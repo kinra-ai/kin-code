@@ -46,7 +46,7 @@ jobs:
 
       - name: Trigger Homebrew formula update
         if: github.repository == 'kinra-ai/kin-code' && github.event_name == 'release'
-        uses: peter-evans/repository-dispatch@v4
+        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
         with:
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           repository: kinra-ai/homebrew-tap
