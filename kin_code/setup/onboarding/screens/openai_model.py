@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, ClassVar
 
 from textual.app import ComposeResult
 from textual.binding import Binding, BindingType
-from textual.containers import Center, Horizontal, Vertical
+from textual.containers import Horizontal, Vertical
 from textual.widgets import Input
 
 from kin_code.cli.textual_ui.widgets.no_markup_static import NoMarkupStatic
@@ -59,29 +59,17 @@ class OpenAIModelScreen(OnboardingScreen):
     def compose(self) -> ComposeResult:
         model_list = Vertical(*self._compose_model_list(), id="model-list")
 
-        with Center(id="model-outer"):
-            with Vertical(id="model-content"):
-                yield NoMarkupStatic("Select a model", id="model-title")
-                yield NoMarkupStatic("Loading models...", id="loading-indicator")
-                yield NoMarkupStatic("", id="error-message")
-                with Center(id="model-list-center"):
-                    yield Horizontal(
-                        NoMarkupStatic("Navigate ↑ ↓", id="nav-hint"),
-                        model_list,
-                        NoMarkupStatic("Press Enter ↵", id="enter-hint"),
-                        id="model-row",
-                    )
-                yield NoMarkupStatic("", classes="spacer")
-                yield Vertical(
-                    NoMarkupStatic("Or enter manually:", id="manual-entry-label"),
-                    Center(
-                        Horizontal(
-                            Input(placeholder="Enter model name", id="manual-model-input"),
-                            id="manual-input-box",
-                        )
-                    ),
-                    id="manual-entry-section",
-                )
+        yield NoMarkupStatic("Select a model", id="model-title")
+        yield NoMarkupStatic("Loading models...", id="loading-indicator")
+        yield NoMarkupStatic("", id="error-message")
+        yield Horizontal(
+            NoMarkupStatic("Navigate ↑ ↓", id="nav-hint"),
+            model_list,
+            NoMarkupStatic("Press Enter ↵", id="enter-hint"),
+            id="model-row",
+        )
+        yield NoMarkupStatic("Or enter manually:", id="manual-entry-label")
+        yield Input(placeholder="Enter model name", id="manual-model-input")
 
     def on_mount(self) -> None:
         app: OnboardingApp = self.app  # type: ignore[assignment]
@@ -115,12 +103,12 @@ class OpenAIModelScreen(OnboardingScreen):
         self._update_display()
 
     def _hide_model_list(self) -> None:
-        model_list_center = self.query_one("#model-list-center")
-        model_list_center.display = False
+        model_row = self.query_one("#model-row")
+        model_row.display = False
 
     def _show_model_list(self) -> None:
-        model_list_center = self.query_one("#model-list-center")
-        model_list_center.display = True
+        model_row = self.query_one("#model-row")
+        model_row.display = True
 
     def _show_error(self, message: str) -> None:
         self._error_message = message
