@@ -22,7 +22,7 @@ from kin_code.core.paths.config_paths import (
 from kin_code.core.programmatic import run_programmatic
 from kin_code.core.types import LLMMessage, OutputFormat
 from kin_code.core.utils import ConversationLimitException
-from kin_code.setup.onboarding import run_onboarding
+from kin_code.setup.onboarding import run_add_provider, run_onboarding
 
 
 def get_initial_mode(args: argparse.Namespace) -> AgentMode:
@@ -134,6 +134,10 @@ def run_cli(args: argparse.Namespace) -> None:
 
     if args.setup:
         run_onboarding()
+        sys.exit(0)
+
+    if args.add_provider:
+        run_add_provider()
         sys.exit(0)
 
     try:

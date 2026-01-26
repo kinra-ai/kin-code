@@ -86,6 +86,11 @@ def parse_arguments() -> argparse.Namespace:
         help="Load agent configuration from ~/.kin-code/agents/NAME.toml",
     )
     parser.add_argument("--setup", action="store_true", help="Setup API key and exit")
+    parser.add_argument(
+        "--add-provider",
+        action="store_true",
+        help="Add an OpenAI-compatible provider endpoint",
+    )
 
     continuation_group = parser.add_mutually_exclusive_group()
     continuation_group.add_argument(

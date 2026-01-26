@@ -59,7 +59,7 @@ class ThemeSelectionScreen(OnboardingScreen):
         Binding("escape", "cancel", "Cancel", show=False),
     ]
 
-    NEXT_SCREEN = "api_key"
+    NEXT_SCREEN = None
 
     def __init__(self) -> None:
         super().__init__()
@@ -161,4 +161,25 @@ class ThemeSelectionScreen(OnboardingScreen):
             KinConfig.save_updates({"textual_theme": theme})
         except OSError:
             pass
-        super().action_next()
+
+        # Import here to avoid circular import
+        from kin_code.setup.onboarding.screens.provider_selection import ProviderType
+
+        app = self.app
+        selected_provider = getattr(app, "selected_provider", None)
+        skip_api_key = getattr(app, "skip_api_key", False)
+
+        # Route based on provider selection
+        match selected_provider:
+            case ProviderType.MISTRAL:
+                self.app.switch_screen("api_key")
+            case ProviderType.OPENAI_COMPATIBLE:
+                # OpenAI flow already complete
+                self.app.exit("completed")
+            case ProviderType.SKIP | None:
+                if skip_api_key:
+                    self.app.exit("completed")
+                else:
+                    self.app.switch_screen("api_key")
+            case _:
+                self.app.switch_screen("api_key")

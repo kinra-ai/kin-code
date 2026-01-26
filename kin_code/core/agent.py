@@ -188,13 +188,12 @@ class Agent:
         if self._max_price is not None:
             self.middleware_pipeline.add(PriceLimitMiddleware(self._max_price))
 
-        if self.config.auto_compact_threshold > 0:
-            self.middleware_pipeline.add(
-                AutoCompactMiddleware(self.config.auto_compact_threshold)
-            )
+        effective_context = self.config.get_effective_context_window()
+        if effective_context > 0:
+            self.middleware_pipeline.add(AutoCompactMiddleware(effective_context))
             if self.config.context_warnings:
                 self.middleware_pipeline.add(
-                    ContextWarningMiddleware(0.5, self.config.auto_compact_threshold)
+                    ContextWarningMiddleware(0.5, effective_context)
                 )
 
         self.middleware_pipeline.add(PlanModeMiddleware(lambda: self._mode))

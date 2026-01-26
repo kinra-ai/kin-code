@@ -29,6 +29,8 @@ from kin_code.core.paths.global_paths import GLOBAL_ENV_FILE, SESSION_LOG_DIR
 from kin_code.core.prompts import SystemPrompt
 from kin_code.core.tools.base import BaseToolConfig
 
+_MIN_CONTEXT_WINDOW = 512
+
 
 def load_api_keys_from_env() -> None:
     if GLOBAL_ENV_FILE.path.is_file():
@@ -226,6 +228,7 @@ class ModelConfig(BaseModel):
     temperature: float = 0.2
     input_price: float = 0.0  # Price per million input tokens
     output_price: float = 0.0  # Price per million output tokens
+    context_window: int | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -257,6 +260,7 @@ DEFAULT_MODELS = [
         alias="devstral-2",
         input_price=0.4,
         output_price=2.0,
+        context_window=128_000,
     ),
     ModelConfig(
         name="devstral-small-latest",
@@ -264,6 +268,7 @@ DEFAULT_MODELS = [
         alias="devstral-small",
         input_price=0.1,
         output_price=0.3,
+        context_window=128_000,
     ),
     ModelConfig(
         name="devstral",
@@ -373,6 +378,23 @@ class KinConfig(BaseSettings):
         raise ValueError(
             f"Provider '{model.provider}' for model '{model.name}' not found in configuration."
         )
+
+    def get_effective_context_window(self) -> int:
+        """Get effective context window, preferring model's value over global default.
+
+        Returns the model's context_window if available and valid (>= _MIN_CONTEXT_WINDOW),
+        otherwise falls back to auto_compact_threshold.
+        """
+        try:
+            active_model = self.get_active_model()
+            if (
+                active_model.context_window is not None
+                and active_model.context_window >= _MIN_CONTEXT_WINDOW
+            ):
+                return active_model.context_window
+        except ValueError:
+            pass
+        return self.auto_compact_threshold
 
     @classmethod
     def settings_customise_sources(

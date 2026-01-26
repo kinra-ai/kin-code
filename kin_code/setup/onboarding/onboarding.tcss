@@ -228,3 +228,311 @@ ThemeSelectionScreen #enter-hint {
 #config-docs-group .link-row {
     margin-top: 0;
 }
+
+/* =============================================================================
+   Provider Selection Screen
+   ============================================================================= */
+
+#provider-outer {
+    width: 100%;
+    height: 100%;
+    align: center middle;
+    overflow-y: auto;
+}
+
+#provider-content {
+    width: auto;
+    height: auto;
+    padding: 1 0;
+}
+
+#provider-title {
+    text-align: center;
+    width: 100%;
+    margin-bottom: 2;
+}
+
+#provider-row {
+    width: auto;
+    height: auto;
+}
+
+#provider-list {
+    width: 32;
+    height: auto;
+}
+
+.provider-item {
+    text-align: center;
+    width: 100%;
+}
+
+.provider-item.selected {
+    color: $text;
+    text-style: bold;
+    border: round #555555;
+    padding: 0 2;
+}
+
+.provider-item.fade-1 {
+    text-opacity: 50%;
+}
+
+ProviderSelectionScreen #nav-hint {
+    color: $text-muted;
+    width: 16;
+    height: 100%;
+    content-align: right middle;
+    padding-right: 2;
+}
+
+ProviderSelectionScreen #enter-hint {
+    color: $text-muted;
+    width: 16;
+    height: 100%;
+    content-align: left middle;
+    padding-left: 2;
+}
+
+/* =============================================================================
+   OpenAI Provider Screen
+   ============================================================================= */
+
+#openai-provider-outer {
+    width: 100%;
+    height: 100%;
+    align: center middle;
+    overflow-y: auto;
+}
+
+#openai-provider-content {
+    width: auto;
+    height: auto;
+    padding: 1 0;
+}
+
+#openai-provider-title {
+    text-align: center;
+    width: 100%;
+    margin-bottom: 2;
+}
+
+#provider-selection-row {
+    width: auto;
+    height: auto;
+}
+
+#preset-list {
+    width: 28;
+    height: auto;
+}
+
+.preset-item {
+    text-align: center;
+    width: 100%;
+}
+
+.preset-item.selected {
+    color: $text;
+    text-style: bold;
+    border: round #555555;
+    padding: 0 2;
+}
+
+#spacer-hint {
+    width: 16;
+}
+
+#url-label {
+    text-align: center;
+    margin-top: 2;
+    color: $text-muted;
+}
+
+#url-input-box {
+    border: round #555555;
+    padding: 0 1;
+    margin-top: 1;
+    width: auto;
+    height: 3;
+}
+
+#base-url-input {
+    border: none;
+    width: 48;
+    height: 1;
+    padding: 0;
+}
+
+#test-row {
+    margin-top: 2;
+    width: auto;
+    height: auto;
+}
+
+#test-button {
+    margin-right: 2;
+}
+
+#test-status {
+    content-align: left middle;
+    width: auto;
+    min-width: 20;
+}
+
+#test-status.testing {
+    color: $text-muted;
+}
+
+#test-status.success {
+    color: $success;
+}
+
+#test-status.error {
+    color: $error;
+}
+
+#continue-hint {
+    color: $text-muted;
+    margin-top: 2;
+}
+
+OpenAIProviderScreen #nav-hint {
+    color: $text-muted;
+    width: 16;
+    height: 100%;
+    content-align: right middle;
+    padding-right: 2;
+}
+
+/* =============================================================================
+   OpenAI API Key Screen
+   ============================================================================= */
+
+.spacer-small {
+    height: 1;
+}
+
+/* =============================================================================
+   OpenAI Model Screen
+   ============================================================================= */
+
+#model-outer {
+    width: 100%;
+    height: 100%;
+    align: center middle;
+    overflow-y: auto;
+}
+
+#model-content {
+    width: auto;
+    height: auto;
+    padding: 1 0;
+}
+
+#model-title {
+    text-align: center;
+    width: 100%;
+    margin-bottom: 2;
+}
+
+#loading-indicator {
+    text-align: center;
+    color: $text-muted;
+    margin-bottom: 1;
+}
+
+#error-message {
+    text-align: center;
+    height: auto;
+}
+
+#error-message.error {
+    color: $error;
+    margin-bottom: 1;
+}
+
+#model-list-center {
+    width: 100%;
+    height: auto;
+}
+
+#model-row {
+    width: auto;
+    height: auto;
+}
+
+#model-list {
+    width: 32;
+    height: auto;
+}
+
+.model-item {
+    text-align: center;
+    width: 100%;
+}
+
+.model-item.selected {
+    color: $text;
+    text-style: bold;
+    border: round #555555;
+    padding: 0 2;
+}
+
+.model-item.fade-1 {
+    text-opacity: 75%;
+}
+
+.model-item.fade-2 {
+    text-opacity: 50%;
+}
+
+.model-item.fade-3 {
+    text-opacity: 25%;
+}
+
+.model-item.fade-4 {
+    text-opacity: 10%;
+}
+
+OpenAIModelScreen #nav-hint {
+    color: $text-muted;
+    width: 16;
+    height: 100%;
+    content-align: right middle;
+    padding-right: 2;
+}
+
+OpenAIModelScreen #enter-hint {
+    color: $text-muted;
+    width: 16;
+    height: 100%;
+    content-align: left middle;
+    padding-left: 2;
+}
+
+#manual-entry-section {
+    margin-top: 2;
+    width: 100%;
+    height: auto;
+}
+
+#manual-entry-label {
+    text-align: center;
+    color: $text-muted;
+}
+
+#manual-input-box {
+    border: round #555555;
+    padding: 0 1;
+    margin-top: 1;
+    width: auto;
+    height: 3;
+}
+
+#manual-model-input {
+    border: none;
+    width: 32;
+    height: 1;
+    padding: 0;
+}
