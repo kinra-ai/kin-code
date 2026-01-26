@@ -180,7 +180,10 @@ class WebFetch(
             raise ToolError("max_length must be a positive number")
 
     @async_retry(
-        tries=3, delay_seconds=1.0, backoff_factor=2.0, is_retryable=_is_retryable_fetch_error
+        tries=3,
+        delay_seconds=1.0,
+        backoff_factor=2.0,
+        is_retryable=_is_retryable_fetch_error,
     )
     async def _fetch_and_extract(self, args: WebFetchArgs) -> WebFetchResult:
         """Fetch URL and extract text content.
@@ -210,7 +213,10 @@ class WebFetch(
                 response.raise_for_status()
 
                 content_type = response.headers.get("content-type", "")
-                if "text/html" not in content_type and "application/xhtml" not in content_type:
+                if (
+                    "text/html" not in content_type
+                    and "application/xhtml" not in content_type
+                ):
                     return self._handle_non_html(args.url, response)
 
                 html_bytes = response.content[: self.config.max_content_bytes]
@@ -276,10 +282,7 @@ class WebFetch(
             content = content[:max_chars] + "\n\n[Content truncated...]"
 
         return WebFetchResult(
-            url=args.url,
-            title=title,
-            content=content,
-            was_truncated=was_truncated,
+            url=args.url, title=title, content=content, was_truncated=was_truncated
         )
 
     def _update_state(self, url: str) -> None:

@@ -56,6 +56,7 @@ Configuration priority (highest to lowest):
 4. Agent-specific TOML file
 5. Field defaults
 """
+
 from __future__ import annotations
 
 from enum import StrEnum, auto

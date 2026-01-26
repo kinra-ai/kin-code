@@ -77,7 +77,9 @@ class OpenAIApiKeyScreen(OnboardingScreen):
         with Vertical(id="api-key-outer"):
             yield NoMarkupStatic("", classes="spacer")
             yield Center(
-                NoMarkupStatic(f"Enter your {provider_name} API key", id="api-key-title")
+                NoMarkupStatic(
+                    f"Enter your {provider_name} API key", id="api-key-title"
+                )
             )
             with Center():
                 with Vertical(id="api-key-content"):

@@ -66,9 +66,7 @@ class OpenAIProviderScreen(OnboardingScreen):
                 with Center():
                     with Horizontal(id="provider-selection-row"):
                         yield NoMarkupStatic("Navigate \u2191 \u2193", id="nav-hint")
-                        yield Vertical(
-                            *self._compose_preset_list(), id="preset-list"
-                        )
+                        yield Vertical(*self._compose_preset_list(), id="preset-list")
                         yield NoMarkupStatic("", id="spacer-hint")
 
                 yield NoMarkupStatic("Base URL:", id="url-label")

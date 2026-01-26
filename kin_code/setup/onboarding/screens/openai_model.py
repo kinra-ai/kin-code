@@ -86,7 +86,9 @@ class OpenAIModelScreen(OnboardingScreen):
         # Use run_worker to fetch models without blocking UI rendering
         self.run_worker(self._fetch_models_background(base_url, api_key))
 
-    async def _fetch_models_background(self, base_url: str, api_key: str | None) -> None:
+    async def _fetch_models_background(
+        self, base_url: str, api_key: str | None
+    ) -> None:
         """Fetch models in the background without blocking UI."""
         self._models = await fetch_models(base_url, api_key)
 

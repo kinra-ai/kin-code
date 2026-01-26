@@ -57,6 +57,7 @@ Typical usage:
     # Discover default configurations for all tools
     defaults = ToolManager.discover_tool_defaults()
 """
+
 from __future__ import annotations
 
 from collections.abc import Callable, Iterator

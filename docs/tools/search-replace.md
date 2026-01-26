@@ -69,7 +69,7 @@ import logging
 search_replace(
     file_path="README.md",
     content='''<<<<<<< SEARCH
-This is an exmaple
+This is an example
 =======
 This is an example
 >>>>>>> REPLACE'''

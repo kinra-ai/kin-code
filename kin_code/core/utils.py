@@ -58,6 +58,7 @@ Typical usage:
     # Run async code synchronously (handles nested event loops)
     result = run_sync(some_async_function())
 """
+
 from __future__ import annotations
 
 import asyncio

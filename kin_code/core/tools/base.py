@@ -71,6 +71,7 @@ Typical usage:
     tool = EchoTool.from_config(EchoConfig(prefix=">> "))
     result = await tool.invoke(message="Hello", repeat=3)
 """
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

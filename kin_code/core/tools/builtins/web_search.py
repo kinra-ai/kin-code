@@ -159,7 +159,10 @@ class WebSearch(
         return api_key
 
     @async_retry(
-        tries=3, delay_seconds=1.0, backoff_factor=2.0, is_retryable=_is_retryable_search_error
+        tries=3,
+        delay_seconds=1.0,
+        backoff_factor=2.0,
+        is_retryable=_is_retryable_search_error,
     )
     async def _execute_search(
         self, args: WebSearchArgs, api_key: str
@@ -247,11 +250,7 @@ class WebSearch(
                     WebSearchResultItem(title=title, url=url, description=description)
                 )
 
-        return WebSearchResult(
-            results=results,
-            query=query,
-            total_count=len(results),
-        )
+        return WebSearchResult(results=results, query=query, total_count=len(results))
 
     def _update_state(self, query: str) -> None:
         """Update state with the recent query."""

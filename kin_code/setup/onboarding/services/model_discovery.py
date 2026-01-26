@@ -43,8 +43,7 @@ class DiscoveredModel:
 
 
 async def fetch_models(
-    base_url: str,
-    api_key: str | None = None,
+    base_url: str, api_key: str | None = None
 ) -> list[DiscoveredModel]:
     """Fetch available models from an OpenAI-compatible endpoint.
 
@@ -99,8 +98,7 @@ def _http_status_error_message(status_code: int) -> str:
 
 
 async def test_connection(
-    base_url: str,
-    api_key: str | None = None,
+    base_url: str, api_key: str | None = None
 ) -> tuple[bool, str]:
     """Test connectivity to an OpenAI-compatible endpoint.
 

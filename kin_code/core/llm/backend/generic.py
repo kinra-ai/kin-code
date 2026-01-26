@@ -152,10 +152,7 @@ class OpenAIAdapter(APIAdapter):
 
         # OpenRouter provider routing - allow fallbacks for better compatibility
         if provider_name == "openrouter":
-            payload["provider"] = {
-                "allow_fallbacks": True,
-                "data_collection": "allow",
-            }
+            payload["provider"] = {"allow_fallbacks": True, "data_collection": "allow"}
 
         return payload
 

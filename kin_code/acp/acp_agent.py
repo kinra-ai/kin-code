@@ -188,9 +188,7 @@ class KinAcpAgent(AcpAgent):
             ),
             protocolVersion=PROTOCOL_VERSION,
             agentInfo=Implementation(
-                name="@kinra/kin-code",
-                title="Kin Code",
-                version=__version__,
+                name="@kinra/kin-code", title="Kin Code", version=__version__
             ),
             authMethods=auth_methods,
         )

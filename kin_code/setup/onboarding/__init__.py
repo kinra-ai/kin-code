@@ -107,7 +107,10 @@ def run_onboarding(app: App | None = None) -> None:
             )
         case "completed":
             # Save OpenAI provider config if the user completed that flow
-            if isinstance(onboarding_app, OnboardingApp) and onboarding_app.openai_preset:
+            if (
+                isinstance(onboarding_app, OnboardingApp)
+                and onboarding_app.openai_preset
+            ):
                 _save_openai_provider_config(onboarding_app)
 
 
@@ -159,6 +162,9 @@ def run_add_provider(app: App | None = None) -> None:
                 f"You may need to set it manually in {GLOBAL_ENV_FILE.path}[/]\n"
             )
         case "completed":
-            if isinstance(add_provider_app, AddProviderApp) and add_provider_app.openai_preset:
+            if (
+                isinstance(add_provider_app, AddProviderApp)
+                and add_provider_app.openai_preset
+            ):
                 _save_openai_provider_config(add_provider_app)
                 rprint("\n[green]Provider and model configured successfully![/]")

@@ -57,15 +57,11 @@ class ProviderSelectionScreen(OnboardingScreen):
     def compose(self) -> ComposeResult:
         with Center(id="provider-outer"):
             with Vertical(id="provider-content"):
-                yield NoMarkupStatic(
-                    "Select your LLM provider", id="provider-title"
-                )
+                yield NoMarkupStatic("Select your LLM provider", id="provider-title")
                 with Center():
                     with Horizontal(id="provider-row"):
                         yield NoMarkupStatic("Navigate \u2191 \u2193", id="nav-hint")
-                        yield Vertical(
-                            *self._compose_option_list(), id="provider-list"
-                        )
+                        yield Vertical(*self._compose_option_list(), id="provider-list")
                         yield NoMarkupStatic("Press Enter \u21b5", id="enter-hint")
 
     def on_mount(self) -> None:

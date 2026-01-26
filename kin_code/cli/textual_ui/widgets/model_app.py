@@ -124,7 +124,9 @@ class ModelApp(Container):
 
     def compose(self) -> ComposeResult:
         with Vertical(id="model-content"):
-            self._title_widget = NoMarkupStatic("Model Selection", classes="model-title")
+            self._title_widget = NoMarkupStatic(
+                "Model Selection", classes="model-title"
+            )
             yield self._title_widget
 
             yield NoMarkupStatic("", classes="model-separator")
@@ -136,7 +138,9 @@ class ModelApp(Container):
                     yield widget
 
             self._search_input = Input(
-                placeholder="Type to search...", id="model-search", classes="model-search"
+                placeholder="Type to search...",
+                id="model-search",
+                classes="model-search",
             )
             self._search_input.display = False
             yield self._search_input
@@ -181,8 +185,14 @@ class ModelApp(Container):
                 active = self.config.active_model
                 try:
                     model = self.config.get_active_model()
-                    ctx = f"{model.context_window // 1000}k" if model.context_window else "?"
-                    return f"Model Selection - Active: {active} ({model.provider}) {ctx}"
+                    ctx = (
+                        f"{model.context_window // 1000}k"
+                        if model.context_window
+                        else "?"
+                    )
+                    return (
+                        f"Model Selection - Active: {active} ({model.provider}) {ctx}"
+                    )
                 except ValueError:
                     return f"Model Selection - Active: {active}"
             case ViewState.DISCOVER:
@@ -207,11 +217,15 @@ class ModelApp(Container):
                 is_active = model.alias == self.config.active_model
                 cursor = "> " if is_selected else "  "
                 active_marker = " *" if is_active else ""
-                ctx = f"{model.context_window // 1000}k" if model.context_window else "?"
+                ctx = (
+                    f"{model.context_window // 1000}k" if model.context_window else "?"
+                )
                 price = ""
                 if model.input_price > 0 or model.output_price > 0:
                     price = f"  ${model.input_price:.2f}/${model.output_price:.2f}"
-                lines.append(f"  {cursor}{model.alias:<20} {ctx:<6}{price}{active_marker}")
+                lines.append(
+                    f"  {cursor}{model.alias:<20} {ctx:<6}{price}{active_marker}"
+                )
 
         for i, widget in enumerate(self._content_widgets):
             if i < len(lines):
@@ -251,7 +265,9 @@ class ModelApp(Container):
             for i, model in enumerate(display_models):
                 is_selected = i == self._selected_index
                 cursor = "> " if is_selected else "  "
-                ctx = f"{model.context_window // 1000}k" if model.context_window else "?"
+                ctx = (
+                    f"{model.context_window // 1000}k" if model.context_window else "?"
+                )
                 owned = f" ({model.owned_by})" if model.owned_by else ""
                 # Mark models that are already configured
                 alias = model.id.split("/")[-1] if "/" in model.id else model.id
@@ -271,7 +287,9 @@ class ModelApp(Container):
             self._search_input.display = False
 
         providers = self._get_providers()
-        provider_name = providers[self._add_provider_index].name if providers else "none"
+        provider_name = (
+            providers[self._add_provider_index].name if providers else "none"
+        )
 
         lines: list[str] = []
         p_cursor = "> " if self._add_focus_field == 0 else "  "
@@ -364,8 +382,7 @@ class ModelApp(Container):
                         # Update existing model's metadata
                         self.post_message(
                             self.ModelUpdated(
-                                alias=alias,
-                                context_window=model.context_window,
+                                alias=alias, context_window=model.context_window
                             )
                         )
                     else:
@@ -430,7 +447,9 @@ class ModelApp(Container):
             import os
 
             api_key = (
-                os.getenv(provider.api_key_env_var) if provider.api_key_env_var else None
+                os.getenv(provider.api_key_env_var)
+                if provider.api_key_env_var
+                else None
             )
             models = await fetch_models(provider.api_base, api_key)
 

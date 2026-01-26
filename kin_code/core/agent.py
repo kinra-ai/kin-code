@@ -50,6 +50,7 @@ Typical usage:
     # Clear history and start fresh
     await agent.clear_history()
 """
+
 from __future__ import annotations
 
 import asyncio

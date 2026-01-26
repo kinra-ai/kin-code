@@ -363,7 +363,10 @@ class KinApp(App):  # noqa: PLR0904
             return
 
         current_models.append(new_model.model_dump())
-        KinConfig.save_updates({"models": current_models, "active_model": message.alias})
+        KinConfig.save_updates({
+            "models": current_models,
+            "active_model": message.alias,
+        })
         await self._reload_config()
         await self._mount_and_scroll(
             UserCommandMessage(f"Added and switched to model: {message.alias}")
@@ -392,10 +395,15 @@ class KinApp(App):  # noqa: PLR0904
             )
             return
 
-        KinConfig.save_updates({"models": current_models, "active_model": message.alias})
+        KinConfig.save_updates({
+            "models": current_models,
+            "active_model": message.alias,
+        })
         await self._reload_config()
 
-        ctx_str = f"{message.context_window // 1000}k" if message.context_window else "?"
+        ctx_str = (
+            f"{message.context_window // 1000}k" if message.context_window else "?"
+        )
         await self._mount_and_scroll(
             UserCommandMessage(f"Updated {message.alias}: context window {ctx_str}")
         )
@@ -404,9 +412,7 @@ class KinApp(App):  # noqa: PLR0904
     async def on_model_app_model_closed(self, message: ModelApp.ModelClosed) -> None:
         """Handle ModelApp close."""
         if not message.changed:
-            await self._mount_and_scroll(
-                UserCommandMessage("Model selection closed.")
-            )
+            await self._mount_and_scroll(UserCommandMessage("Model selection closed."))
         await self._switch_to_input_app()
 
     async def on_compact_message_completed(
@@ -819,13 +825,14 @@ class KinApp(App):  # noqa: PLR0904
             else:
                 self._config = new_config
             if self._context_progress:
-                if (effective_context := self.config.get_effective_context_window()) > 0:
+                if (
+                    effective_context := self.config.get_effective_context_window()
+                ) > 0:
                     current_tokens = (
                         self.agent.stats.context_tokens if self.agent else 0
                     )
                     self._context_progress.tokens = TokenState(
-                        max_tokens=effective_context,
-                        current_tokens=current_tokens,
+                        max_tokens=effective_context, current_tokens=current_tokens
                     )
                 else:
                     self._context_progress.tokens = TokenState()
