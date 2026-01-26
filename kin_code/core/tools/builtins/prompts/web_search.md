@@ -22,3 +22,21 @@ Use `web_search` to find information, documentation, or solutions on the web.
 **Workflow:**
 1. Use `web_search` to find relevant URLs
 2. Use `web_fetch` with promising URLs to get full content
+
+**Configuration:**
+
+Requires a Brave Search API key. Get a free key at https://brave.com/search/api/ (2,000 queries/month).
+
+Add to `~/.kin-code/.env` (global) or `./.kin-code/.env` (project):
+```
+BRAVE_SEARCH_API_KEY=your-api-key-here
+```
+
+Optional `config.toml` settings:
+```toml
+[tools.web_search]
+api_key_env_var = "BRAVE_SEARCH_API_KEY"  # Custom env var name
+default_count = 10                         # Default result count
+max_snippet_length = 500                   # Max description length
+safesearch = "moderate"                    # off, moderate, strict
+```

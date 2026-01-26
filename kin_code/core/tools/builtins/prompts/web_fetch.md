@@ -23,3 +23,13 @@ Use `web_fetch` to retrieve full content from a web page URL.
 - Large pages are automatically truncated
 - Follows redirects automatically
 - Handles common content types (HTML, plain text)
+
+**Configuration:**
+
+Optional `config.toml` settings:
+```toml
+[tools.web_fetch]
+timeout = 30.0              # Request timeout in seconds
+max_content_chars = 50000   # Max content length to return
+max_redirects = 5           # Maximum redirects to follow
+```
