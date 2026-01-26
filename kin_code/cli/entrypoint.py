@@ -1,3 +1,9 @@
+"""CLI entrypoint for Kin Code.
+
+This module provides the main entry point for the Kin Code CLI application,
+including argument parsing, folder trust verification, and application startup.
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -16,6 +22,11 @@ from kin_code.setup.trusted_folders.trust_folder_dialog import (
 
 
 def parse_arguments() -> argparse.Namespace:
+    """Parse command-line arguments for Kin Code.
+
+    Returns:
+        Parsed arguments namespace containing all CLI options.
+    """
     parser = argparse.ArgumentParser(description="Run the Kin Code interactive CLI")
     parser.add_argument(
         "-v", "--version", action="version", version=f"%(prog)s {__version__}"
@@ -109,6 +120,14 @@ def parse_arguments() -> argparse.Namespace:
 
 
 def check_and_resolve_trusted_folder() -> None:
+    """Check if current folder requires trust verification and prompt user if needed.
+
+    Examines the current working directory for trustable content (e.g., git repos,
+    config files). If the folder has not been previously trusted or untrusted,
+    prompts the user to make a trust decision via an interactive dialog.
+
+    The user's choice is persisted so they won't be prompted again for the same folder.
+    """
     cwd = Path.cwd()
     if not has_trustable_content(cwd) or cwd.resolve() == Path.home().resolve():
         return
@@ -133,6 +152,11 @@ def check_and_resolve_trusted_folder() -> None:
 
 
 def main() -> None:
+    """Main CLI entrypoint that initializes configuration and starts the application.
+
+    Parses command-line arguments, verifies folder trust for interactive sessions,
+    unlocks configuration paths, and delegates to run_cli for actual execution.
+    """
     args = parse_arguments()
 
     is_interactive = args.prompt is None

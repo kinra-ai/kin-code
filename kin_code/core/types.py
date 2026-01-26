@@ -216,7 +216,23 @@ class LLMMessage(BaseModel):
         }
 
     def __add__(self, other: LLMMessage) -> LLMMessage:
-        """Careful: this is not commutative!"""
+        """Accumulate two messages by concatenating their content and tool calls.
+
+        This operation is not commutative - the order of operands matters.
+
+        Args:
+            other: Another LLMMessage to accumulate with this one.
+
+        Returns:
+            A new LLMMessage with combined content, reasoning, and tool calls.
+
+        Raises:
+            ValueError: If messages have different roles.
+            ValueError: If messages have different names.
+            ValueError: If messages have different tool_call_ids.
+            ValueError: If a tool call chunk is missing its index.
+            ValueError: If tool calls at the same index have different names.
+        """
         if self.role != other.role:
             raise ValueError("Can't accumulate messages with different roles")
 

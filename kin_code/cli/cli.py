@@ -1,3 +1,9 @@
+"""CLI runner for Kin Code.
+
+This module contains the main CLI logic including mode detection, configuration
+loading, session management, and dispatching to interactive or programmatic mode.
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -26,6 +32,14 @@ from kin_code.setup.onboarding import run_add_provider, run_onboarding
 
 
 def get_initial_mode(args: argparse.Namespace) -> AgentMode:
+    """Determine the initial agent mode based on CLI arguments.
+
+    Args:
+        args: Parsed command-line arguments.
+
+    Returns:
+        The appropriate AgentMode based on flags (PLAN, AUTO_APPROVE, or DEFAULT).
+    """
     if args.plan:
         return AgentMode.PLAN
     if args.auto_approve:
@@ -36,6 +50,14 @@ def get_initial_mode(args: argparse.Namespace) -> AgentMode:
 
 
 def get_prompt_from_stdin() -> str | None:
+    """Read prompt content from stdin if available.
+
+    Checks if stdin has piped content and reads it. If successful, reopens
+    stdin from /dev/tty to allow interactive input afterward.
+
+    Returns:
+        The stripped stdin content, or None if stdin is a tty or empty.
+    """
     if sys.stdin.isatty():
         return None
     try:
@@ -53,6 +75,18 @@ def get_prompt_from_stdin() -> str | None:
 def load_config_or_exit(
     agent: str | None = None, mode: AgentMode = AgentMode.DEFAULT
 ) -> KinConfig:
+    """Load configuration, running onboarding if API key is missing.
+
+    Args:
+        agent: Optional agent configuration name to load.
+        mode: Agent mode that may provide config overrides.
+
+    Returns:
+        Loaded KinConfig instance.
+
+    Note:
+        Exits the process if configuration is invalid or prompt file is missing.
+    """
     try:
         return KinConfig.load(agent, **mode.config_overrides)
     except MissingAPIKeyError:
@@ -67,6 +101,13 @@ def load_config_or_exit(
 
 
 def bootstrap_config_files() -> None:
+    """Create default configuration files if they don't exist.
+
+    Creates the following files with defaults if missing:
+    - config.toml: Main configuration file
+    - instructions.md: User instructions file
+    - history: Command history file
+    """
     if not CONFIG_FILE.path.exists():
         try:
             KinConfig.save_updates(KinConfig.create_default())
@@ -83,7 +124,7 @@ def bootstrap_config_files() -> None:
     if not HISTORY_FILE.path.exists():
         try:
             HISTORY_FILE.path.parent.mkdir(parents=True, exist_ok=True)
-            HISTORY_FILE.path.write_text("Hello Vibe!\n", "utf-8")
+            HISTORY_FILE.path.write_text("Hello Kin!\n", "utf-8")
         except Exception as e:
             rprint(f"[yellow]Could not create history file: {e}[/]")
 
@@ -91,6 +132,18 @@ def bootstrap_config_files() -> None:
 def load_session(
     args: argparse.Namespace, config: KinConfig
 ) -> list[LLMMessage] | None:
+    """Load a previous session if --continue or --resume was specified.
+
+    Args:
+        args: Parsed command-line arguments containing session flags.
+        config: Configuration with session logging settings.
+
+    Returns:
+        List of messages from the loaded session, or None if no session to load.
+
+    Note:
+        Exits the process if session logging is disabled or session not found.
+    """
     if not args.continue_session and not args.resume:
         return None
 
@@ -130,6 +183,15 @@ def load_session(
 
 
 def run_cli(args: argparse.Namespace) -> None:
+    """Execute the main CLI logic based on parsed arguments.
+
+    Handles setup commands (--setup, --add-provider), bootstraps config files,
+    and dispatches to either programmatic mode (with -p flag) or interactive
+    Textual UI mode.
+
+    Args:
+        args: Parsed command-line arguments from entrypoint.
+    """
     load_api_keys_from_env()
 
     if args.setup:

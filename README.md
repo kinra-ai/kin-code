@@ -145,7 +145,10 @@ Use slash commands for meta-actions and configuration changes during a session.
 | `/compact` | Summarize conversation to reduce context |
 | `/status` | Display agent statistics |
 | `/log` | Show path to current session log |
+| `/terminal-setup` | Configure Shift+Enter for newlines |
 | `/exit` | Exit the application |
+
+For detailed documentation on all commands and keybindings, see the [Slash Commands Guide](docs/user-guide/slash-commands.md).
 
 ## Configuration
 
