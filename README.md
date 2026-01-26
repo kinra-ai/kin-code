@@ -106,6 +106,18 @@ by default it will use `auto-approve` mode.
 
 Use slash commands for meta-actions and configuration changes during a session.
 
+| Command | Description |
+|---------|-------------|
+| `/help` | Show help message with shortcuts and commands |
+| `/config` | Open configuration settings |
+| `/model` | Manage models and switch active model |
+| `/reload` | Reload configuration from disk |
+| `/clear` | Clear conversation history |
+| `/compact` | Summarize conversation to reduce context |
+| `/status` | Display agent statistics |
+| `/log` | Show path to current session log |
+| `/exit` | Exit the application |
+
 ## Configuration
 
 Kin is configured via a `config.toml` file. It looks for this file first in `./.kin-code/config.toml` and then falls back to `~/.kin-code/config.toml`.

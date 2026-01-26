@@ -71,7 +71,7 @@ In `config.toml`:
 active_model = "devstral-2"  # Use the alias
 ```
 
-Or use `/config` during a session to change models.
+Or use `/model` during a session to change models.
 
 ## Model Aliases
 
@@ -87,8 +87,30 @@ Prices are per million tokens.
 
 ## Context Window
 
-The `context_window` value is used for:
-- Automatic conversation compaction
-- Deciding when to truncate context
+The `context_window` field stores the maximum context size in tokens. It is used for:
 
-If not set, falls back to `auto_compact_threshold` from global config.
+- **Footer display**: Shows context usage as "N% of Xk tokens"
+- **Automatic conversation compaction**: Triggers when approaching the limit
+- **Deciding when to truncate context**
+
+The effective context window is determined by `get_effective_context_window()`:
+1. Uses the model's `context_window` if set
+2. Falls back to `auto_compact_threshold` from global config
+
+## Refreshing Model Metadata
+
+To update an existing model's metadata (such as `context_window`) from its provider:
+
+1. Open model management: `/model`
+2. Press `D` to enter discover view
+3. Find your model (marked with `*` indicating it's already configured)
+4. Press `Enter` to refresh its metadata
+
+This fetches the latest context window size from the provider endpoint. Supported provider field names:
+
+| Provider | Field Name |
+|----------|------------|
+| OpenRouter | `context_length` |
+| Groq | `context_window` |
+| vLLM | `max_model_len` |
+| LM Studio | `loaded_context_length` |
