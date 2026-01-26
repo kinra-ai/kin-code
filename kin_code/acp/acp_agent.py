@@ -24,8 +24,8 @@ Architecture:
     run_acp_server: Entry point for stdio-based ACP server.
 
 The implementation handles three different launch modes:
-    1. Dev mode: `uv run vibe-acp` from project root
-    2. UV tool install: `vibe-acp` with UV path resolution
+    1. Dev mode: `uv run kin-acp` from project root
+    2. UV tool install: `kin-acp` with UV path resolution
     3. Bundled binary: Self-contained executable with embedded Python
 
 Protocol Flow:
@@ -139,12 +139,12 @@ class KinAcpAgent(AcpAgent):
         self.client_capabilities = params.clientCapabilities
 
         # The ACP Agent process can be launched in 3 different ways, depending on installation
-        #  - dev mode: `uv run vibe-acp`, ran from the project root
-        #  - uv tool install: `vibe-acp`, similar to dev mode, but uv takes care of path resolution
-        #  - bundled binary: `./vibe-acp` from binary location
+        #  - dev mode: `uv run kin-acp`, ran from the project root
+        #  - uv tool install: `kin-acp`, similar to dev mode, but uv takes care of path resolution
+        #  - bundled binary: `./kin-acp` from binary location
         # The 2 first modes are working similarly, under the hood uv runs `/some/python /my/entrypoint.py``
         # The last mode is quite different as our bundler also includes the python install.
-        # So sys.executable is already /path/to/binary/vibe-acp.
+        # So sys.executable is already /path/to/binary/kin-acp.
         # For this reason, we make a distinction in the way we call the setup command
         command = sys.executable
         if "python" not in Path(command).name:

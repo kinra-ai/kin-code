@@ -1490,8 +1490,8 @@ def _print_session_resume_message(session_id: str | None) -> None:
         return
 
     print()
-    print("To continue this session, run: vibe --continue")
-    print(f"Or: vibe --resume {session_id}")
+    print("To continue this session, run: kin --continue")
+    print(f"Or: kin --resume {session_id}")
 
 
 def run_textual_ui(
