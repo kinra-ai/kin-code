@@ -81,7 +81,7 @@ class OpenAIModelScreen(OnboardingScreen):
                     )
                     yield Center(Horizontal(self._manual_input, id="manual-input-box"))
 
-    async def on_mount(self) -> None:
+    def on_mount(self) -> None:
         app: OnboardingApp = self.app  # type: ignore[assignment]
         base_url: str = getattr(app, "openai_base_url", "")
         api_key: str | None = getattr(app, "openai_api_key", None)
@@ -94,6 +94,11 @@ class OpenAIModelScreen(OnboardingScreen):
             self._focus_manual_input()
             return
 
+        # Use run_worker to fetch models without blocking UI rendering
+        self.run_worker(self._fetch_models_background(base_url, api_key))
+
+    async def _fetch_models_background(self, base_url: str, api_key: str | None) -> None:
+        """Fetch models in the background without blocking UI."""
         self._models = await fetch_models(base_url, api_key)
 
         loading = self.query_one("#loading-indicator", NoMarkupStatic)
