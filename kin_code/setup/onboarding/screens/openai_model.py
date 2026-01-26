@@ -48,21 +48,16 @@ class OpenAIModelScreen(OnboardingScreen):
         super().__init__()
         self._models: list[DiscoveredModel] = []
         self._selected_index = 0
-        self._model_widgets: list[NoMarkupStatic] = []
         self._is_loading = True
         self._error_message: str | None = None
 
     def _compose_model_list(self) -> ComposeResult:
+        """Compose the model selection list widgets."""
         for _ in range(VISIBLE_NEIGHBORS * 2 + 1):
-            widget = NoMarkupStatic("", classes="model-item")
-            self._model_widgets.append(widget)
-            yield widget
+            yield NoMarkupStatic("", classes="model-item")
 
     def compose(self) -> ComposeResult:
-        self._manual_input = Input(
-            placeholder="Enter model name",
-            id="manual-model-input",
-        )
+        model_list = Vertical(*self._compose_model_list(), id="model-list")
 
         with Center(id="model-outer"):
             with Vertical(id="model-content"):
@@ -70,16 +65,23 @@ class OpenAIModelScreen(OnboardingScreen):
                 yield NoMarkupStatic("Loading models...", id="loading-indicator")
                 yield NoMarkupStatic("", id="error-message")
                 with Center(id="model-list-center"):
-                    with Horizontal(id="model-row"):
-                        yield NoMarkupStatic("Navigate \u2191 \u2193", id="nav-hint")
-                        yield Vertical(*self._compose_model_list(), id="model-list")
-                        yield NoMarkupStatic("Press Enter \u21b5", id="enter-hint")
-                yield NoMarkupStatic("", classes="spacer")
-                with Vertical(id="manual-entry-section"):
-                    yield NoMarkupStatic(
-                        "Or enter manually:", id="manual-entry-label"
+                    yield Horizontal(
+                        NoMarkupStatic("Navigate ↑ ↓", id="nav-hint"),
+                        model_list,
+                        NoMarkupStatic("Press Enter ↵", id="enter-hint"),
+                        id="model-row",
                     )
-                    yield Center(Horizontal(self._manual_input, id="manual-input-box"))
+                yield NoMarkupStatic("", classes="spacer")
+                yield Vertical(
+                    NoMarkupStatic("Or enter manually:", id="manual-entry-label"),
+                    Center(
+                        Horizontal(
+                            Input(placeholder="Enter model name", id="manual-model-input"),
+                            id="manual-input-box",
+                        )
+                    ),
+                    id="manual-entry-section",
+                )
 
     def on_mount(self) -> None:
         app: OnboardingApp = self.app  # type: ignore[assignment]
@@ -87,7 +89,6 @@ class OpenAIModelScreen(OnboardingScreen):
         api_key: str | None = getattr(app, "openai_api_key", None)
 
         self._hide_model_list()
-        self.focus()
 
         if not base_url:
             self._show_error("No endpoint URL configured")
@@ -132,7 +133,8 @@ class OpenAIModelScreen(OnboardingScreen):
         self._is_loading = False
 
     def _focus_manual_input(self) -> None:
-        self._manual_input.focus()
+        manual_input = self.query_one("#manual-model-input", Input)
+        manual_input.focus()
 
     def _get_model_at_offset(self, offset: int) -> str:
         if not self._models:
@@ -141,12 +143,14 @@ class OpenAIModelScreen(OnboardingScreen):
         return self._models[index].id
 
     def _update_display(self) -> None:
+        model_widgets = list(self.query(".model-item").results(NoMarkupStatic))
+
         if not self._models:
-            for widget in self._model_widgets:
+            for widget in model_widgets:
                 widget.update("")
             return
 
-        for i, widget in enumerate(self._model_widgets):
+        for i, widget in enumerate(model_widgets):
             offset = i - VISIBLE_NEIGHBORS
 
             widget.remove_class("selected", *FADE_CLASSES)
@@ -180,7 +184,8 @@ class OpenAIModelScreen(OnboardingScreen):
         if self._is_loading:
             return
 
-        if manual_value := self._manual_input.value.strip():
+        manual_input = self.query_one("#manual-model-input", Input)
+        if manual_value := manual_input.value.strip():
             self._save_and_continue(manual_value)
             return
 
@@ -196,7 +201,8 @@ class OpenAIModelScreen(OnboardingScreen):
         app: OnboardingApp = self.app  # type: ignore[assignment]
         app.openai_model_name = model_name  # type: ignore[attr-defined]
         # Store context_window if we have a selected model from the list
-        if self._models and not self._manual_input.value.strip():
+        manual_input = self.query_one("#manual-model-input", Input)
+        if self._models and not manual_input.value.strip():
             selected_model = self._models[self._selected_index]
             app.openai_model_context_window = selected_model.context_window  # type: ignore[attr-defined]
 
