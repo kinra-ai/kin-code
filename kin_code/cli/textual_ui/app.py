@@ -30,6 +30,7 @@ from kin_code.cli.textual_ui.widgets.config_app import ConfigApp
 from kin_code.cli.textual_ui.widgets.model_app import ModelApp
 from kin_code.cli.textual_ui.widgets.context_progress import ContextProgress, TokenState
 from kin_code.cli.textual_ui.widgets.loading import LoadingWidget
+from kin_code.cli.textual_ui.widgets.model_display import ModelDisplay
 from kin_code.cli.textual_ui.widgets.messages import (
     AssistantMessage,
     BashOutputMessage,
@@ -125,6 +126,7 @@ class KinApp(App):  # noqa: PLR0904
         self._chat_input_container: ChatInputContainer | None = None
         self._mode_indicator: ModeIndicator | None = None
         self._context_progress: ContextProgress | None = None
+        self._model_display: ModelDisplay | None = None
         self._current_bottom_app: BottomApp = BottomApp.Input
 
         self.history_file = HISTORY_FILE.path
@@ -178,6 +180,8 @@ class KinApp(App):  # noqa: PLR0904
                 self.config.displayed_workdir or self.config.effective_workdir
             )
             yield NoMarkupStatic(id="spacer")
+            yield ModelDisplay(self.config.active_model)
+            yield NoMarkupStatic("  ", id="model-spacer")
             yield ContextProgress()
 
     async def on_mount(self) -> None:
@@ -201,6 +205,7 @@ class KinApp(App):  # noqa: PLR0904
         self._chat_input_container = self.query_one(ChatInputContainer)
         self._mode_indicator = self.query_one(ModeIndicator)
         self._context_progress = self.query_one(ContextProgress)
+        self._model_display = self.query_one(ModelDisplay)
 
         if self.config.auto_compact_threshold > 0:
             self._context_progress.tokens = TokenState(
@@ -793,6 +798,9 @@ class KinApp(App):  # noqa: PLR0904
                     )
                 else:
                     self._context_progress.tokens = TokenState()
+
+            if self._model_display:
+                self._model_display.set_model(self.config.active_model)
 
             await self._mount_and_scroll(UserCommandMessage("Configuration reloaded."))
         except Exception as e:

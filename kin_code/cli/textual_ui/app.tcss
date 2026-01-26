@@ -914,6 +914,21 @@ ContextProgress {
     color: $foreground;
 }
 
+ModelDisplay {
+    width: auto;
+    height: auto;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    color: $text-muted;
+}
+
+#model-spacer {
+    width: auto;
+    height: auto;
+    background: transparent;
+}
+
 #model-app {
     width: 100%;
     height: auto;
