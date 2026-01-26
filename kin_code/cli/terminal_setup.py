@@ -16,6 +16,7 @@ class Terminal(Enum):
     ITERM2 = "iterm2"
     WEZTERM = "wezterm"
     GHOSTTY = "ghostty"
+    ZED = "zed"
     UNKNOWN = "unknown"
 
 
@@ -48,6 +49,9 @@ def detect_terminal() -> Terminal:
         if _is_cursor():
             return Terminal.CURSOR
         return Terminal.VSCODE
+
+    if term_program == "zed" or os.environ.get("ZED_TERM"):
+        return Terminal.ZED
 
     term_map = {
         "iterm.app": Terminal.ITERM2,
@@ -386,6 +390,14 @@ def setup_terminal() -> SetupResult:
             return _setup_wezterm()
         case Terminal.GHOSTTY:
             return _setup_ghostty()
+        case Terminal.ZED:
+            return SetupResult(
+                success=True,
+                terminal=Terminal.ZED,
+                message="Zed detected. Shift+Enter should work out of the box.\n\n"
+                "If it doesn't work, ensure you're running Zed 0.143.0 or later.\n"
+                "See: https://github.com/zed-industries/zed/issues/33858",
+            )
         case Terminal.UNKNOWN:
             return SetupResult(
                 success=False,
@@ -395,6 +407,14 @@ def setup_terminal() -> SetupResult:
                 "- Cursor\n"
                 "- iTerm2\n"
                 "- WezTerm\n"
-                "- Ghostty\n\n"
+                "- Ghostty\n"
+                "- Zed\n\n"
                 "You can manually configure Shift+Enter to send: \\x1b[13;2u",
+            )
+        case _:
+            # Exhaustive match - should never reach here
+            return SetupResult(
+                success=False,
+                terminal=terminal,
+                message=f"Unhandled terminal type: {terminal}",
             )
