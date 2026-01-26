@@ -60,9 +60,7 @@ def acp_agent(backend: FakeBackend) -> KinAcpAgent:
 
 class TestACPNewSession:
     @pytest.mark.asyncio
-    async def test_new_session_response_structure(
-        self, acp_agent: KinAcpAgent
-    ) -> None:
+    async def test_new_session_response_structure(self, acp_agent: KinAcpAgent) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
         )

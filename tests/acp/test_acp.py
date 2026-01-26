@@ -98,7 +98,9 @@ def kin_code_home_dir(tmp_path: Path) -> Path:
 @pytest.fixture
 def kin_code_home_grep_ask(tmp_path: Path) -> Path:
     """Create a temporary kin-code home directory with grep configured to ask permission."""
-    return _create_kin_code_home_dir(tmp_path, {"tools": {"grep": {"permission": "ask"}}})
+    return _create_kin_code_home_dir(
+        tmp_path, {"tools": {"grep": {"permission": "ask"}}}
+    )
 
 
 class JsonRpcRequest(BaseModel):

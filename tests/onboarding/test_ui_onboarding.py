@@ -83,7 +83,7 @@ async def test_ui_gets_through_the_onboarding_successfully() -> None:
 
 
 @pytest.mark.asyncio
-async def test_ui_can_pick_a_theme_and_saves_selection(config_dir: Path) -> None:  # noqa: ARG001
+async def test_ui_can_pick_a_theme_and_saves_selection(config_dir: Path) -> None:
     app = OnboardingApp()
 
     async with app.run_test() as pilot:

@@ -32,13 +32,17 @@ class TestHTMLTextExtractor:
 
     def test_extracts_title(self):
         extractor = _HTMLTextExtractor()
-        extractor.feed("<html><head><title>Page Title</title></head><body>Content</body></html>")
+        extractor.feed(
+            "<html><head><title>Page Title</title></head><body>Content</body></html>"
+        )
 
         assert extractor.title == "Page Title"
 
     def test_skips_script_tags(self):
         extractor = _HTMLTextExtractor()
-        extractor.feed("<html><body><script>alert('xss')</script><p>Safe</p></body></html>")
+        extractor.feed(
+            "<html><body><script>alert('xss')</script><p>Safe</p></body></html>"
+        )
 
         text = extractor.get_text()
 
@@ -47,7 +51,9 @@ class TestHTMLTextExtractor:
 
     def test_skips_style_tags(self):
         extractor = _HTMLTextExtractor()
-        extractor.feed("<html><body><style>.foo { color: red; }</style><p>Visible</p></body></html>")
+        extractor.feed(
+            "<html><body><style>.foo { color: red; }</style><p>Visible</p></body></html>"
+        )
 
         text = extractor.get_text()
 
@@ -67,7 +73,9 @@ class TestHTMLTextExtractor:
 
     def test_handles_nested_skip_tags(self):
         extractor = _HTMLTextExtractor()
-        extractor.feed("<html><body><script><script>nested</script></script><p>Safe</p></body></html>")
+        extractor.feed(
+            "<html><body><script><script>nested</script></script><p>Safe</p></body></html>"
+        )
 
         text = extractor.get_text()
 
@@ -132,7 +140,9 @@ async def test_validates_zero_max_length(web_fetch):
 async def test_successful_fetch(web_fetch):
     html = "<html><head><title>Test Page</title></head><body><p>Hello World</p></body></html>"
     respx.get("https://example.com/page").mock(
-        return_value=httpx.Response(200, content=html.encode(), headers={"content-type": "text/html"})
+        return_value=httpx.Response(
+            200, content=html.encode(), headers={"content-type": "text/html"}
+        )
     )
 
     result = await web_fetch.run(WebFetchArgs(url="https://example.com/page"))
@@ -148,7 +158,9 @@ async def test_successful_fetch(web_fetch):
 @respx.mock
 async def test_handles_plain_text(web_fetch):
     respx.get("https://example.com/text.txt").mock(
-        return_value=httpx.Response(200, text="Plain text content", headers={"content-type": "text/plain"})
+        return_value=httpx.Response(
+            200, text="Plain text content", headers={"content-type": "text/plain"}
+        )
     )
 
     result = await web_fetch.run(WebFetchArgs(url="https://example.com/text.txt"))
@@ -160,7 +172,9 @@ async def test_handles_plain_text(web_fetch):
 @respx.mock
 async def test_handles_non_html_content(web_fetch):
     respx.get("https://example.com/file.pdf").mock(
-        return_value=httpx.Response(200, content=b"PDF content", headers={"content-type": "application/pdf"})
+        return_value=httpx.Response(
+            200, content=b"PDF content", headers={"content-type": "application/pdf"}
+        )
     )
 
     result = await web_fetch.run(WebFetchArgs(url="https://example.com/file.pdf"))
@@ -172,9 +186,7 @@ async def test_handles_non_html_content(web_fetch):
 @pytest.mark.asyncio
 @respx.mock
 async def test_handles_404_not_found(web_fetch):
-    respx.get("https://example.com/missing").mock(
-        return_value=httpx.Response(404)
-    )
+    respx.get("https://example.com/missing").mock(return_value=httpx.Response(404))
 
     with pytest.raises(ToolError) as err:
         await web_fetch.run(WebFetchArgs(url="https://example.com/missing"))
@@ -185,9 +197,7 @@ async def test_handles_404_not_found(web_fetch):
 @pytest.mark.asyncio
 @respx.mock
 async def test_handles_403_forbidden(web_fetch):
-    respx.get("https://example.com/forbidden").mock(
-        return_value=httpx.Response(403)
-    )
+    respx.get("https://example.com/forbidden").mock(return_value=httpx.Response(403))
 
     with pytest.raises(ToolError) as err:
         await web_fetch.run(WebFetchArgs(url="https://example.com/forbidden"))
@@ -198,9 +208,7 @@ async def test_handles_403_forbidden(web_fetch):
 @pytest.mark.asyncio
 @respx.mock
 async def test_handles_401_unauthorized(web_fetch):
-    respx.get("https://example.com/protected").mock(
-        return_value=httpx.Response(401)
-    )
+    respx.get("https://example.com/protected").mock(return_value=httpx.Response(401))
 
     with pytest.raises(ToolError) as err:
         await web_fetch.run(WebFetchArgs(url="https://example.com/protected"))
@@ -216,7 +224,9 @@ async def test_truncates_long_content(web_fetch):
 
     long_content = "<html><body>" + "x" * 200 + "</body></html>"
     respx.get("https://example.com/long").mock(
-        return_value=httpx.Response(200, content=long_content.encode(), headers={"content-type": "text/html"})
+        return_value=httpx.Response(
+            200, content=long_content.encode(), headers={"content-type": "text/html"}
+        )
     )
 
     result = await tool.run(WebFetchArgs(url="https://example.com/long"))
@@ -230,10 +240,14 @@ async def test_truncates_long_content(web_fetch):
 async def test_respects_max_length_parameter(web_fetch):
     long_content = "<html><body>" + "x" * 500 + "</body></html>"
     respx.get("https://example.com/long").mock(
-        return_value=httpx.Response(200, content=long_content.encode(), headers={"content-type": "text/html"})
+        return_value=httpx.Response(
+            200, content=long_content.encode(), headers={"content-type": "text/html"}
+        )
     )
 
-    result = await web_fetch.run(WebFetchArgs(url="https://example.com/long", max_length=50))
+    result = await web_fetch.run(
+        WebFetchArgs(url="https://example.com/long", max_length=50)
+    )
 
     assert result.was_truncated
     assert len(result.content) <= 100  # 50 + "[Content truncated...]"
@@ -244,7 +258,9 @@ async def test_respects_max_length_parameter(web_fetch):
 async def test_tracks_recent_urls(web_fetch):
     html = "<html><body>Content</body></html>"
     respx.get(url__regex=r"https://example\.com/page\d").mock(
-        return_value=httpx.Response(200, content=html.encode(), headers={"content-type": "text/html"})
+        return_value=httpx.Response(
+            200, content=html.encode(), headers={"content-type": "text/html"}
+        )
     )
 
     await web_fetch.run(WebFetchArgs(url="https://example.com/page1"))
@@ -263,7 +279,9 @@ async def test_tracks_recent_urls(web_fetch):
 async def test_limits_recent_urls_history(web_fetch):
     html = "<html><body>Content</body></html>"
     respx.get(url__regex=r"https://example\.com/page\d+").mock(
-        return_value=httpx.Response(200, content=html.encode(), headers={"content-type": "text/html"})
+        return_value=httpx.Response(
+            200, content=html.encode(), headers={"content-type": "text/html"}
+        )
     )
 
     for i in range(15):
@@ -278,7 +296,9 @@ async def test_limits_recent_urls_history(web_fetch):
 @respx.mock
 async def test_sends_correct_headers(web_fetch):
     route = respx.get("https://example.com/page").mock(
-        return_value=httpx.Response(200, content=b"<html></html>", headers={"content-type": "text/html"})
+        return_value=httpx.Response(
+            200, content=b"<html></html>", headers={"content-type": "text/html"}
+        )
     )
 
     await web_fetch.run(WebFetchArgs(url="https://example.com/page"))
@@ -292,10 +312,7 @@ def test_get_call_display_basic():
 
     args = WebFetchArgs(url="https://example.com/page")
     event = ToolCallEvent(
-        tool_name="web_fetch",
-        tool_call_id="123",
-        args=args,
-        tool_class=WebFetch,
+        tool_name="web_fetch", tool_call_id="123", args=args, tool_class=WebFetch
     )
 
     display = WebFetch.get_call_display(event)
@@ -309,10 +326,7 @@ def test_get_call_display_long_url():
     long_url = "https://example.com/" + "x" * 100
     args = WebFetchArgs(url=long_url)
     event = ToolCallEvent(
-        tool_name="web_fetch",
-        tool_call_id="123",
-        args=args,
-        tool_class=WebFetch,
+        tool_name="web_fetch", tool_call_id="123", args=args, tool_class=WebFetch
     )
 
     display = WebFetch.get_call_display(event)

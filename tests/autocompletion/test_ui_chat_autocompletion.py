@@ -235,9 +235,7 @@ async def test_fuzzy_matches_subsequence_characters(
 
 
 @pytest.mark.asyncio
-async def test_fuzzy_matches_word_boundaries(
-    file_tree: Path, kin_app: KinApp
-) -> None:
+async def test_fuzzy_matches_word_boundaries(file_tree: Path, kin_app: KinApp) -> None:
     async with kin_app.run_test() as pilot:
         popup = kin_app.query_one(CompletionPopup)
 

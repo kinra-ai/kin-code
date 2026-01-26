@@ -262,10 +262,7 @@ def test_get_call_display_basic():
 
     args = WebSearchArgs(query="python async")
     event = ToolCallEvent(
-        tool_name="web_search",
-        tool_call_id="123",
-        args=args,
-        tool_class=WebSearch,
+        tool_name="web_search", tool_call_id="123", args=args, tool_class=WebSearch
     )
 
     display = WebSearch.get_call_display(event)
@@ -278,10 +275,7 @@ def test_get_call_display_with_freshness():
 
     args = WebSearchArgs(query="news", freshness="pd")
     event = ToolCallEvent(
-        tool_name="web_search",
-        tool_call_id="123",
-        args=args,
-        tool_class=WebSearch,
+        tool_name="web_search", tool_call_id="123", args=args, tool_class=WebSearch
     )
 
     display = WebSearch.get_call_display(event)
@@ -291,12 +285,14 @@ def test_get_call_display_with_freshness():
 
 
 def test_get_result_display():
-    from kin_code.core.types import ToolResultEvent
     from kin_code.core.tools.builtins.web_search import WebSearchResultItem
+    from kin_code.core.types import ToolResultEvent
 
     result = WebSearchResult(
         results=[
-            WebSearchResultItem(title="Test", url="https://test.com", description="Desc")
+            WebSearchResultItem(
+                title="Test", url="https://test.com", description="Desc"
+            )
         ],
         query="test query",
         total_count=1,

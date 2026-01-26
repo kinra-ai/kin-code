@@ -189,9 +189,7 @@ class TestACPSetModel:
         assert acp_session.agent.config.active_model == initial_model
 
     @pytest.mark.asyncio
-    async def test_set_model_updates_active_model(
-        self, acp_agent: KinAcpAgent
-    ) -> None:
+    async def test_set_model_updates_active_model(self, acp_agent: KinAcpAgent) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
         )
