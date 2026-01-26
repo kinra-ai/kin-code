@@ -1,3 +1,50 @@
+"""Agent Communication Protocol (ACP) implementation for Kin Code.
+
+This module implements the ACP server that allows Kin Code to be used as an agent
+in ACP-compatible environments like Claude Desktop, Cline, and other ACP clients.
+It bridges between the ACP protocol and Kin Code's internal agent architecture.
+
+The ACP agent handles the full lifecycle of agent sessions including initialization,
+authentication, session management, mode/model switching, prompt execution, and
+real-time streaming of events back to the client. It translates between ACP's
+message format and Kin Code's internal event system.
+
+Key Responsibilities:
+    - Protocol negotiation and capability advertisement
+    - Session lifecycle management (create, load, terminate)
+    - Prompt execution with streaming updates
+    - Tool permission requests via ACP's permission system
+    - Mode switching (plan, auto-approve, etc.)
+    - Model switching with config reload
+    - Cancellation handling for long-running operations
+
+Architecture:
+    KinAcpAgent: Main ACP protocol handler implementing AcpAgent interface.
+    AcpSession: Wrapper around KinAgent with session state.
+    run_acp_server: Entry point for stdio-based ACP server.
+
+The implementation handles three different launch modes:
+    1. Dev mode: `uv run vibe-acp` from project root
+    2. UV tool install: `vibe-acp` with UV path resolution
+    3. Bundled binary: Self-contained executable with embedded Python
+
+Protocol Flow:
+    1. Client connects via stdio and sends initialize request
+    2. Agent advertises capabilities and authentication methods
+    3. Client creates new session with working directory
+    4. Agent loads config, creates KinAgent, returns session ID
+    5. Client sends prompt, agent streams events back
+    6. Tool calls trigger permission requests if needed
+    7. Client can switch modes/models, cancel execution
+
+Typical Usage:
+    # Start ACP server (called by entry point)
+    run_acp_server()
+
+    # Client interaction (handled by ACP client library)
+    # initialize -> newSession -> prompt -> sessionUpdate (streaming)
+"""
+
 from __future__ import annotations
 
 import asyncio

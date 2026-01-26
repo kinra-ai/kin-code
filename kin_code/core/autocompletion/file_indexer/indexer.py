@@ -1,3 +1,69 @@
+"""High-performance file system indexer with incremental updates.
+
+This module provides a thread-safe file system indexer that builds and maintains
+an in-memory index of files and directories for fast autocompletion. It supports
+incremental updates via file system watching, handles concurrent access with fine-
+grained locking, and manages background rebuilds when switching between projects.
+
+The indexer uses a multi-threaded architecture with coordinated cancellation to
+ensure only one rebuild runs per root directory at a time. File system watches
+provide efficient incremental updates, and ignore rules (gitignore-style) reduce
+index size by excluding build artifacts, dependencies, and other irrelevant files.
+
+Key components:
+    - FileIndexer: Main indexer class with thread-safe access
+    - FileIndexStore: In-memory storage with snapshot support
+    - WatchController: File system watcher for incremental updates
+    - IgnoreRules: Gitignore-style filtering
+    - IndexEntry: Immutable file/directory metadata
+
+Features:
+    - Thread-safe concurrent access with RLock coordination
+    - Background rebuilds in dedicated thread pool
+    - Automatic rebuild cancellation on root directory changes
+    - Incremental updates via file system watching
+    - Mass change detection to trigger full rebuilds
+    - Snapshot-based access for consistent reads during updates
+    - Graceful shutdown with cleanup on exit
+
+Threading model:
+    - Main thread: Triggers rebuilds and retrieves snapshots
+    - Rebuild thread: Scans file system and builds index
+    - Watcher thread: Monitors file system changes
+    - Locks coordinate access between threads
+
+Typical usage:
+    indexer = FileIndexer(mass_change_threshold=200)
+
+    # Get index for current directory
+    entries = indexer.get_index(Path.cwd())
+
+    # Index is cached and auto-updated via file watching
+    # Access again for instant results
+    entries = indexer.get_index(Path.cwd())
+
+    # Switch to different directory triggers rebuild
+    entries = indexer.get_index(Path("/other/project"))
+
+    # Stats for debugging/monitoring
+    print(f"Total files: {indexer.stats.total_files}")
+    print(f"Ignored files: {indexer.stats.ignored_files}")
+
+Performance:
+    The indexer is optimized for large repositories with tens of thousands of
+    files. Background rebuilds prevent blocking the main thread, and file system
+    watching avoids full rescans on small changes. The mass_change_threshold
+    parameter triggers full rebuilds when many files change simultaneously (e.g.,
+    git checkout).
+
+Lifecycle:
+    - First get_index() call triggers background rebuild and blocks until complete
+    - Subsequent calls return cached snapshot instantly
+    - File system changes apply incremental updates without blocking
+    - Root directory change cancels pending rebuilds and starts new one
+    - atexit handler ensures clean shutdown
+"""
+
 from __future__ import annotations
 
 import atexit

@@ -1,3 +1,62 @@
+"""Dynamic tool discovery and lazy instantiation.
+
+This module provides the ToolManager class that handles automatic discovery of
+tool classes from Python files, integration of MCP (Model Context Protocol)
+servers, tool configuration merging, and lazy instantiation of tool instances.
+Each Agent has its own ToolManager to maintain isolated tool state.
+
+Key Components:
+    ToolManager: Central registry for discovering, configuring, and instantiating tools.
+    NoSuchToolError: Raised when a requested tool is not found.
+
+The ToolManager:
+- Discovers tool classes from multiple search paths (default, global, local, custom)
+- Automatically integrates MCP servers (HTTP, streamable-HTTP, stdio transports)
+- Merges tool-specific configuration with user overrides from config.toml
+- Lazily instantiates tools on first use to minimize startup cost
+- Maintains per-agent tool instances with isolated state
+- Supports tool resets when agent state is cleared
+- Provides default configuration discovery for initialization
+
+Tool discovery order (first to last):
+1. Built-in tools from kin_code/core/tools/default/
+2. Custom tool_paths from configuration
+3. Local .kin-code/tools/ in project directory
+4. Global tools from ~/.config/kin-code/tools/
+
+MCP integration:
+- Automatically discovers MCP tools from configured servers at initialization
+- Creates proxy tool classes that implement BaseTool interface
+- Supports HTTP, streamable-HTTP, and stdio transports
+- Prefixes tool names with server alias to avoid conflicts
+- Appends server hints to tool descriptions for context
+
+Typical usage:
+
+    from kin_code.core.tools.manager import ToolManager
+    from kin_code.core.config import KinConfig
+
+    config = KinConfig.load()
+    manager = ToolManager(lambda: config)
+
+    # Get available tool classes
+    available = manager.available_tools()
+    print(f"Found {len(available)} tools")
+
+    # Get tool instance (created lazily)
+    bash_tool = manager.get("bash")
+    result = await bash_tool.invoke(command="echo hello")
+
+    # Get tool configuration (merges defaults with user overrides)
+    tool_config = manager.get_tool_config("bash")
+    print(f"Permission: {tool_config.permission}")
+
+    # Reset all tool instances
+    manager.reset_all()
+
+    # Discover default configurations for all tools
+    defaults = ToolManager.discover_tool_defaults()
+"""
 from __future__ import annotations
 
 from collections.abc import Callable, Iterator

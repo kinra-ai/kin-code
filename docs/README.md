@@ -69,6 +69,15 @@ Connect with external tools and editors.
 - [MCP Servers](./integrations/mcp-servers.md) - Model Context Protocol
 - [ACP Setup](./integrations/acp-setup.md) - Editor integration
 
+### [Architecture](./architecture/index.md)
+
+Deep dive into Kin Code's internal architecture and design.
+
+- [Architecture Overview](./architecture/overview.md) - Comprehensive system architecture
+- Core components: Agent, Tool Manager, LLM Backend, Middleware, Configuration
+- Conversation flow and event system
+- Extension points for customization
+
 ### [Reference](./reference/index.md)
 
 Complete reference documentation.

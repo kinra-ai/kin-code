@@ -96,6 +96,21 @@ class Todo(
         return "Managing todos"
 
     async def run(self, args: TodoArgs) -> TodoResult:
+        """Manage a persistent list of todos stored in agent state.
+
+        Supports reading the current todo list or writing a new list. Writing
+        replaces the entire todo list and validates uniqueness of IDs.
+
+        Args:
+            args: Arguments containing the action (read/write) and optional todos list.
+
+        Returns:
+            TodoResult with message, todos list, and total count.
+
+        Raises:
+            ToolError: If action is invalid, number of todos exceeds max_todos,
+                or todo IDs are not unique.
+        """
         match args.action:
             case "read":
                 return self._read_todos()

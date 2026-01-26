@@ -1,3 +1,41 @@
+"""Programmatic entry point for non-interactive agent execution.
+
+This module provides the main interface for running Kin Code agents in automated,
+non-interactive contexts such as scripts, services, or batch processing. It handles
+the full lifecycle of executing a prompt and returning the result, with support for
+conversation continuity, cost/turn limits, and multiple output formats.
+
+The programmatic interface defaults to AUTO_APPROVE mode for automation use cases,
+but can be configured with any mode. It integrates with the middleware system to
+enforce limits and properly surfaces errors as exceptions.
+
+Key Features:
+    - Single-function entry point for programmatic execution
+    - Support for conversation continuity via previous_messages
+    - Built-in cost and turn limiting with middleware
+    - Multiple output formats (TEXT, JSON, STREAMING)
+    - Automatic async/sync bridging with asyncio.run()
+
+Typical Usage:
+    config = KinConfig.load()
+    result = run_programmatic(
+        config=config,
+        prompt="Analyze this codebase",
+        max_turns=5,
+        max_price=0.50,
+        output_format=OutputFormat.TEXT,
+    )
+    print(result)
+
+    # Continue conversation
+    messages = agent.messages  # Save from previous run
+    result = run_programmatic(
+        config=config,
+        prompt="What about the tests?",
+        previous_messages=messages,
+    )
+"""
+
 from __future__ import annotations
 
 import asyncio

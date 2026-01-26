@@ -1,3 +1,70 @@
+"""Autocompletion system for commands and file paths.
+
+This module provides a flexible autocompletion system supporting multiple
+completion sources (commands, file paths) that can be combined. It implements
+fuzzy matching for file paths with @-prefix syntax and prefix matching for
+slash commands.
+
+The completion system uses a pluggable architecture where individual completers
+can be composed into a MultiCompleter that delegates to multiple sources. Each
+completer can define its own replacement range logic for intelligent text
+replacement in the input.
+
+Key components:
+    - Completer: Base class defining the completer interface
+    - CommandCompleter: Slash command completion with descriptions
+    - PathCompleter: File path completion with fuzzy matching and @-prefix
+    - MultiCompleter: Compositor for combining multiple completers
+
+PathCompleter features:
+    - Fuzzy matching across indexed files using FileIndexer
+    - Smart context detection (@, @path/, @path/to/file)
+    - Immediate children listing for directory navigation
+    - Hidden file filtering (dot-files) based on partial input
+    - Score-based ranking with exact matches prioritized
+    - Configurable limits for performance (max entries, target matches)
+
+CommandCompleter features:
+    - Prefix matching for slash commands
+    - Description support for each command
+    - Case-insensitive matching
+
+PathCompleter syntax:
+    @               -> Show top-level files/dirs
+    @src/           -> Show immediate children of src/
+    @components     -> Fuzzy match across all indexed files
+    @.vscode        -> Include hidden files when prefix starts with dot
+
+Typical usage:
+    # Command completion
+    commands = [("/help", "Show help"), ("/docs", "Show docs")]
+    cmd_completer = CommandCompleter(commands)
+
+    # File completion
+    path_completer = PathCompleter(
+        max_entries_to_process=32000,
+        target_matches=100,
+    )
+
+    # Combined completion
+    completer = MultiCompleter([cmd_completer, path_completer])
+
+    # Get completions
+    text = "Check @src/ma"
+    cursor_pos = len(text)
+    completions = completer.get_completions(text, cursor_pos)
+    # Returns: ["@src/main.py", "@src/manager.py", ...]
+
+    # Get replacement range
+    range_result = completer.get_replacement_range(text, cursor_pos)
+    # Returns: (6, 13) to replace "@src/ma"
+
+Performance:
+    PathCompleter uses FileIndexer for fast lookups with caching and incremental
+    updates via file system watching. The max_entries_to_process and target_matches
+    parameters allow tuning for large repositories.
+"""
+
 from __future__ import annotations
 
 from pathlib import Path

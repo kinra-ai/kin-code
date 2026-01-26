@@ -71,6 +71,22 @@ class ReadFile(
 
     @final
     async def run(self, args: ReadFileArgs) -> ReadFileResult:
+        """Read a file and return its content within a specified line range.
+
+        Reads the file from the given offset up to the limit, respecting the
+        max_read_bytes configuration. Truncates output if it exceeds the byte limit.
+
+        Args:
+            args: Arguments containing the file path, offset, and optional limit.
+
+        Returns:
+            ReadFileResult with path, content, lines read, and truncation status.
+
+        Raises:
+            ToolError: If path is empty, offset is negative, limit is non-positive,
+                path cannot be resolved, file doesn't exist, path is a directory,
+                or an error occurs during reading.
+        """
         file_path = self._prepare_and_validate_path(args)
 
         read_result = await self._read_file(args, file_path)

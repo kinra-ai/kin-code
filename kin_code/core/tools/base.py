@@ -1,3 +1,76 @@
+"""Base classes and infrastructure for the tool system.
+
+This module defines the foundational classes for implementing tools in the
+agent framework. Tools are actions the agent can take, ranging from executing
+shell commands to calling APIs or manipulating files. The type-safe tool
+system uses Pydantic models for arguments, results, configuration, and state.
+
+Key Components:
+    BaseTool: Abstract base class for all tools with type-safe arg/result models.
+    BaseToolConfig: Configuration model for tools (permissions, workdir, allow/deny lists).
+    BaseToolState: Base class for tool-specific persistent state.
+    ToolInfo: Metadata about a tool (name, description, parameters).
+    ToolPermission: Enum for permission levels (ALWAYS, NEVER, ASK).
+    ToolError: Base exception for tool execution errors.
+    ToolPermissionError: Raised when tool permission checks fail.
+
+Tool architecture:
+- Each tool is a generic class: BaseTool[ToolArgs, ToolResult, ToolConfig, ToolState]
+- ToolArgs: Pydantic model defining input parameters
+- ToolResult: Pydantic model defining output structure
+- ToolConfig: Tool-specific configuration extending BaseToolConfig
+- ToolState: Persistent state maintained across invocations
+- Tools implement async run(args: ToolArgs) -> ToolResult method
+
+Permission system:
+- ALWAYS: Tool executes without approval (auto-approved or allowlisted)
+- NEVER: Tool is blocked (disabled or denylisted)
+- ASK: User approval required before execution (default)
+- Allowlist/denylist patterns can override permission at runtime
+
+Configuration inheritance:
+- Default configuration from tool class
+- User overrides from config.toml [tools.<name>] section
+- Workdir injection from agent configuration
+- Permission can be set per-tool in configuration
+
+Typical usage:
+
+    from kin_code.core.tools.base import (
+        BaseTool,
+        BaseToolConfig,
+        BaseToolState,
+        ToolPermission,
+    )
+    from pydantic import BaseModel, Field
+
+    class EchoArgs(BaseModel):
+        message: str = Field(description="Message to echo")
+        repeat: int = Field(default=1, description="Number of times to repeat")
+
+    class EchoResult(BaseModel):
+        output: str
+        count: int
+
+    class EchoConfig(BaseToolConfig):
+        prefix: str = ""
+
+    class EchoState(BaseToolState):
+        total_calls: int = 0
+
+    class EchoTool(BaseTool[EchoArgs, EchoResult, EchoConfig, EchoState]):
+        description = "Echo a message, optionally repeated multiple times"
+
+        async def run(self, args: EchoArgs) -> EchoResult:
+            self.state.total_calls += 1
+            message = self.config.prefix + args.message
+            output = "\\n".join([message] * args.repeat)
+            return EchoResult(output=output, count=args.repeat)
+
+    # Tool is automatically discovered and instantiated by ToolManager
+    tool = EchoTool.from_config(EchoConfig(prefix=">> "))
+    result = await tool.invoke(message="Hello", repeat=3)
+"""
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -15,7 +88,11 @@ ARGS_COUNT = 4
 
 
 class ToolError(Exception):
-    """Raised when the tool encounters an unrecoverable problem."""
+    """Raised when a tool encounters an unrecoverable problem.
+
+    This exception is used to indicate tool-specific failures such as
+    invalid arguments, file system errors, or runtime execution issues.
+    """
 
 
 class ToolInfo(BaseModel):
@@ -33,7 +110,11 @@ class ToolInfo(BaseModel):
 
 
 class ToolPermissionError(Exception):
-    """Raised when a tool permission is not allowed."""
+    """Raised when a tool permission check fails.
+
+    This exception is used when an invalid permission value is provided
+    or when a tool is explicitly denied by permission settings.
+    """
 
 
 class ToolPermission(StrEnum):
@@ -43,6 +124,17 @@ class ToolPermission(StrEnum):
 
     @classmethod
     def by_name(cls, name: str) -> ToolPermission:
+        """Convert a permission name string to a ToolPermission enum.
+
+        Args:
+            name: The permission name string (case-insensitive).
+
+        Returns:
+            The corresponding ToolPermission enum value.
+
+        Raises:
+            ToolPermissionError: If the name is not a valid permission.
+        """
         try:
             return ToolPermission(name.upper())
         except ValueError:
@@ -136,7 +228,19 @@ class BaseTool[
 
     async def invoke(self, **raw: Any) -> ToolResult:
         """Validate arguments and run the tool.
-        Pattern checking is now handled by Agent._should_execute_tool.
+
+        Validates the raw arguments against the tool's argument model,
+        then calls the run method with validated arguments. Pattern checking
+        for allowlist/denylist is handled by Agent._should_execute_tool.
+
+        Args:
+            **raw: Raw keyword arguments to validate and pass to the tool.
+
+        Returns:
+            The tool's result model instance.
+
+        Raises:
+            ToolError: If argument validation fails.
         """
         try:
             args_model, _ = self._get_tool_args_results()
@@ -270,7 +374,7 @@ class BaseTool[
         config_class = cls._get_tool_config_class()
         return config_class(permission=permission)
 
-    def check_allowlist_denylist(self, args: ToolArgs) -> ToolPermission | None:
+    def check_allowlist_denylist(self, _args: ToolArgs) -> ToolPermission | None:
         """Check if args match allowlist/denylist patterns.
 
         Returns:

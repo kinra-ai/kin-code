@@ -1,3 +1,55 @@
+"""Generic OpenAI-compatible LLM backend implementation.
+
+This module provides a flexible, adapter-based backend system for communicating
+with OpenAI-compatible API endpoints. It supports multiple API styles through
+pluggable adapters, handles both streaming and non-streaming completions, and
+implements robust error handling with automatic retries.
+
+The architecture uses the adapter pattern to normalize different provider APIs
+(OpenAI, OpenRouter, etc.) into a consistent interface. Each adapter handles
+protocol-specific details like request formatting, header requirements, and
+response parsing.
+
+Key components:
+    - GenericBackend: Main backend class with async context manager support
+    - APIAdapter: Protocol defining the adapter interface
+    - OpenAIAdapter: Default adapter for OpenAI-compatible endpoints
+    - PreparedRequest: Request data structure (endpoint, headers, body)
+    - BACKEND_ADAPTERS: Registry mapping API styles to adapter instances
+
+The backend automatically handles:
+    - API key injection from environment variables
+    - Provider-specific routing and headers (e.g., OpenRouter fallbacks)
+    - Reasoning content field normalization across providers
+    - Streaming with SSE parsing and usage tracking
+    - Connection pooling and timeout management
+    - Retry logic for transient failures
+
+Typical usage:
+    async with GenericBackend(provider=config.provider) as backend:
+        response = await backend.complete(
+            model=config.model,
+            messages=[LLMMessage(role=Role.user, content="Hello")],
+            temperature=0.7,
+        )
+        print(response.message.content)
+
+    # Streaming example
+    async with GenericBackend(provider=config.provider) as backend:
+        async for chunk in backend.complete_streaming(
+            model=config.model,
+            messages=[LLMMessage(role=Role.user, content="Hello")],
+        ):
+            if chunk.message.content:
+                print(chunk.message.content, end="", flush=True)
+
+The adapter registration system allows extension:
+    @register_adapter(BACKEND_ADAPTERS, "custom")
+    class CustomAdapter(APIAdapter):
+        endpoint: ClassVar[str] = "/v1/completions"
+        # Implement prepare_request and parse_response
+"""
+
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator, Callable

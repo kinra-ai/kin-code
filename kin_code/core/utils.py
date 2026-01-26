@@ -1,3 +1,63 @@
+"""Utility functions for async operations and cross-platform support.
+
+This module provides common utility functions including async retry decorators,
+event loop management, tagged text parsing, user cancellation handling, platform
+detection, and dangerous directory checks. These utilities support the core agent
+infrastructure and ensure robust operation across different environments.
+
+Key Components:
+    TaggedText: Wrapper for text with semantic tags (cancellation, errors, warnings).
+    CancellationReason: Enum of possible cancellation reasons for tool execution.
+    ConversationLimitException: Raised when conversation limits are exceeded.
+    async_retry: Decorator for retrying async functions with exponential backoff.
+    async_generator_retry: Decorator for retrying async generators.
+    run_sync: Execute async coroutines synchronously, handling nested event loops.
+    is_dangerous_directory: Check if a path is a system/user directory that should be protected.
+    get_user_agent: Generate appropriate user-agent strings for LLM API requests.
+    is_user_cancellation_event: Check if an event represents user cancellation.
+
+Tagged text system:
+- CANCELLATION_TAG: User cancellations (interrupts, skips, no response)
+- TOOL_ERROR_TAG: Tool execution errors
+- VIBE_STOP_EVENT_TAG: Middleware-triggered stops
+- VIBE_WARNING_TAG: System warnings
+
+Retry decorators support:
+- Exponential backoff with configurable delay and backoff factor
+- Custom retry predicate (defaults to retryable HTTP errors)
+- Works with both regular async functions and async generators
+- Handles httpx.HTTPStatusError for transient failures (408, 429, 5xx)
+
+Typical usage:
+
+    from kin_code.core.utils import (
+        async_retry,
+        TaggedText,
+        is_dangerous_directory,
+        run_sync,
+    )
+
+    # Retry with exponential backoff
+    @async_retry(tries=3, delay_seconds=0.5, backoff_factor=2.0)
+    async def fetch_data():
+        async with httpx.AsyncClient() as client:
+            response = await client.get("https://api.example.com/data")
+            response.raise_for_status()
+            return response.json()
+
+    # Check for dangerous directories before operations
+    is_dangerous, reason = is_dangerous_directory("/Users/alice/Desktop")
+    if is_dangerous:
+        raise ValueError(f"Cannot operate in {reason}")
+
+    # Parse tagged messages
+    tagged = TaggedText.from_string("<user_cancellation>Operation cancelled</user_cancellation>")
+    if tagged.tag == "user_cancellation":
+        print(f"User cancelled: {tagged.message}")
+
+    # Run async code synchronously (handles nested event loops)
+    result = run_sync(some_async_function())
+"""
 from __future__ import annotations
 
 import asyncio

@@ -107,6 +107,24 @@ class SearchReplace(
 
     @final
     async def run(self, args: SearchReplaceArgs) -> SearchReplaceResult:
+        """Apply SEARCH/REPLACE blocks to modify a file.
+
+        Parses the content for SEARCH/REPLACE blocks, validates the file path,
+        applies each block sequentially with fuzzy matching support, and writes
+        the modified content back to disk.
+
+        Args:
+            args: Arguments containing the file path and content with SEARCH/REPLACE blocks.
+
+        Returns:
+            SearchReplaceResult with file path, blocks applied, lines changed, and warnings.
+
+        Raises:
+            ToolError: If file path is empty, content size exceeds max_content_size,
+                content is empty, no valid SEARCH/REPLACE blocks found, file doesn't
+                exist, path is not a file, search text not found in file, or errors
+                occur during reading or writing.
+        """
         file_path, search_replace_blocks = self._prepare_and_validate_args(args)
 
         original_content = await self._read_file(file_path)

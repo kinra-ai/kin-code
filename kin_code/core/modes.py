@@ -1,3 +1,36 @@
+"""Agent operational modes with safety levels and configuration overrides.
+
+This module defines the operational modes that control agent behavior and
+permission levels. Each mode has a distinct safety profile, auto-approval
+setting, and optional configuration overrides that affect tool availability
+and execution policies.
+
+Modes range from safe read-only (PLAN) to fully automated (AUTO_APPROVE),
+allowing users to balance convenience with safety. The mode system integrates
+with the agent's approval workflow and middleware to enforce appropriate
+restrictions.
+
+Available Modes:
+    DEFAULT: Standard interactive mode requiring user approval for tools.
+    PLAN: Read-only exploration mode with limited safe tools.
+    ACCEPT_EDITS: Auto-approves file edits but requires approval for other tools.
+    AUTO_APPROVE: Fully automated mode, auto-approves all tool executions.
+
+Safety Levels:
+    SAFE: No destructive operations, read-only access.
+    NEUTRAL: Balanced, requires user confirmation.
+    DESTRUCTIVE: Allows modifications with some automation.
+    YOLO: Fully automated, no safety checks.
+
+Typical Usage:
+    mode = AgentMode.PLAN
+    print(mode.display_name)  # "Plan"
+    print(mode.safety)  # ModeSafety.SAFE
+    print(mode.auto_approve)  # True
+
+    agent = Agent(config, mode=mode)
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

@@ -1,3 +1,61 @@
+"""Configuration management with Pydantic validation.
+
+This module defines the KinConfig class (aliased as VibeConfig for backward
+compatibility) that centralizes all agent configuration including models,
+providers, tools, MCP servers, system prompts, and runtime settings. The
+configuration system supports TOML files, environment variables, and
+programmatic overrides with comprehensive validation.
+
+Key Components:
+    KinConfig: Main configuration class with Pydantic validation and TOML persistence.
+    ModelConfig: Model-specific settings (name, pricing, context window, temperature).
+    ProviderConfig: Provider connection details (API base URL, key, backend type).
+    MCPServer: Discriminated union of MCP server configurations (http, streamable-http, stdio).
+    Backend: Enum for LLM backend types (MISTRAL, GENERIC).
+    BaseToolConfig: Base configuration for tools (permissions, workdir, allow/deny lists).
+    ProjectContextConfig: Settings for project context gathering.
+    SessionLoggingConfig: Configuration for session logging behavior.
+
+The configuration system:
+- Loads from TOML file (~/.config/kin-code/config.toml by default)
+- Supports KIN_* prefixed environment variables for overrides
+- Validates API keys, provider compatibility, and model uniqueness
+- Resolves system prompts from built-in enums or custom .md files
+- Manages MCP server configurations with discriminated unions
+- Provides agent-specific config files for specialized behaviors
+- Supports per-tool configuration with allowlists/denylists
+- Handles path expansion for workdir, tool_paths, and skill_paths
+
+Typical usage:
+
+    from kin_code.core.config import KinConfig, ModelConfig, ProviderConfig
+
+    # Load default configuration
+    config = KinConfig.load()
+
+    # Load with agent-specific overrides
+    config = KinConfig.load(agent="python-dev")
+
+    # Access active model settings
+    model = config.get_active_model()
+    provider = config.get_provider_for_model(model)
+
+    # Save configuration updates
+    KinConfig.save_updates({
+        "active_model": "devstral-small",
+        "context_warnings": True,
+    })
+
+    # Create default config for first-time setup
+    default_dict = KinConfig.create_default()
+
+Configuration priority (highest to lowest):
+1. Programmatic overrides passed to KinConfig.load(**overrides)
+2. KIN_* environment variables
+3. TOML configuration file
+4. Agent-specific TOML file
+5. Field defaults
+"""
 from __future__ import annotations
 
 from enum import StrEnum, auto
@@ -41,6 +99,16 @@ def load_api_keys_from_env() -> None:
 
 
 class MissingAPIKeyError(RuntimeError):
+    """Raised when a required API key environment variable is not set.
+
+    This exception is raised during configuration validation when a provider
+    requires an API key but the corresponding environment variable is missing.
+
+    Attributes:
+        env_key: The name of the missing environment variable.
+        provider_name: The name of the provider that requires the API key.
+    """
+
     def __init__(self, env_key: str, provider_name: str) -> None:
         super().__init__(
             f"Missing {env_key} environment variable for {provider_name} provider"
@@ -50,6 +118,17 @@ class MissingAPIKeyError(RuntimeError):
 
 
 class MissingPromptFileError(RuntimeError):
+    """Raised when a system prompt file cannot be found.
+
+    This exception is raised when the system_prompt_id does not match a
+    built-in prompt enum value and no corresponding .md file exists in
+    the prompts directory.
+
+    Attributes:
+        system_prompt_id: The prompt identifier that was not found.
+        prompt_dir: The directory path where custom prompts should be located.
+    """
+
     def __init__(self, system_prompt_id: str, prompt_dir: str) -> None:
         super().__init__(
             f"Invalid system_prompt_id value: '{system_prompt_id}'. "
@@ -61,6 +140,16 @@ class MissingPromptFileError(RuntimeError):
 
 
 class WrongBackendError(RuntimeError):
+    """Raised when a provider's backend doesn't match its API type.
+
+    This exception is raised during configuration validation when a Mistral API
+    provider is configured with a non-Mistral backend, or vice versa.
+
+    Attributes:
+        backend: The incorrectly configured backend.
+        is_mistral_api: Whether the provider is a Mistral API endpoint.
+    """
+
     def __init__(self, backend: Backend, is_mistral_api: bool) -> None:
         super().__init__(
             f"Wrong backend '{backend}' for {'' if is_mistral_api else 'non-'}"
@@ -90,6 +179,7 @@ class TomlFileSettingsSource(PydanticBaseSettingsSource):
     def get_field_value(
         self, field: FieldInfo, field_name: str
     ) -> tuple[Any, str, bool]:
+        del field  # Required by protocol but not used in TOML source
         return self.toml_data.get(field_name), field_name, False
 
     def __call__(self) -> dict[str, Any]:
@@ -354,6 +444,18 @@ class KinConfig(BaseSettings):
 
     @property
     def system_prompt(self) -> str:
+        """Get the system prompt content for the configured prompt ID.
+
+        Attempts to load the prompt from built-in prompts first, then checks
+        for a custom .md file in the prompts directory.
+
+        Returns:
+            The system prompt content as a string.
+
+        Raises:
+            MissingPromptFileError: If the system_prompt_id does not match a
+                built-in prompt or a .md file in the prompts directory.
+        """
         try:
             return SystemPrompt[self.system_prompt_id.upper()].read()
         except KeyError:
@@ -365,6 +467,16 @@ class KinConfig(BaseSettings):
         return custom_sp_path.read_text()
 
     def get_active_model(self) -> ModelConfig:
+        """Get the currently active model configuration.
+
+        Searches the configured models list for one matching the active_model alias.
+
+        Returns:
+            The ModelConfig for the active model.
+
+        Raises:
+            ValueError: If the active model alias is not found in the models list.
+        """
         for model in self.models:
             if model.alias == self.active_model:
                 return model
@@ -373,6 +485,19 @@ class KinConfig(BaseSettings):
         )
 
     def get_provider_for_model(self, model: ModelConfig) -> ProviderConfig:
+        """Get the provider configuration for a given model.
+
+        Searches the configured providers list for one matching the model's provider name.
+
+        Args:
+            model: The model configuration to find a provider for.
+
+        Returns:
+            The ProviderConfig for the model's provider.
+
+        Raises:
+            ValueError: If the model's provider is not found in the providers list.
+        """
         for provider in self.providers:
             if provider.name == model.provider:
                 return provider
@@ -413,6 +538,7 @@ class KinConfig(BaseSettings):
         into os.environ for use by providers. Only VIBE_* prefixed environment
         variables (via env_settings) and TOML config are used for Pydantic settings.
         """
+        del dotenv_settings  # Intentionally excluded per docstring
         return (
             init_settings,
             env_settings,
@@ -553,6 +679,17 @@ class KinConfig(BaseSettings):
 
     @classmethod
     def _get_agent_config(cls, agent: str | None) -> dict[str, Any] | None:
+        """Load agent-specific configuration from a TOML file.
+
+        Args:
+            agent: Optional name of the agent configuration to load. If None, returns None.
+
+        Returns:
+            Dictionary of configuration values, or None if agent is None.
+
+        Raises:
+            ValueError: If the agent configuration file is not found.
+        """
         if agent is None:
             return None
 

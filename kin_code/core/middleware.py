@@ -1,3 +1,39 @@
+"""Conversation middleware system for controlling agent behavior and enforcing limits.
+
+This module provides a flexible middleware pipeline that intercepts and controls
+the agent's conversation flow. Middleware can inject messages, enforce limits,
+trigger context compaction, or halt execution based on various conditions.
+
+The middleware system operates on a before/after pattern around each agent turn,
+allowing fine-grained control over the conversation lifecycle. Multiple middleware
+can be composed in a pipeline, with early-exit support for critical actions.
+
+Key Classes:
+    MiddlewarePipeline: Orchestrates multiple middleware in sequence.
+    ConversationMiddleware: Protocol defining the middleware interface.
+    TurnLimitMiddleware: Enforces maximum number of agent turns.
+    PriceLimitMiddleware: Halts execution when cost exceeds threshold.
+    AutoCompactMiddleware: Triggers automatic context compaction.
+    ContextWarningMiddleware: Warns user when approaching context limit.
+    PlanModeMiddleware: Enforces read-only behavior in plan mode.
+
+Typical Usage:
+    pipeline = MiddlewarePipeline()
+    pipeline.add(TurnLimitMiddleware(max_turns=10))
+    pipeline.add(PriceLimitMiddleware(max_price=1.0))
+
+    context = ConversationContext(messages=msgs, stats=stats, config=cfg)
+    result = await pipeline.run_before_turn(context)
+
+    match result.action:
+        case MiddlewareAction.STOP:
+            # Halt execution
+        case MiddlewareAction.COMPACT:
+            # Trigger context compaction
+        case MiddlewareAction.INJECT_MESSAGE:
+            # Add message to conversation
+"""
+
 from __future__ import annotations
 
 from collections.abc import Callable

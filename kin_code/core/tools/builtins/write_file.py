@@ -96,6 +96,22 @@ class WriteFile(
 
     @final
     async def run(self, args: WriteFileArgs) -> WriteFileResult:
+        """Create or overwrite a file with the given content.
+
+        Validates the file path, checks content size limits, and writes the file
+        to disk. Tracks recently written files in state.
+
+        Args:
+            args: Arguments containing the file path, content, and overwrite flag.
+
+        Returns:
+            WriteFileResult with path, bytes written, and whether the file existed.
+
+        Raises:
+            ToolError: If path is empty, content exceeds max_write_bytes, path is
+                outside project directory, file exists without overwrite flag, parent
+                directory doesn't exist, or an error occurs during writing.
+        """
         file_path, file_existed, content_bytes = self._prepare_and_validate_path(args)
 
         await self._write_file(args, file_path)

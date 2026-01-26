@@ -1,3 +1,60 @@
+"""Mistral AI native SDK backend implementation.
+
+This module provides a backend implementation specifically for Mistral AI's API
+using their official Python SDK (mistralai). Unlike the generic backend which
+uses raw HTTP requests, this backend leverages Mistral's SDK for type-safe
+message formatting, tool calling, and reasoning content support.
+
+The backend handles Mistral-specific features like ThinkChunk for reasoning
+content (chain-of-thought) and provides bidirectional mapping between Kin Code's
+internal types and Mistral's SDK types.
+
+Key components:
+    - MistralBackend: Main backend class with async context manager support
+    - MistralMapper: Bidirectional converter between internal and SDK types
+    - ParsedContent: Structure separating regular and reasoning content
+
+The mapper handles:
+    - Message role conversion (system, user, assistant, tool)
+    - Tool call serialization/deserialization
+    - Reasoning content extraction from ThinkChunk structures
+    - Content chunking for multi-part assistant messages
+
+Features:
+    - Native SDK integration for improved type safety
+    - Automatic reasoning content parsing from ThinkChunk
+    - Tool calling with proper argument serialization
+    - Streaming with delta updates and usage tracking
+    - URL validation and version extraction for API endpoints
+
+Typical usage:
+    async with MistralBackend(provider=config.provider) as backend:
+        response = await backend.complete(
+            model=config.model,
+            messages=[LLMMessage(role=Role.user, content="Explain...")],
+            temperature=0.7,
+        )
+        if response.message.reasoning_content:
+            print(f"Reasoning: {response.message.reasoning_content}")
+        print(f"Answer: {response.message.content}")
+
+    # Streaming example
+    async with MistralBackend(provider=config.provider) as backend:
+        async for chunk in backend.complete_streaming(
+            model=config.model,
+            messages=[LLMMessage(role=Role.user, content="Explain...")],
+        ):
+            if chunk.message.reasoning_content:
+                print(f"[thinking] {chunk.message.reasoning_content}")
+            if chunk.message.content:
+                print(chunk.message.content, end="", flush=True)
+
+Note:
+    This backend requires reasoning_field_name to be "reasoning_content" in the
+    provider configuration, as Mistral uses its own ThinkChunk structure for
+    reasoning rather than custom field names.
+"""
+
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator

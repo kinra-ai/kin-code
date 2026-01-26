@@ -1,3 +1,55 @@
+"""Agent orchestration and conversation management.
+
+This module provides the core Agent class that orchestrates LLM interactions,
+tool execution, and conversation flow. The Agent manages the complete lifecycle
+of agentic conversations including message history, middleware pipelines, tool
+approval workflows, context compaction, and session logging.
+
+Key Components:
+    Agent: Main orchestrator coordinating LLM calls, tool execution, and conversation state.
+    ToolDecision: Represents approval/rejection decisions for tool execution.
+    ToolExecutionResponse: Enum for tool execution verdicts (EXECUTE, SKIP).
+    AgentError: Base exception for agent-related errors.
+    AgentStateError: Raised when agent is in an invalid state.
+    LLMResponseError: Raised when LLM response is malformed or missing data.
+
+The Agent class:
+- Maintains conversation history as a list of LLMMessage objects
+- Executes middleware pipeline before/after each turn
+- Handles streaming and non-streaming LLM responses
+- Manages tool approval workflow (auto-approve or callback-based)
+- Implements context compaction when token limits are exceeded
+- Tracks detailed statistics (tokens, price, duration, tool calls)
+- Supports mode switching (DEFAULT, ASK, PLAN) with different behaviors
+- Logs interactions for debugging and replay
+
+Typical usage:
+
+    from kin_code.core.agent import Agent
+    from kin_code.core.config import KinConfig
+    from kin_code.core.modes import AgentMode
+
+    config = KinConfig.load()
+    agent = Agent(config, mode=AgentMode.DEFAULT, enable_streaming=True)
+
+    async for event in agent.act("Write a Python script"):
+        match event:
+            case AssistantEvent(content=content):
+                print(content, end="", flush=True)
+            case ToolCallEvent(tool_name=name, args=args):
+                print(f"\\nCalling tool: {name}")
+            case ToolResultEvent(result=result):
+                print(f"Result: {result}")
+
+    # Switch modes dynamically
+    await agent.switch_mode(AgentMode.ASK)
+
+    # Compact conversation when context grows large
+    summary = await agent.compact()
+
+    # Clear history and start fresh
+    await agent.clear_history()
+"""
 from __future__ import annotations
 
 import asyncio
@@ -76,15 +128,27 @@ class ToolDecision(BaseModel):
 
 
 class AgentError(Exception):
-    """Base exception for Agent errors."""
+    """Base exception for Agent-related errors.
+
+    This is the parent class for all agent-specific exceptions, providing
+    a common type for catching agent operation failures.
+    """
 
 
 class AgentStateError(AgentError):
-    """Raised when agent is in an invalid state."""
+    """Raised when the agent is in an invalid state.
+
+    This exception indicates that the agent's internal state is inconsistent
+    or unsuitable for the requested operation.
+    """
 
 
 class LLMResponseError(AgentError):
-    """Raised when LLM response is malformed or missing expected data."""
+    """Raised when an LLM response is malformed or missing expected data.
+
+    This exception is raised when the LLM backend returns a response that
+    lacks required fields like usage data or has an unexpected structure.
+    """
 
 
 class Agent:
@@ -98,7 +162,26 @@ class Agent:
         backend: BackendLike | None = None,
         enable_streaming: bool = False,
     ) -> None:
-        """Initialize the agent with configuration and mode."""
+        """Initialize the agent with configuration and operating mode.
+
+        Creates a new Agent instance that orchestrates LLM interactions, tool execution,
+        and conversation management. Sets up the tool manager, skill manager, middleware
+        pipeline, and interaction logging.
+
+        Args:
+            config: Configuration object containing model settings, API keys, and workdir.
+            mode: Operating mode that determines auto-approval and config overrides.
+                Defaults to AgentMode.DEFAULT.
+            message_observer: Optional callback invoked for each message added to history.
+                Useful for UI updates or logging.
+            max_turns: Maximum number of conversation turns before stopping.
+                None means unlimited.
+            max_price: Maximum total price in dollars before stopping. None means unlimited.
+            backend: Optional custom backend for LLM API calls. If None, selects backend
+                based on active model and provider.
+            enable_streaming: Whether to enable streaming responses from the LLM.
+                Defaults to False.
+        """
         self.config = config
         self._mode = mode
         self._max_turns = max_turns
@@ -147,10 +230,20 @@ class Agent:
 
     @property
     def mode(self) -> AgentMode:
+        """Current operating mode of the agent.
+
+        Returns:
+            The active AgentMode controlling auto-approval and behavior.
+        """
         return self._mode
 
     @property
     def auto_approve(self) -> bool:
+        """Whether tools are automatically approved for execution.
+
+        Returns:
+            True if the current mode enables auto-approval, False otherwise.
+        """
         return self._mode.auto_approve
 
     def _select_backend(self) -> BackendLike:
@@ -160,6 +253,14 @@ class Agent:
         return BACKEND_FACTORY[provider.backend](provider=provider, timeout=timeout)
 
     def add_message(self, message: LLMMessage) -> None:
+        """Append a message to the conversation history.
+
+        Adds the given message to the internal message list without triggering
+        any observers or validation. Use this for direct message injection.
+
+        Args:
+            message: The message to append to the conversation history.
+        """
         self.messages.append(message)
 
     def _flush_new_messages(self) -> None:
@@ -174,12 +275,29 @@ class Agent:
         self._last_observed_message_index = len(self.messages)
 
     async def act(self, msg: str) -> AsyncGenerator[BaseEvent]:
+        """Process a user message and generate response events.
+
+        Executes a complete conversation turn including LLM calls, tool execution,
+        and middleware processing. Yields events for streaming progress updates.
+
+        Args:
+            msg: The user's message to process.
+
+        Yields:
+            BaseEvent: Events including AssistantEvent, ToolCallEvent, ToolResultEvent,
+                CompactStartEvent, CompactEndEvent, and ReasoningEvent.
+        """
         self._clean_message_history()
         async for event in self._conversation_loop(msg):
             yield event
 
     def _setup_middleware(self) -> None:
-        """Configure middleware pipeline for this conversation."""
+        """Configure middleware pipeline for this conversation.
+
+        Clears existing middleware and adds turn limits, price limits,
+        auto-compaction, context warnings, and plan mode middleware based
+        on the agent's configuration.
+        """
         self.middleware_pipeline.clear()
 
         if self._max_turns is not None:
@@ -530,6 +648,18 @@ class Agent:
                 continue
 
     async def _chat(self, max_tokens: int | None = None) -> LLMChunk:
+        """Execute a non-streaming LLM completion request.
+
+        Args:
+            max_tokens: Optional maximum tokens to generate. None means use model default.
+
+        Returns:
+            LLMChunk containing the assistant's message and usage statistics.
+
+        Raises:
+            LLMResponseError: If usage data is missing in the completion response.
+            RuntimeError: If the API request fails or encounters an error.
+        """
         active_model = self.config.get_active_model()
         provider = self.config.get_provider_for_model(active_model)
 
@@ -580,6 +710,21 @@ class Agent:
     async def _chat_streaming(
         self, max_tokens: int | None = None
     ) -> AsyncGenerator[LLMChunk]:
+        """Execute a streaming LLM completion request.
+
+        Streams chunks as they arrive from the LLM backend, aggregating them
+        into a final message that is appended to conversation history.
+
+        Args:
+            max_tokens: Optional maximum tokens to generate. None means use model default.
+
+        Yields:
+            LLMChunk objects containing incremental message content and usage data.
+
+        Raises:
+            LLMResponseError: If usage data is missing in the final streamed chunk.
+            RuntimeError: If the API request fails or encounters an error.
+        """
         active_model = self.config.get_active_model()
         provider = self.config.get_provider_for_model(active_model)
 
@@ -762,9 +907,24 @@ class Agent:
         self.interaction_logger.reset_session(self.session_id)
 
     def set_approval_callback(self, callback: ApprovalCallback) -> None:
+        """Register a callback for tool execution approval.
+
+        Sets the function to be called when the agent needs user approval
+        for tool execution (when not in auto-approve mode).
+
+        Args:
+            callback: Either a synchronous or async function that takes
+                (tool_name, args, tool_call_id) and returns (ApprovalResponse, feedback).
+        """
         self.approval_callback = callback
 
     async def clear_history(self) -> None:
+        """Clear conversation history and reset agent state.
+
+        Saves the current interaction to logs, removes all messages except
+        the system prompt, resets statistics and middleware, and starts a
+        new session. Tool state is also reset.
+        """
         await self.interaction_logger.save_interaction(
             self.messages, self.stats, self.config, self.tool_manager
         )
@@ -785,7 +945,19 @@ class Agent:
         self._reset_session()
 
     async def compact(self) -> str:
-        """Compact the conversation history."""
+        """Compact the conversation history into a summary.
+
+        Asks the LLM to summarize the conversation, replaces the message history
+        with system prompt plus summary, and resets the session. This reduces
+        context token usage while preserving conversation continuity.
+
+        Returns:
+            The generated summary content.
+
+        Raises:
+            LLMResponseError: If usage data is missing from the summary response.
+            RuntimeError: If the API request fails during summarization.
+        """
         try:
             self._clean_message_history()
             await self.interaction_logger.save_interaction(
@@ -854,6 +1026,15 @@ class Agent:
             raise
 
     async def switch_mode(self, new_mode: AgentMode) -> None:
+        """Switch to a different agent operating mode.
+
+        Changes the agent's mode and reloads configuration with mode-specific
+        overrides. Preserves conversation history while updating system prompt
+        and settings.
+
+        Args:
+            new_mode: The target AgentMode to switch to.
+        """
         if new_mode == self._mode:
             return
         new_config = KinConfig.load(
@@ -869,6 +1050,17 @@ class Agent:
         max_turns: int | None = None,
         max_price: float | None = None,
     ) -> None:
+        """Reload agent configuration while preserving conversation history.
+
+        Saves current state, regenerates the system prompt with new configuration,
+        and preserves non-system messages. Resets tool managers and middleware
+        with the new settings.
+
+        Args:
+            config: Optional new configuration to apply. If None, keeps current config.
+            max_turns: Optional new maximum turn limit. If None, keeps current limit.
+            max_price: Optional new price limit. If None, keeps current limit.
+        """
         await self.interaction_logger.save_interaction(
             self.messages, self.stats, self.config, self.tool_manager
         )

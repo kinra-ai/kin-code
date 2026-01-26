@@ -1,3 +1,59 @@
+"""LLM backend error handling and structured error reporting.
+
+This module provides comprehensive error handling for LLM backend operations,
+including HTTP errors, request failures, and provider-specific error responses.
+It structures error information for debugging and user-friendly error messages.
+
+The error handling system captures detailed context about failed requests,
+including the provider, endpoint, model, request payload summary, and parsed
+error messages from provider responses. It implements special handling for
+common HTTP status codes like authentication failures and rate limits.
+
+Key components:
+    - BackendError: Main exception class with structured error details
+    - BackendErrorBuilder: Factory for constructing errors from HTTP/network failures
+    - ErrorResponse: Pydantic model for parsing provider error responses
+    - ErrorDetail: Nested error detail structure
+    - PayloadSummary: Anonymized request metadata for debugging
+
+Features:
+    - Structured error messages with request IDs and status codes
+    - User-friendly messages for 401 (auth) and 429 (rate limit) errors
+    - Provider error message extraction from various response formats
+    - Payload summarization without exposing sensitive content
+    - Body excerpt truncation for large responses
+    - Headers normalized to lowercase for consistent access
+
+The error builder supports two construction patterns:
+    1. build_http_error: For HTTP responses with status codes
+    2. build_request_error: For network/connection failures
+
+Typical error structure:
+    LLM backend error [openai]
+      status: 401 Unauthorized
+      reason: Invalid API key
+      request_id: req-abc123
+      endpoint: https://api.openai.com/v1/chat/completions
+      model: gpt-4
+      provider_message: Incorrect API key provided
+      body_excerpt: {"error": {"message": "Incorrect API key..."}}
+      payload_summary: {"model": "gpt-4", "message_count": 2, ...}
+
+Usage in backends:
+    except httpx.HTTPStatusError as e:
+        raise BackendErrorBuilder.build_http_error(
+            provider=self._provider.name,
+            endpoint=url,
+            response=e.response,
+            headers=e.response.headers,
+            model=model.name,
+            messages=messages,
+            temperature=temperature,
+            has_tools=bool(tools),
+            tool_choice=tool_choice,
+        ) from e
+"""
+
 from __future__ import annotations
 
 from collections.abc import Mapping

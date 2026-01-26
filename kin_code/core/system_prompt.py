@@ -1,3 +1,38 @@
+"""System prompt generation with project context, tools, and environment details.
+
+This module constructs the comprehensive system prompt that provides the agent with
+all necessary context about its environment, available tools, project structure,
+and operating parameters. The system prompt is dynamically generated based on
+configuration settings and current project state.
+
+The system prompt includes several optional sections that can be enabled/disabled:
+- Model and environment information
+- Operating system and shell details
+- Tool-specific prompts and usage instructions
+- User-defined instructions (CLAUDE.md, .clinerules, etc.)
+- Project directory structure with intelligent truncation
+- Git repository status and commit history
+- Available skills/plugins with descriptions
+
+The ProjectContextProvider handles efficient directory traversal with configurable
+depth limits, gitignore respecting, and performance safeguards to prevent hangs
+on large repositories.
+
+Key Components:
+    get_universal_system_prompt: Main entry point for system prompt generation.
+    ProjectContextProvider: Generates project structure and git information.
+    _get_os_system_prompt: Platform-specific shell and command guidance.
+    _get_available_skills_section: Documents available skills/plugins.
+
+Typical Usage:
+    system_prompt = get_universal_system_prompt(
+        tool_manager=tool_mgr,
+        config=config,
+        skill_manager=skill_mgr,
+    )
+    messages = [LLMMessage(role=Role.system, content=system_prompt)]
+"""
+
 from __future__ import annotations
 
 from collections.abc import Generator
@@ -131,10 +166,10 @@ class ProjectContextProvider:
         self._start_time = time.time()
         self._file_count = 0
 
-        yield from self._process_directory(self.root_path, "", 0, is_root=True)
+        yield from self._process_directory(self.root_path, "", 0, _is_root=True)
 
     def _process_directory(
-        self, path: Path, prefix: str, depth: int, is_root: bool = False
+        self, path: Path, prefix: str, depth: int, _is_root: bool = False
     ) -> Generator[str]:
         if depth > self.config.max_depth or self._should_stop():
             return

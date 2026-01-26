@@ -115,6 +115,22 @@ class Grep(
         )
 
     async def run(self, args: GrepArgs) -> GrepResult:
+        """Search files recursively for a regex pattern using ripgrep or grep.
+
+        Detects available backend (ripgrep or grep), validates arguments, executes
+        the search with exclusion patterns, and parses the output. Respects
+        .gitignore and .codeignore files when using ripgrep.
+
+        Args:
+            args: Arguments containing the search pattern and optional parameters.
+
+        Returns:
+            GrepResult with matches, total count, and whether results were truncated.
+
+        Raises:
+            ToolError: If neither ripgrep nor grep is installed, search pattern is
+                empty, path doesn't exist, or an error occurs during search execution.
+        """
         backend = self._detect_backend()
         self._validate_args(args)
         self.state.search_history.append(args.pattern)

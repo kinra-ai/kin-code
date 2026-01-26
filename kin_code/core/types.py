@@ -1,3 +1,29 @@
+"""Core type definitions for the agent's conversation and event system.
+
+This module defines all fundamental types used throughout the agent architecture,
+including messages, events, statistics, and protocol types for LLM interactions.
+These types form the contract between the agent, LLM providers, tools, and
+the conversation loop.
+
+The type system is designed around several key concepts:
+- LLMMessage: Unified representation of conversation messages across roles
+- Events: Strongly-typed events emitted during agent execution
+- AgentStats: Real-time tracking of token usage, costs, and performance
+- Tool Protocol: Types for function calling and tool execution
+- Approval System: Callback types for user approval workflows
+
+Key Type Categories:
+    Messages: LLMMessage, LLMChunk, LLMUsage, Content, Role
+    Events: AssistantEvent, ToolCallEvent, ToolResultEvent, CompactStartEvent
+    Statistics: AgentStats, SessionInfo, SessionMetadata
+    Tools: ToolCall, FunctionCall, AvailableTool, AvailableFunction
+    Approval: ApprovalCallback, ApprovalResponse
+    Output: OutputFormat
+
+All types use Pydantic for validation and serialization, with modern Python 3.12+
+type hints including built-in generics (list, dict) and union operators (|).
+"""
+
 from __future__ import annotations
 
 from abc import ABC

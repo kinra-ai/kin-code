@@ -1,3 +1,72 @@
+"""MCP (Model Context Protocol) server integration.
+
+This module provides integration with MCP servers, allowing the agent to
+dynamically discover and invoke tools exposed by external MCP servers via
+HTTP or stdio transports. MCP tools are automatically wrapped in proxy
+classes that implement the BaseTool interface, making them indistinguishable
+from built-in tools to the agent.
+
+Key Components:
+    RemoteTool: Pydantic model representing a tool discovered from an MCP server.
+    MCPToolResult: Result model for MCP tool invocations (text or structured).
+    list_tools_http: Discover available tools from an MCP HTTP/streamable-HTTP server.
+    list_tools_stdio: Discover available tools from an MCP stdio server.
+    call_tool_http: Invoke an MCP tool via HTTP transport.
+    call_tool_stdio: Invoke an MCP tool via stdio transport.
+    create_mcp_http_proxy_tool_class: Generate a BaseTool subclass for an HTTP MCP tool.
+    create_mcp_stdio_proxy_tool_class: Generate a BaseTool subclass for a stdio MCP tool.
+
+MCP integration flow:
+1. ToolManager reads mcp_servers from configuration at initialization
+2. For each server, calls list_tools_http or list_tools_stdio to discover tools
+3. For each discovered tool, generates a proxy class with create_mcp_*_proxy_tool_class
+4. Proxy classes implement BaseTool interface and forward invocations to MCP server
+5. Tool names are prefixed with server alias to avoid conflicts (e.g., "github_create_issue")
+6. Server hints are appended to tool descriptions for additional context
+
+Transport types:
+- http: Standard HTTP MCP server
+- streamable-http: Streaming HTTP MCP server (uses streamablehttp_client)
+- stdio: Process-based MCP server communicating via stdin/stdout
+
+Proxy tool naming:
+- HTTP: f"{alias_from_url}_{tool_name}" or f"{alias}_{tool_name}"
+- Stdio: f"{alias}_{tool_name}" or f"{prog}_{hash}_{tool_name}"
+
+Typical usage:
+
+    # Configuration in config.toml:
+    # [[mcp_servers]]
+    # name = "github"
+    # transport = "http"
+    # url = "https://github-mcp.example.com"
+    # headers = { "Authorization" = "Bearer $GITHUB_TOKEN" }
+    # prompt = "Use for GitHub operations like creating issues or PRs"
+
+    from kin_code.core.tools.mcp import list_tools_http, call_tool_http
+
+    # Manual discovery (normally done by ToolManager)
+    tools = await list_tools_http(
+        "https://github-mcp.example.com",
+        headers={"Authorization": "Bearer token"}
+    )
+    for tool in tools:
+        print(f"{tool.name}: {tool.description}")
+
+    # Manual invocation (normally done by proxy tool)
+    result = await call_tool_http(
+        "https://github-mcp.example.com",
+        "create_issue",
+        {"repo": "owner/repo", "title": "Bug report", "body": "..."},
+        headers={"Authorization": "Bearer token"}
+    )
+    print(result.text or result.structured)
+
+    # Proxy tools are used automatically by agent:
+    # agent: "Create an issue in myrepo about the login bug"
+    # -> agent.tool_manager.get("github_create_issue")
+    # -> MCPHttpProxyTool.run() -> call_tool_http()
+"""
 from __future__ import annotations
 
 import hashlib
@@ -163,6 +232,17 @@ def create_mcp_http_proxy_tool_class(
             return dict(cls._input_schema)
 
         async def run(self, args: _OpenArgs) -> MCPToolResult:
+            """Execute the MCP tool via HTTP.
+
+            Args:
+                args: Tool-specific arguments validated against the MCP schema.
+
+            Returns:
+                MCPToolResult with the tool execution result and metadata.
+
+            Raises:
+                ToolError: If the MCP HTTP call fails.
+            """
             try:
                 payload = args.model_dump(exclude_none=True)
                 return await call_tool_http(
@@ -172,7 +252,7 @@ def create_mcp_http_proxy_tool_class(
                 raise ToolError(f"MCP call failed: {exc}") from exc
 
         @classmethod
-        def get_call_display(cls, event: ToolCallEvent) -> ToolCallDisplay:
+        def get_call_display(cls, _event: ToolCallEvent) -> ToolCallDisplay:
             return ToolCallDisplay(summary=f"{published_name}")
 
         @classmethod
@@ -255,6 +335,17 @@ def create_mcp_stdio_proxy_tool_class(
             return dict(cls._input_schema)
 
         async def run(self, args: _OpenArgs) -> MCPToolResult:
+            """Execute the MCP tool via stdio.
+
+            Args:
+                args: Tool-specific arguments validated against the MCP schema.
+
+            Returns:
+                MCPToolResult with the tool execution result and metadata.
+
+            Raises:
+                ToolError: If the MCP stdio call fails.
+            """
             try:
                 payload = args.model_dump(exclude_none=True)
                 result = await call_tool_stdio(
@@ -265,7 +356,7 @@ def create_mcp_stdio_proxy_tool_class(
                 raise ToolError(f"MCP stdio call failed: {exc!r}") from exc
 
         @classmethod
-        def get_call_display(cls, event: ToolCallEvent) -> ToolCallDisplay:
+        def get_call_display(cls, _event: ToolCallEvent) -> ToolCallDisplay:
             return ToolCallDisplay(summary=f"{published_name}")
 
         @classmethod

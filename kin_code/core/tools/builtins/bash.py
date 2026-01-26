@@ -27,6 +27,17 @@ def _get_parser() -> Parser:
 
 
 def _extract_commands(command: str) -> list[str]:
+    """Extract individual command names from a bash command string.
+
+    Uses tree-sitter to parse bash syntax and extract command nodes,
+    handling compound statements, pipes, and redirections.
+
+    Args:
+        command: The bash command string to parse.
+
+    Returns:
+        List of command strings extracted from the input.
+    """
     parser = _get_parser()
     tree = parser.parse(command.encode("utf-8"))
 
@@ -53,6 +64,14 @@ def _extract_commands(command: str) -> list[str]:
 
 
 def _get_subprocess_encoding() -> str:
+    """Determine the correct encoding for subprocess output.
+
+    On Windows, uses the OEM code page (e.g., cp850, cp1252).
+    On other platforms, defaults to UTF-8.
+
+    Returns:
+        Encoding name suitable for decoding subprocess output.
+    """
     if sys.platform == "win32":
         # Windows console uses OEM code page (e.g., cp850, cp1252)
         import ctypes
@@ -62,6 +81,16 @@ def _get_subprocess_encoding() -> str:
 
 
 def _get_base_env() -> dict[str, str]:
+    """Build base environment variables for non-interactive command execution.
+
+    Sets CI flags and disables interactive features, TTY, colors, and pagers
+    to ensure commands run in a predictable non-interactive mode suitable
+    for automation.
+
+    Returns:
+        Dictionary of environment variables with the current environment
+        plus non-interactive overrides.
+    """
     base_env = {
         **os.environ,
         "CI": "true",
@@ -85,6 +114,15 @@ def _get_base_env() -> dict[str, str]:
 
 
 async def _kill_process_tree(proc: asyncio.subprocess.Process) -> None:
+    """Forcefully terminate a subprocess and all its children.
+
+    On Windows, uses taskkill with /F /T flags. On Unix, kills the
+    process group with SIGKILL. Silently handles processes that have
+    already terminated or can't be accessed.
+
+    Args:
+        proc: The subprocess to terminate.
+    """
     if proc.returncode is not None:
         return
 
@@ -200,6 +238,20 @@ class Bash(BaseTool[BashArgs, BashResult, BashToolConfig, BaseToolState]):
     description: ClassVar[str] = "Run a one-off bash command and capture its output."
 
     def check_allowlist_denylist(self, args: BashArgs) -> ToolPermission | None:
+        """Check if command should be automatically allowed or denied.
+
+        Parses the command to extract individual commands, then checks them
+        against allowlist, denylist, and standalone denylist patterns.
+        Returns ALWAYS if all commands are allowlisted, NEVER if any are
+        denylisted, or None if user approval is needed.
+
+        Args:
+            args: The bash arguments containing the command to check.
+
+        Returns:
+            ToolPermission.ALWAYS if automatically allowed,
+            ToolPermission.NEVER if denied, or None for manual approval.
+        """
         if is_windows():
             return None
 
@@ -261,6 +313,21 @@ class Bash(BaseTool[BashArgs, BashResult, BashToolConfig, BaseToolState]):
         return BashResult(stdout=stdout, stderr=stderr, returncode=returncode)
 
     async def run(self, args: BashArgs) -> BashResult:
+        """Execute a bash command and capture its output.
+
+        Runs the command in a subprocess with a timeout, captures stdout and stderr,
+        and returns the result. The subprocess runs in non-interactive mode with
+        a clean environment. Output is truncated to max_output_bytes.
+
+        Args:
+            args: Arguments containing the command and optional timeout.
+
+        Returns:
+            BashResult with stdout, stderr, and return code.
+
+        Raises:
+            ToolError: If the command times out, fails, or encounters an error.
+        """
         timeout = args.timeout or self.config.default_timeout
         max_bytes = self.config.max_output_bytes
 
