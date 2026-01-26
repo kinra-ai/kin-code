@@ -401,6 +401,12 @@ def _get_windows_system_prompt() -> str:
     )
 
 
+def _get_date_info() -> str:
+    from datetime import date
+
+    return f"Today's date is {date.today().isoformat()}"
+
+
 def _add_commit_signature() -> str:
     return (
         "When you want to commit changes, you will always use the 'git commit' bash command.\n"
@@ -460,6 +466,7 @@ def get_universal_system_prompt(
 
     if config.include_prompt_detail:
         sections.append(_get_os_system_prompt())
+        sections.append(_get_date_info())
         tool_prompts = []
         active_tools = get_active_tool_classes(tool_manager, config)
         for tool_class in active_tools:
