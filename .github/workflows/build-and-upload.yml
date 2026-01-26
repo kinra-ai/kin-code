@@ -47,6 +47,7 @@ jobs:
     permissions:
       contents: read
     strategy:
+      fail-fast: false
       matrix: ${{ fromJSON(needs.configure.outputs.matrix) }}
     runs-on: ${{ matrix.runner }}
 
@@ -75,16 +76,20 @@ jobs:
       - name: Build with PyInstaller
         run: uv run --no-dev --group build pyinstaller kin-acp.spec
 
-      - name: Get package version with uv (Unix)
+      - name: Get package version (Unix)
         id: get_version_unix
         if: ${{ matrix.os != 'windows' }}
-        run: python -c "import subprocess; version = subprocess.check_output(['uv', 'version']).decode().split()[1]; print(f'version={version}')" >> $GITHUB_OUTPUT
+        run: |
+          version=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          echo "version=$version" >> $GITHUB_OUTPUT
 
-      - name: Get package version with uv (Windows)
+      - name: Get package version (Windows)
         id: get_version_windows
         if: ${{ matrix.os == 'windows' }}
         shell: pwsh
-        run: python -c "import subprocess; version = subprocess.check_output(['uv', 'version']).decode().split()[1]; print(f'version={version}')" >> $env:GITHUB_OUTPUT
+        run: |
+          $version = python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])"
+          echo "version=$version" >> $env:GITHUB_OUTPUT
 
       - name: Upload binary as artifact (Unix)
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
@@ -147,6 +152,7 @@ jobs:
     permissions:
       contents: read
     strategy:
+      fail-fast: false
       matrix: ${{ fromJSON(needs.configure.outputs.matrix) }}
     runs-on: ${{ matrix.runner }}
     steps:
