@@ -522,7 +522,16 @@ class ModelApp(Container):
                 event.prevent_default()
 
         if self._view_state == ViewState.DISCOVER:
-            if event.character and event.character.isprintable() and self._search_input:
+            if event.key == "enter":
+                self.action_select()
+                event.prevent_default()
+            elif event.key in ("up", "down"):
+                if event.key == "up":
+                    self.action_move_up()
+                else:
+                    self.action_move_down()
+                event.prevent_default()
+            elif event.character and event.character.isprintable() and self._search_input:
                 self._search_input.focus()
 
     def on_blur(self, _event: events.Blur) -> None:
