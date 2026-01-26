@@ -370,6 +370,37 @@ class KinApp(App):  # noqa: PLR0904
         )
         await self._switch_to_input_app()
 
+    async def on_model_app_model_updated(self, message: ModelApp.ModelUpdated) -> None:
+        """Handle model metadata refresh from ModelApp."""
+        current_models = [m.model_dump() for m in self.config.models]
+
+        # Find and update the model
+        updated = False
+        for model in current_models:
+            if model["alias"] == message.alias:
+                if message.context_window is not None:
+                    model["context_window"] = message.context_window
+                updated = True
+                break
+
+        if not updated:
+            await self._mount_and_scroll(
+                ErrorMessage(
+                    f"Model '{message.alias}' not found",
+                    collapsed=self._tools_collapsed,
+                )
+            )
+            return
+
+        KinConfig.save_updates({"models": current_models, "active_model": message.alias})
+        await self._reload_config()
+
+        ctx_str = f"{message.context_window // 1000}k" if message.context_window else "?"
+        await self._mount_and_scroll(
+            UserCommandMessage(f"Updated {message.alias}: context window {ctx_str}")
+        )
+        await self._switch_to_input_app()
+
     async def on_model_app_model_closed(self, message: ModelApp.ModelClosed) -> None:
         """Handle ModelApp close."""
         if not message.changed:

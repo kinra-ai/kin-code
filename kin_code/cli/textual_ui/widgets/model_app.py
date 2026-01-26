@@ -59,6 +59,14 @@ class ModelApp(Container):
             self.alias = alias
             self.context_window = context_window
 
+    class ModelUpdated(Message):
+        """Message sent when an existing model's metadata is refreshed from discovery."""
+
+        def __init__(self, alias: str, context_window: int | None) -> None:
+            super().__init__()
+            self.alias = alias
+            self.context_window = context_window
+
     class ModelClosed(Message):
         def __init__(self, changed: bool = False) -> None:
             super().__init__()
@@ -345,14 +353,26 @@ class ModelApp(Container):
                     providers = self._get_providers()
                     provider = providers[self._discovery_provider_index]
                     alias = model.id.split("/")[-1] if "/" in model.id else model.id
-                    self.post_message(
-                        self.ModelAdded(
-                            provider=provider.name,
-                            model_id=model.id,
-                            alias=alias,
-                            context_window=model.context_window,
+
+                    # Check if model with this alias already exists
+                    existing_aliases = {m.alias for m in self.config.models}
+                    if alias in existing_aliases:
+                        # Update existing model's metadata
+                        self.post_message(
+                            self.ModelUpdated(
+                                alias=alias,
+                                context_window=model.context_window,
+                            )
                         )
-                    )
+                    else:
+                        self.post_message(
+                            self.ModelAdded(
+                                provider=provider.name,
+                                model_id=model.id,
+                                alias=alias,
+                                context_window=model.context_window,
+                            )
+                        )
             case ViewState.ADD:
                 self._save_manual_model()
 
