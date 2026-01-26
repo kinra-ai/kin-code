@@ -229,6 +229,7 @@ class ModelConfig(BaseModel):
     input_price: float = 0.0  # Price per million input tokens
     output_price: float = 0.0  # Price per million output tokens
     context_window: int | None = None
+    supports_tools: bool = True  # Whether the model supports tool calling
 
     @model_validator(mode="before")
     @classmethod

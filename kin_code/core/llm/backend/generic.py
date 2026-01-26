@@ -79,6 +79,7 @@ class OpenAIAdapter(APIAdapter):
         tools: list[AvailableTool] | None,
         max_tokens: int | None,
         tool_choice: StrToolChoice | AvailableTool | None,
+        provider_name: str | None = None,
     ) -> dict[str, Any]:
         payload = {
             "model": model_name,
@@ -96,6 +97,13 @@ class OpenAIAdapter(APIAdapter):
             )
         if max_tokens is not None:
             payload["max_tokens"] = max_tokens
+
+        # OpenRouter provider routing - allow fallbacks for better compatibility
+        if provider_name == "openrouter":
+            payload["provider"] = {
+                "allow_fallbacks": True,
+                "data_collection": "allow",
+            }
 
         return payload
 
@@ -145,7 +153,13 @@ class OpenAIAdapter(APIAdapter):
         ]
 
         payload = self.build_payload(
-            model_name, converted_messages, temperature, tools, max_tokens, tool_choice
+            model_name,
+            converted_messages,
+            temperature,
+            tools,
+            max_tokens,
+            tool_choice,
+            provider_name=provider.name,
         )
 
         if enable_streaming:

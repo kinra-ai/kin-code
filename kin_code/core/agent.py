@@ -533,10 +533,15 @@ class Agent:
         active_model = self.config.get_active_model()
         provider = self.config.get_provider_for_model(active_model)
 
-        available_tools = self.format_handler.get_available_tools(
-            self.tool_manager, self.config
-        )
-        tool_choice = self.format_handler.get_tool_choice()
+        # Only include tools if the model supports them
+        if active_model.supports_tools:
+            available_tools = self.format_handler.get_available_tools(
+                self.tool_manager, self.config
+            )
+            tool_choice = self.format_handler.get_tool_choice()
+        else:
+            available_tools = None
+            tool_choice = None
 
         try:
             start_time = time.perf_counter()
@@ -578,10 +583,15 @@ class Agent:
         active_model = self.config.get_active_model()
         provider = self.config.get_provider_for_model(active_model)
 
-        available_tools = self.format_handler.get_available_tools(
-            self.tool_manager, self.config
-        )
-        tool_choice = self.format_handler.get_tool_choice()
+        # Only include tools if the model supports them
+        if active_model.supports_tools:
+            available_tools = self.format_handler.get_available_tools(
+                self.tool_manager, self.config
+            )
+            tool_choice = self.format_handler.get_tool_choice()
+        else:
+            available_tools = None
+            tool_choice = None
         try:
             start_time = time.perf_counter()
             usage = LLMUsage()
@@ -811,13 +821,18 @@ class Agent:
             active_model = self.config.get_active_model()
             provider = self.config.get_provider_for_model(active_model)
 
+            # Only include tools if the model supports them
+            tools_for_counting = (
+                self.format_handler.get_available_tools(self.tool_manager, self.config)
+                if active_model.supports_tools
+                else None
+            )
+
             async with self.backend as backend:
                 actual_context_tokens = await backend.count_tokens(
                     model=active_model,
                     messages=self.messages,
-                    tools=self.format_handler.get_available_tools(
-                        self.tool_manager, self.config
-                    ),
+                    tools=tools_for_counting,
                     extra_headers={"user-agent": get_user_agent(provider.backend)},
                 )
 
