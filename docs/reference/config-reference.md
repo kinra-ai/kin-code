@@ -67,7 +67,7 @@ reasoning_field_name = "reasoning_content" # Field name for reasoning
 
 ```toml
 [[models]]
-name = "mistral-vibe-cli-latest"  # Model identifier sent to API
+name = "kin-code-latest"  # Model identifier sent to API
 provider = "mistral"              # Must match a provider name
 alias = "devstral-2"              # Short name (must be unique)
 temperature = 0.2                 # Sampling temperature

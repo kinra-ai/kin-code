@@ -3,8 +3,8 @@
 from PyInstaller.utils.hooks import collect_all
 
 # Collect all dependencies (including hidden imports and binaries) from builtins modules
-core_builtins_deps = collect_all('vibe.core.tools.builtins')
-acp_builtins_deps = collect_all('vibe.acp.tools.builtins')
+core_builtins_deps = collect_all('kin_code.core.tools.builtins')
+acp_builtins_deps = collect_all('kin_code.acp.tools.builtins')
 
 # Extract hidden imports and binaries, filtering to ensure only strings are in hiddenimports
 hidden_imports = []
@@ -15,18 +15,18 @@ for item in core_builtins_deps[2] + acp_builtins_deps[2]:
 binaries = core_builtins_deps[1] + acp_builtins_deps[1]
 
 a = Analysis(
-    ['vibe/acp/entrypoint.py'],
+    ['kin_code/acp/entrypoint.py'],
     pathex=[],
     binaries=binaries,
     datas=[
         # By default, pyinstaller doesn't include the .md files
-        ('vibe/core/prompts/*.md', 'vibe/core/prompts'),
-        ('vibe/core/tools/builtins/prompts/*.md', 'vibe/core/tools/builtins/prompts'),
+        ('kin_code/core/prompts/*.md', 'kin_code/core/prompts'),
+        ('kin_code/core/tools/builtins/prompts/*.md', 'kin_code/core/tools/builtins/prompts'),
         # We also need to add all setup files
-        ('vibe/setup/*', 'vibe/setup'),
-        # This is necessary because tools are dynamically called in vibe, meaning there is no static reference to those files
-        ('vibe/core/tools/builtins/*.py', 'vibe/core/tools/builtins'),
-        ('vibe/acp/tools/builtins/*.py', 'vibe/acp/tools/builtins'),
+        ('kin_code/setup/*', 'kin_code/setup'),
+        # This is necessary because tools are dynamically called in kin_code, meaning there is no static reference to those files
+        ('kin_code/core/tools/builtins/*.py', 'kin_code/core/tools/builtins'),
+        ('kin_code/acp/tools/builtins/*.py', 'kin_code/acp/tools/builtins'),
     ],
     hiddenimports=hidden_imports,
     hookspath=[],
@@ -44,7 +44,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='vibe-acp',
+    name='kin-acp',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

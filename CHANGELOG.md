@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-01-26
+
+### Breaking Changes
+
+This release completes the rebranding from "Mistral Vibe" to "Kin Code". The following breaking changes require attention when upgrading:
+
+- **Model name change**: Default model renamed from `mistral-vibe-cli-latest` to `kin-code-latest`. Update your `config.toml` if you reference the old name directly.
+- **History file renamed**: Command history file renamed from `vibehistory` to `kinhistory`. Your history will start fresh.
+- **Ignore file renamed**: Project ignore file renamed from `.vibeignore` to `.kinignore`. The old file is still supported for backward compatibility.
+- **Constants renamed**: Internal constants `VIBE_STOP_EVENT_TAG` and `VIBE_WARNING_TAG` renamed to `KIN_STOP_EVENT_TAG` and `KIN_WARNING_TAG`.
+- **ACP authentication ID**: Changed from `vibe-setup` to `kin-setup`.
+- **Test mock environment variable**: Changed from `VIBE_MOCK_LLM_DATA` to `KIN_MOCK_LLM_DATA`.
+- **Binary renamed**: `vibe-acp` binary renamed to `kin-acp`.
+
+### Migration Guide
+
+1. **Config file**: No changes needed for most users. The model alias `devstral-2` remains the same.
+2. **Ignore file**: Rename `.vibeignore` to `.kinignore`, or keep both (backward compatible).
+3. **Environment variables**: `KIN_HOME` and `VIBE_HOME` both work; `KIN_HOME` is preferred.
+4. **ACP clients**: Update any direct references to `vibe-acp` binary to `kin-acp`.
+
+### Added
+
+- Added `VIBE.md` and `.vibe.md` to trustable filenames for backward compatibility
+- Added backward compatibility for `.vibeignore` ignore files
+
+### Changed
+
+- Logger names updated to use `kin` prefix
+- User agent string updated to `Kin-Code/{version}`
+- All documentation updated with new naming
+
 ## [1.3.5] - 2026-01-12
 
 ### Fixed

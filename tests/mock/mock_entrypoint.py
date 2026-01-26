@@ -1,7 +1,7 @@
 """Wrapper script that intercepts LLM calls when mocking is enabled.
 
 This script is used to mock the LLM calls when testing the CLI.
-Mocked returns are stored in the VIBE_MOCK_LLM_DATA environment variable.
+Mocked returns are stored in the KIN_MOCK_LLM_DATA environment variable.
 """
 
 from __future__ import annotations

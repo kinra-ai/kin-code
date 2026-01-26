@@ -129,9 +129,9 @@ Examples:
             ".vscode/launch.json",
             [(f'"version": "{current_version}"', f'"version": "{new_version}"')],
         )
-        # Update vibe/core/__init__.py
+        # Update kin_code/__init__.py
         update_hard_values_files(
-            "vibe/__init__.py",
+            "kin_code/__init__.py",
             [(f'__version__ = "{current_version}"', f'__version__ = "{new_version}"')],
         )
         # Update tests/acp/test_initialize.py

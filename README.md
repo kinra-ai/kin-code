@@ -284,6 +284,10 @@ Kin Code can be used in text editors and IDEs that support [Agent Client Protoco
 - [CHANGELOG](CHANGELOG.md) - See what's new in each version
 - [CONTRIBUTING](CONTRIBUTING.md) - Guidelines for feedback and bug reports
 
+## Acknowledgments
+
+Kin Code was originally forked from [Mistral Vibe](https://github.com/mistralai/mistral-vibe-cli), the open-source CLI coding assistant by Mistral AI. We are grateful to the Mistral team for creating this excellent foundation.
+
 ## License
 
 Copyright 2025 Kinra

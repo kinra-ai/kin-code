@@ -1,11 +1,11 @@
 {
-  "version": "1.3.5",
+  "version": "1.0.0",
   "configurations": [
     {
       "name": "ACP Server",
       "type": "debugpy",
       "request": "launch",
-      "program": "vibe/acp/entrypoint.py",
+      "program": "kin_code/acp/entrypoint.py",
       "args": [],
       "console": "integratedTerminal",
       "justMyCode": false
@@ -42,7 +42,7 @@
       "name": "CLI",
       "type": "debugpy",
       "request": "launch",
-      "program": "vibe/cli/entrypoint.py",
+      "program": "kin_code/cli/entrypoint.py",
       "args": [],
       "console": "integratedTerminal",
       "justMyCode": false

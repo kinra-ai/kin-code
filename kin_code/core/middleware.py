@@ -42,7 +42,7 @@ from enum import StrEnum, auto
 from typing import TYPE_CHECKING, Any, Protocol
 
 from kin_code.core.modes import AgentMode
-from kin_code.core.utils import VIBE_WARNING_TAG
+from kin_code.core.utils import KIN_WARNING_TAG
 
 if TYPE_CHECKING:
     from kin_code.core.config import KinConfig
@@ -164,7 +164,7 @@ class ContextWarningMiddleware:
             self.has_warned = True
 
             percentage_used = (context.stats.context_tokens / max_context) * 100
-            warning_msg = f"<{VIBE_WARNING_TAG}>You have used {percentage_used:.0f}% of your total context ({context.stats.context_tokens:,}/{max_context:,} tokens)</{VIBE_WARNING_TAG}>"
+            warning_msg = f"<{KIN_WARNING_TAG}>You have used {percentage_used:.0f}% of your total context ({context.stats.context_tokens:,}/{max_context:,} tokens)</{KIN_WARNING_TAG}>"
 
             return MiddlewareResult(
                 action=MiddlewareAction.INJECT_MESSAGE, message=warning_msg
@@ -179,9 +179,9 @@ class ContextWarningMiddleware:
         self.has_warned = False
 
 
-PLAN_MODE_REMINDER = f"""<{VIBE_WARNING_TAG}>Plan mode is active. The user indicated that they do not want you to execute yet -- you MUST NOT make any edits, run any non-readonly tools (including changing configs or making commits), or otherwise make any changes to the system. This supersedes any other instructions you have received (for example, to make edits). Instead, you should:
+PLAN_MODE_REMINDER = f"""<{KIN_WARNING_TAG}>Plan mode is active. The user indicated that they do not want you to execute yet -- you MUST NOT make any edits, run any non-readonly tools (including changing configs or making commits), or otherwise make any changes to the system. This supersedes any other instructions you have received (for example, to make edits). Instead, you should:
 1. Answer the user's query comprehensively
-2. When you're done researching, present your plan by giving the full plan and not doing further tool calls to return input to the user. Do NOT make any file changes or run any tools that modify the system state in any way until the user has confirmed the plan.</{VIBE_WARNING_TAG}>"""
+2. When you're done researching, present your plan by giving the full plan and not doing further tool calls to return input to the user. Do NOT make any file changes or run any tools that modify the system state in any way until the user has confirmed the plan.</{KIN_WARNING_TAG}>"""
 
 
 class PlanModeMiddleware:

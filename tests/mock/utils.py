@@ -4,7 +4,7 @@ import json
 
 from kin_code.core.types import LLMChunk, LLMMessage, LLMUsage, Role, ToolCall
 
-MOCK_DATA_ENV_VAR = "VIBE_MOCK_LLM_DATA"
+MOCK_DATA_ENV_VAR = "KIN_MOCK_LLM_DATA"
 
 
 def mock_llm_chunk(

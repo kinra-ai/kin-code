@@ -163,7 +163,7 @@ class KinAcpAgent(AcpAgent):
         auth_methods = (
             [
                 AuthMethod(
-                    id="vibe-setup",
+                    id="kin-setup",
                     name="Register your API Key",
                     description="Register your API Key inside Kin Code",
                     field_meta={

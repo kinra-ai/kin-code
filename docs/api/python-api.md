@@ -140,7 +140,7 @@ config = KinConfig(
     active_model="devstral-2",
     models=[
         ModelConfig(
-            name="mistral-vibe-cli-latest",
+            name="kin-code-latest",
             provider="mistral",
             alias="devstral-2",
             temperature=0.2,

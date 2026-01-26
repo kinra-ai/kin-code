@@ -80,10 +80,10 @@ from kin_code.core.types import BaseEvent, ToolResultEvent
 
 CANCELLATION_TAG = "user_cancellation"
 TOOL_ERROR_TAG = "tool_error"
-VIBE_STOP_EVENT_TAG = "vibe_stop_event"
-VIBE_WARNING_TAG = "vibe_warning"
+KIN_STOP_EVENT_TAG = "kin_stop_event"
+KIN_WARNING_TAG = "kin_warning"
 
-KNOWN_TAGS = [CANCELLATION_TAG, TOOL_ERROR_TAG, VIBE_STOP_EVENT_TAG, VIBE_WARNING_TAG]
+KNOWN_TAGS = [CANCELLATION_TAG, TOOL_ERROR_TAG, KIN_STOP_EVENT_TAG, KIN_WARNING_TAG]
 
 
 class TaggedText:
@@ -203,11 +203,11 @@ logging.basicConfig(
     handlers=[logging.FileHandler(LOG_FILE.path, "a", "utf-8")],
 )
 
-logger = logging.getLogger("vibe")
+logger = logging.getLogger("kin")
 
 
 def get_user_agent(backend: Backend) -> str:
-    user_agent = f"Mistral-Vibe/{__version__}"
+    user_agent = f"Kin-Code/{__version__}"
     if backend == Backend.MISTRAL:
         mistral_sdk_prefix = "mistral-client-python/"
         user_agent = f"{mistral_sdk_prefix}{user_agent}"

@@ -67,7 +67,7 @@ class GrepToolConfig(BaseToolConfig):
         description="List of glob patterns to exclude from search (dirs should end with /).",
     )
     codeignore_file: str = Field(
-        default=".vibeignore",
+        default=".kinignore",
         description="Name of the file to read for additional exclusion patterns.",
     )
 
@@ -160,6 +160,12 @@ class Grep(
         codeignore_path = self.config.effective_workdir / self.config.codeignore_file
         if codeignore_path.is_file():
             patterns.extend(self._load_codeignore_patterns(codeignore_path))
+
+        # Backward compatibility: also check for .vibeignore if primary not found
+        if not codeignore_path.is_file():
+            legacy_path = self.config.effective_workdir / ".vibeignore"
+            if legacy_path.is_file():
+                patterns.extend(self._load_codeignore_patterns(legacy_path))
 
         return patterns
 

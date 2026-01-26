@@ -13,7 +13,7 @@ from kin_code.core.skills.parser import SkillParseError, parse_frontmatter
 if TYPE_CHECKING:
     from kin_code.core.config import KinConfig
 
-logger = getLogger("vibe")
+logger = getLogger("kin")
 
 
 class SkillManager:

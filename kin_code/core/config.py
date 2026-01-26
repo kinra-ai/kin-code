@@ -357,7 +357,7 @@ DEFAULT_PROVIDERS = [
 
 DEFAULT_MODELS = [
     ModelConfig(
-        name="mistral-vibe-cli-latest",
+        name="kin-code-latest",
         provider="mistral",
         alias="devstral-2",
         input_price=0.4,

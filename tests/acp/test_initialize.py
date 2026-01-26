@@ -41,7 +41,7 @@ class TestACPInitialize:
             ),
         )
         assert response.agentInfo == Implementation(
-            name="@kinra/kin-code", title="Kin Code", version="1.3.5"
+            name="@kinra/kin-code", title="Kin Code", version="1.0.0"
         )
 
         assert response.authMethods == []
@@ -63,13 +63,13 @@ class TestACPInitialize:
             ),
         )
         assert response.agentInfo == Implementation(
-            name="@kinra/kin-code", title="Kin Code", version="1.3.5"
+            name="@kinra/kin-code", title="Kin Code", version="1.0.0"
         )
 
         assert response.authMethods is not None
         assert len(response.authMethods) == 1
         auth_method = response.authMethods[0]
-        assert auth_method.id == "vibe-setup"
+        assert auth_method.id == "kin-setup"
         assert auth_method.name == "Register your API Key"
         assert auth_method.description == "Register your API Key inside Kin Code"
         assert auth_method.field_meta is not None

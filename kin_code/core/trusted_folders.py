@@ -7,7 +7,7 @@ import tomli_w
 
 from kin_code.core.paths.global_paths import TRUSTED_FOLDERS_FILE
 
-TRUSTABLE_FILENAMES = ["AGENTS.md", "KIN.md", ".kin.md"]
+TRUSTABLE_FILENAMES = ["AGENTS.md", "KIN.md", ".kin.md", "VIBE.md", ".vibe.md"]
 
 
 def has_trustable_content(path: Path) -> bool:

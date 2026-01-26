@@ -8,7 +8,7 @@ Kin includes these default models:
 
 ```toml
 [[models]]
-name = "mistral-vibe-cli-latest"
+name = "kin-code-latest"
 provider = "mistral"
 alias = "devstral-2"
 temperature = 0.2

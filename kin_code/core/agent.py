@@ -109,7 +109,7 @@ from kin_code.core.types import (
 )
 from kin_code.core.utils import (
     TOOL_ERROR_TAG,
-    VIBE_STOP_EVENT_TAG,
+    KIN_STOP_EVENT_TAG,
     CancellationReason,
     get_user_agent,
     get_user_cancellation_message,
@@ -322,7 +322,7 @@ class Agent:
         match result.action:
             case MiddlewareAction.STOP:
                 yield AssistantEvent(
-                    content=f"<{VIBE_STOP_EVENT_TAG}>{result.reason}</{VIBE_STOP_EVENT_TAG}>",
+                    content=f"<{KIN_STOP_EVENT_TAG}>{result.reason}</{KIN_STOP_EVENT_TAG}>",
                     stopped_by_middleware=True,
                 )
 

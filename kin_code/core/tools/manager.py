@@ -80,7 +80,7 @@ from kin_code.core.tools.mcp import (
 )
 from kin_code.core.utils import run_sync
 
-logger = getLogger("vibe")
+logger = getLogger("kin")
 
 if TYPE_CHECKING:
     from kin_code.core.config import KinConfig, MCPHttp, MCPStdio, MCPStreamableHttp
