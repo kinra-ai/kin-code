@@ -27,10 +27,8 @@ from kin_code.cli.textual_ui.widgets.approval_app import ApprovalApp
 from kin_code.cli.textual_ui.widgets.chat_input import ChatInputContainer
 from kin_code.cli.textual_ui.widgets.compact import CompactMessage
 from kin_code.cli.textual_ui.widgets.config_app import ConfigApp
-from kin_code.cli.textual_ui.widgets.model_app import ModelApp
 from kin_code.cli.textual_ui.widgets.context_progress import ContextProgress, TokenState
 from kin_code.cli.textual_ui.widgets.loading import LoadingWidget
-from kin_code.cli.textual_ui.widgets.model_display import ModelDisplay
 from kin_code.cli.textual_ui.widgets.messages import (
     AssistantMessage,
     BashOutputMessage,
@@ -43,6 +41,8 @@ from kin_code.cli.textual_ui.widgets.messages import (
     WarningMessage,
 )
 from kin_code.cli.textual_ui.widgets.mode_indicator import ModeIndicator
+from kin_code.cli.textual_ui.widgets.model_app import ModelApp
+from kin_code.cli.textual_ui.widgets.model_display import ModelDisplay
 from kin_code.cli.textual_ui.widgets.no_markup_static import NoMarkupStatic
 from kin_code.cli.textual_ui.widgets.path_display import PathDisplay
 from kin_code.cli.textual_ui.widgets.tools import ToolCallMessage, ToolResultMessage

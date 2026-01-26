@@ -108,8 +108,8 @@ from kin_code.core.types import (
     ToolResultEvent,
 )
 from kin_code.core.utils import (
-    TOOL_ERROR_TAG,
     KIN_STOP_EVENT_TAG,
+    TOOL_ERROR_TAG,
     CancellationReason,
     get_user_agent,
     get_user_cancellation_message,

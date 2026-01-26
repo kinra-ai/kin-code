@@ -188,7 +188,7 @@ class TomlFileSettingsSource(PydanticBaseSettingsSource):
             raise RuntimeError(f"Cannot read {file}: {e}") from e
 
     def get_field_value(
-        self, field: FieldInfo, field_name: str  # noqa: ARG002
+        self, field: FieldInfo, field_name: str
     ) -> tuple[Any, str, bool]:
         del field  # Required by protocol but not used in TOML source
         return self.toml_data.get(field_name), field_name, False
@@ -539,7 +539,7 @@ class KinConfig(BaseSettings):
         settings_cls: type[BaseSettings],
         init_settings: PydanticBaseSettingsSource,
         env_settings: PydanticBaseSettingsSource,
-        dotenv_settings: PydanticBaseSettingsSource,  # noqa: ARG003
+        dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         """Define the priority of settings sources.
