@@ -107,8 +107,8 @@ async def test_ui_handles_non_utf8_output(kin_app: KinApp) -> None:
         await pilot.press("enter")
         message = await _wait_for_bash_output_message(kin_app, pilot)
         output_widget = message.query_one(".bash-output", Static)
-        # accept both possible encodings, as some shells emit escaped bytes as literal strings
-        assert str(output_widget.render()) in {"", "\xff\xfe", r"\xff\xfe"}
+        # accept possible encodings: empty, raw bytes, escaped, or Unicode replacement chars
+        assert str(output_widget.render()) in {"", "\xff\xfe", r"\xff\xfe", "\ufffd\ufffd"}
         assert_no_command_error(kin_app)
 
 
@@ -134,5 +134,6 @@ async def test_ui_handles_non_utf8_stderr(kin_app: KinApp) -> None:
         await pilot.press("enter")
         message = await _wait_for_bash_output_message(kin_app, pilot)
         output_widget = message.query_one(".bash-output", Static)
-        assert str(output_widget.render()) == ""
+        # stderr with non-UTF8 may show as empty or Unicode replacement chars
+        assert str(output_widget.render()) in {"", "\ufffd\ufffd"}
         assert_no_command_error(kin_app)

@@ -90,6 +90,17 @@ from kin_code.core.tools.base import BaseToolConfig
 _MIN_CONTEXT_WINDOW = 512
 
 
+def _strip_none_values(obj: Any) -> Any:
+    """Recursively remove None values from nested dicts and lists for TOML serialization."""
+    match obj:
+        case dict():
+            return {k: _strip_none_values(v) for k, v in obj.items() if v is not None}
+        case list():
+            return [_strip_none_values(item) for item in obj]
+        case _:
+            return obj
+
+
 def load_api_keys_from_env() -> None:
     if GLOBAL_ENV_FILE.path.is_file():
         env_vars = dotenv_values(GLOBAL_ENV_FILE.path)
@@ -177,7 +188,7 @@ class TomlFileSettingsSource(PydanticBaseSettingsSource):
             raise RuntimeError(f"Cannot read {file}: {e}") from e
 
     def get_field_value(
-        self, field: FieldInfo, field_name: str
+        self, field: FieldInfo, field_name: str  # noqa: ARG002
     ) -> tuple[Any, str, bool]:
         del field  # Required by protocol but not used in TOML source
         return self.toml_data.get(field_name), field_name, False
@@ -528,7 +539,7 @@ class KinConfig(BaseSettings):
         settings_cls: type[BaseSettings],
         init_settings: PydanticBaseSettingsSource,
         env_settings: PydanticBaseSettingsSource,
-        dotenv_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,  # noqa: ARG003
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         """Define the priority of settings sources.
@@ -674,8 +685,10 @@ class KinConfig(BaseSettings):
 
     @classmethod
     def dump_config(cls, config: dict[str, Any]) -> None:
+        serializable = to_jsonable_python(config, fallback=str)
+        serializable = _strip_none_values(serializable)
         with CONFIG_FILE.path.open("wb") as f:
-            tomli_w.dump(config, f)
+            tomli_w.dump(serializable, f)
 
     @classmethod
     def _get_agent_config(cls, agent: str | None) -> dict[str, Any] | None:

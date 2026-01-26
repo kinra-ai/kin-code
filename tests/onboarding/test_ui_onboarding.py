@@ -13,6 +13,7 @@ from textual.widgets import Input
 from kin_code.core.paths.global_paths import GLOBAL_CONFIG_FILE, GLOBAL_ENV_FILE
 from kin_code.setup.onboarding import OnboardingApp
 from kin_code.setup.onboarding.screens.api_key import ApiKeyScreen
+from kin_code.setup.onboarding.screens.provider_selection import ProviderSelectionScreen
 from kin_code.setup.onboarding.screens.theme_selection import ThemeSelectionScreen
 
 
@@ -31,10 +32,20 @@ async def _wait_for(
 
 
 async def pass_welcome_screen(pilot: Pilot) -> None:
+    """Pass the welcome screen and land on provider selection."""
     welcome_screen = pilot.app.get_screen("welcome")
     await _wait_for(
         lambda: not welcome_screen.query_one("#enter-hint").has_class("hidden"), pilot
     )
+    await pilot.press("enter")
+    await _wait_for(
+        lambda: isinstance(pilot.app.screen, ProviderSelectionScreen), pilot
+    )
+
+
+async def pass_provider_selection_screen(pilot: Pilot) -> None:
+    """Pass the provider selection screen (selecting Mistral) and land on theme selection."""
+    # Mistral is already selected by default, just press enter
     await pilot.press("enter")
     await _wait_for(lambda: isinstance(pilot.app.screen, ThemeSelectionScreen), pilot)
 
@@ -46,6 +57,7 @@ async def test_ui_gets_through_the_onboarding_successfully() -> None:
 
     async with app.run_test() as pilot:
         await pass_welcome_screen(pilot)
+        await pass_provider_selection_screen(pilot)
 
         await pilot.press("enter")
         await _wait_for(lambda: isinstance(app.screen, ApiKeyScreen), pilot)
@@ -71,11 +83,12 @@ async def test_ui_gets_through_the_onboarding_successfully() -> None:
 
 
 @pytest.mark.asyncio
-async def test_ui_can_pick_a_theme_and_saves_selection(config_dir: Path) -> None:
+async def test_ui_can_pick_a_theme_and_saves_selection(config_dir: Path) -> None:  # noqa: ARG001
     app = OnboardingApp()
 
     async with app.run_test() as pilot:
         await pass_welcome_screen(pilot)
+        await pass_provider_selection_screen(pilot)
 
         theme_screen = app.screen
         assert isinstance(theme_screen, ThemeSelectionScreen)
