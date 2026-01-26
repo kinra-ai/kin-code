@@ -99,10 +99,16 @@ class OpenAIAdapter(APIAdapter):
 
         return payload
 
-    def build_headers(self, api_key: str | None = None) -> dict[str, str]:
+    def build_headers(
+        self, api_key: str | None = None, provider_name: str | None = None
+    ) -> dict[str, str]:
         headers = {"Content-Type": "application/json"}
         if api_key:
             headers["Authorization"] = f"Bearer {api_key}"
+        # OpenRouter requires these headers
+        if provider_name == "openrouter":
+            headers["HTTP-Referer"] = "https://github.com/kinra-ai/kin-code"
+            headers["X-Title"] = "Kin Code"
         return headers
 
     def _reasoning_to_api(
@@ -149,7 +155,7 @@ class OpenAIAdapter(APIAdapter):
                 stream_options["stream_tool_calls"] = True
             payload["stream_options"] = stream_options
 
-        headers = self.build_headers(api_key)
+        headers = self.build_headers(api_key, provider.name)
         body = json.dumps(payload).encode("utf-8")
 
         return PreparedRequest(self.endpoint, headers, body)
