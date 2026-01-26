@@ -1,6 +1,6 @@
 [project]
 name = "kin-code"
-version = "1.0.3"
+version = "1.0.4"
 description = "CLI coding agent by Kinra"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -128,7 +128,7 @@ select = [
     "RUF019",
     "RUF100",
 ]
-ignore = ["D203", "D205", "D213", "ANN401", "PLR6301"]
+ignore = ["D203", "D205", "D213", "ANN401", "PLR6301", "PLR0911", "PLR2004"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["ANN", "PLR"]
