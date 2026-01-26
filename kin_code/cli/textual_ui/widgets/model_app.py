@@ -157,7 +157,7 @@ class ModelApp(Container):
             case ViewState.LIST:
                 return "up/dn navigate  Enter select  D discover  A add  Esc close"
             case ViewState.DISCOVER:
-                return "up/dn navigate  Enter add  <-/-> provider  type search  Esc back"
+                return "up/dn navigate  Enter add/refresh  <-/-> provider  type search  Esc back"
             case ViewState.ADD:
                 return "Tab next field  Enter save  Esc cancel"
 
@@ -241,18 +241,22 @@ class ModelApp(Container):
             total = len(self._discovered_models)
             filtered = len(self._filtered_models)
             if self._search_query:
-                lines.append(f"Showing {filtered} of {total} models")
+                lines.append(f"Showing {filtered} of {total} models  (* = configured)")
             else:
-                lines.append(f"{total} models available")
+                lines.append(f"{total} models available  (* = configured)")
             lines.append("")
 
             display_models = self._filtered_models[:15]
+            existing_aliases = {m.alias for m in self.config.models}
             for i, model in enumerate(display_models):
                 is_selected = i == self._selected_index
                 cursor = "> " if is_selected else "  "
                 ctx = f"{model.context_window // 1000}k" if model.context_window else "?"
                 owned = f" ({model.owned_by})" if model.owned_by else ""
-                lines.append(f"{cursor}{model.id:<40} {ctx}{owned}")
+                # Mark models that are already configured
+                alias = model.id.split("/")[-1] if "/" in model.id else model.id
+                configured = " *" if alias in existing_aliases else ""
+                lines.append(f"{cursor}{model.id:<40} {ctx}{owned}{configured}")
 
         for i, widget in enumerate(self._content_widgets):
             if i < len(lines):
