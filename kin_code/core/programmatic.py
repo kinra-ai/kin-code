@@ -60,7 +60,7 @@ def run_programmatic(
     """Run in programmatic mode: execute prompt and return the assistant response.
 
     Args:
-        config: Configuration for the Vibe agent
+        config: Configuration for the Kin agent
         prompt: The user prompt to process
         max_turns: Maximum number of assistant turns (LLM calls) to allow
         max_price: Maximum cost in dollars before stopping
