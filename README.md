@@ -12,16 +12,45 @@ Kin Code is a command-line coding assistant powered by Mistral's models. It prov
 > [!WARNING]
 > Kin Code works on Windows, but we officially support and target UNIX environments.
 
-### Using uv (recommended)
+## Installation
+
+### Quick Install (Recommended)
+
+**macOS/Linux:**
+```bash
+curl -LsSf https://raw.githubusercontent.com/kinra-ai/kin-code/main/scripts/install.sh | bash
+```
+
+**Windows (PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/kinra-ai/kin-code/main/scripts/install.ps1 | iex
+```
+
+### With Homebrew (macOS)
+
+```bash
+brew tap kinra-ai/tap
+brew install kin-code
+```
+
+### With uv
 
 ```bash
 uv tool install kin-code
 ```
 
-### Using pip
+### With pip
 
 ```bash
 pip install kin-code
+```
+
+### Verifying Downloads
+
+Binary releases include artifact attestations for supply chain security. Verify with:
+
+```bash
+gh attestation verify kin-acp-*.zip --repo kinra-ai/kin-code
 ```
 
 ## Features

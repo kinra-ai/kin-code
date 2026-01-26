@@ -106,6 +106,9 @@ jobs:
     if: github.event_name == 'release'
     permissions:
       contents: write
+      id-token: write
+      attestations: write
+      artifact-metadata: write
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
@@ -124,6 +127,12 @@ jobs:
               zip -j "release-assets/${name}.zip" "$dir/kin-acp.exe"
             fi
           done
+
+      - name: Generate artifact attestations
+        if: github.repository == 'kinra-ai/kin-code'
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: 'release-assets/*.zip'
 
       - name: Attach binaries to release
         uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2
