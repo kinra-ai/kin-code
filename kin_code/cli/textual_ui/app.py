@@ -1194,7 +1194,7 @@ class KinApp(App):  # noqa: PLR0904
         if (
             self._current_bottom_app == BottomApp.Input
             and self._last_escape_time is not None
-            and (current_time - self._last_escape_time) < 0.2  # noqa: PLR2004
+            and (current_time - self._last_escape_time) < 0.2
         ):
             try:
                 input_widget = self.query_one(ChatInputContainer)

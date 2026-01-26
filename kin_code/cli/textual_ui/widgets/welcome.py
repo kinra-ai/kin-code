@@ -140,7 +140,7 @@ class WelcomeBanner(Static):
             if (
                 hasattr(border, "top")
                 and isinstance(edge := border.top, tuple)
-                and len(edge) >= 2  # noqa: PLR2004
+                and len(edge) >= 2
                 and isinstance(color := edge[1], Color)
             ):
                 self._cached_skeleton_color = color.hex
