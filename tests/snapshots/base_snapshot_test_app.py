@@ -3,14 +3,14 @@ from __future__ import annotations
 from rich.style import Style
 from textual.widgets.text_area import TextAreaTheme
 
+from kin_code.cli.textual_ui.app import KinApp
+from kin_code.cli.textual_ui.widgets.chat_input import ChatTextArea
+from kin_code.core.agent import Agent
+from kin_code.core.config import KinConfig, SessionLoggingConfig
 from tests.stubs.fake_backend import FakeBackend
-from vibe.cli.textual_ui.app import VibeApp
-from vibe.cli.textual_ui.widgets.chat_input import ChatTextArea
-from vibe.core.agent import Agent
-from vibe.core.config import SessionLoggingConfig, VibeConfig
 
 
-def default_config() -> VibeConfig:
+def default_config() -> KinConfig:
     """Default configuration for snapshot testing.
     Remove as much interference as possible from the snapshot comparison, in order to get a clean pixel-to-pixel comparison.
     - Injects a fake backend to prevent (or stub) LLM calls.
@@ -18,7 +18,7 @@ def default_config() -> VibeConfig:
     - Forces a value for the displayed workdir
     - Hides the chat input cursor (as the blinking animation is not deterministic).
     """
-    return VibeConfig(
+    return KinConfig(
         session_logging=SessionLoggingConfig(enabled=False),
         textual_theme="gruvbox",
         disable_welcome_banner_animation=True,
@@ -27,10 +27,10 @@ def default_config() -> VibeConfig:
     )
 
 
-class BaseSnapshotTestApp(VibeApp):
-    CSS_PATH = "../../vibe/cli/textual_ui/app.tcss"
+class BaseSnapshotTestApp(KinApp):
+    CSS_PATH = "../../kin_code/cli/textual_ui/app.tcss"
 
-    def __init__(self, config: VibeConfig | None = None, **kwargs):
+    def __init__(self, config: KinConfig | None = None, **kwargs):
         config = config or default_config()
 
         super().__init__(config=config, **kwargs)

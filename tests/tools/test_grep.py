@@ -4,8 +4,8 @@ import shutil
 
 import pytest
 
-from vibe.core.tools.base import ToolError
-from vibe.core.tools.builtins.grep import (
+from kin_code.core.tools.base import ToolError
+from kin_code.core.tools.builtins.grep import (
     Grep,
     GrepArgs,
     GrepBackend,

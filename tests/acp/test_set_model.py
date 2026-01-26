@@ -6,12 +6,12 @@ from unittest.mock import patch
 from acp import AgentSideConnection, NewSessionRequest, SetSessionModelRequest
 import pytest
 
+from kin_code.acp.acp_agent import KinAcpAgent
+from kin_code.core.agent import Agent
+from kin_code.core.config import KinConfig, ModelConfig
+from kin_code.core.types import LLMChunk, LLMMessage, LLMUsage, Role
 from tests.stubs.fake_backend import FakeBackend
 from tests.stubs.fake_connection import FakeAgentSideConnection
-from vibe.acp.acp_agent import VibeAcpAgent
-from vibe.core.agent import Agent
-from vibe.core.config import ModelConfig, VibeConfig
-from vibe.core.types import LLMChunk, LLMMessage, LLMUsage, Role
 
 
 @pytest.fixture
@@ -26,8 +26,8 @@ def backend() -> FakeBackend:
 
 
 @pytest.fixture
-def acp_agent(backend: FakeBackend) -> VibeAcpAgent:
-    config = VibeConfig(
+def acp_agent(backend: FakeBackend) -> KinAcpAgent:
+    config = KinConfig(
         active_model="devstral-latest",
         models=[
             ModelConfig(
@@ -47,7 +47,7 @@ def acp_agent(backend: FakeBackend) -> VibeAcpAgent:
         ],
     )
 
-    VibeConfig.dump_config(config.model_dump())
+    KinConfig.dump_config(config.model_dump())
 
     class PatchedAgent(Agent):
         def __init__(self, *args, **kwargs) -> None:
@@ -60,22 +60,22 @@ def acp_agent(backend: FakeBackend) -> VibeAcpAgent:
             except ValueError:
                 pass
 
-    patch("vibe.acp.acp_agent.VibeAgent", side_effect=PatchedAgent).start()
+    patch("kin_code.acp.acp_agent.KinAgent", side_effect=PatchedAgent).start()
 
-    vibe_acp_agent: VibeAcpAgent | None = None
+    kin_acp_agent: KinAcpAgent | None = None
 
-    def _create_agent(connection: AgentSideConnection) -> VibeAcpAgent:
-        nonlocal vibe_acp_agent
-        vibe_acp_agent = VibeAcpAgent(connection)
-        return vibe_acp_agent
+    def _create_agent(connection: AgentSideConnection) -> KinAcpAgent:
+        nonlocal kin_acp_agent
+        kin_acp_agent = KinAcpAgent(connection)
+        return kin_acp_agent
 
     FakeAgentSideConnection(_create_agent)
-    return vibe_acp_agent  # pyright: ignore[reportReturnType]
+    return kin_acp_agent  # pyright: ignore[reportReturnType]
 
 
 class TestACPSetModel:
     @pytest.mark.asyncio
-    async def test_set_model_success(self, acp_agent: VibeAcpAgent) -> None:
+    async def test_set_model_success(self, acp_agent: KinAcpAgent) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
         )
@@ -95,7 +95,7 @@ class TestACPSetModel:
 
     @pytest.mark.asyncio
     async def test_set_model_invalid_model_returns_none(
-        self, acp_agent: VibeAcpAgent
+        self, acp_agent: KinAcpAgent
     ) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
@@ -115,7 +115,7 @@ class TestACPSetModel:
         assert acp_session.agent.config.active_model == initial_model
 
     @pytest.mark.asyncio
-    async def test_set_model_to_same_model(self, acp_agent: VibeAcpAgent) -> None:
+    async def test_set_model_to_same_model(self, acp_agent: KinAcpAgent) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
         )
@@ -135,13 +135,13 @@ class TestACPSetModel:
         assert acp_session.agent.config.active_model == initial_model
 
     @pytest.mark.asyncio
-    async def test_set_model_saves_to_config(self, acp_agent: VibeAcpAgent) -> None:
+    async def test_set_model_saves_to_config(self, acp_agent: KinAcpAgent) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
         )
         session_id = session_response.sessionId
 
-        with patch("vibe.acp.acp_agent.VibeConfig.save_updates") as mock_save:
+        with patch("kin_code.acp.acp_agent.KinConfig.save_updates") as mock_save:
             response = await acp_agent.setSessionModel(
                 SetSessionModelRequest(sessionId=session_id, modelId="devstral-small")
             )
@@ -151,14 +151,14 @@ class TestACPSetModel:
 
     @pytest.mark.asyncio
     async def test_set_model_does_not_save_on_invalid_model(
-        self, acp_agent: VibeAcpAgent
+        self, acp_agent: KinAcpAgent
     ) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
         )
         session_id = session_response.sessionId
 
-        with patch("vibe.acp.acp_agent.VibeConfig.save_updates") as mock_save:
+        with patch("kin_code.acp.acp_agent.KinConfig.save_updates") as mock_save:
             response = await acp_agent.setSessionModel(
                 SetSessionModelRequest(
                     sessionId=session_id, modelId="non-existent-model"
@@ -169,7 +169,7 @@ class TestACPSetModel:
             mock_save.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_set_model_with_empty_string(self, acp_agent: VibeAcpAgent) -> None:
+    async def test_set_model_with_empty_string(self, acp_agent: KinAcpAgent) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
         )
@@ -190,7 +190,7 @@ class TestACPSetModel:
 
     @pytest.mark.asyncio
     async def test_set_model_updates_active_model(
-        self, acp_agent: VibeAcpAgent
+        self, acp_agent: KinAcpAgent
     ) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
@@ -210,7 +210,7 @@ class TestACPSetModel:
 
     @pytest.mark.asyncio
     async def test_set_model_calls_reload_with_initial_messages(
-        self, acp_agent: VibeAcpAgent
+        self, acp_agent: KinAcpAgent
     ) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
@@ -236,7 +236,7 @@ class TestACPSetModel:
 
     @pytest.mark.asyncio
     async def test_set_model_preserves_conversation_history(
-        self, acp_agent: VibeAcpAgent
+        self, acp_agent: KinAcpAgent
     ) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
@@ -266,7 +266,7 @@ class TestACPSetModel:
 
     @pytest.mark.asyncio
     async def test_set_model_resets_stats_with_new_model_pricing(
-        self, acp_agent: VibeAcpAgent
+        self, acp_agent: KinAcpAgent
     ) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])

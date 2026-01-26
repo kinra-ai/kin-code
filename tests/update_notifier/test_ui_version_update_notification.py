@@ -7,25 +7,25 @@ from typing import Protocol
 import pytest
 from textual.app import Notification
 
+from kin_code.cli.textual_ui.app import KinApp
+from kin_code.cli.update_notifier import (
+    UpdateCache,
+    VersionUpdate,
+    VersionUpdateGatewayCause,
+    VersionUpdateGatewayError,
+)
+from kin_code.core.config import KinConfig, SessionLoggingConfig
+from kin_code.core.modes import AgentMode
 from tests.update_notifier.adapters.fake_update_cache_repository import (
     FakeUpdateCacheRepository,
 )
 from tests.update_notifier.adapters.fake_version_update_gateway import (
     FakeVersionUpdateGateway,
 )
-from vibe.cli.textual_ui.app import VibeApp
-from vibe.cli.update_notifier import (
-    UpdateCache,
-    VersionUpdate,
-    VersionUpdateGatewayCause,
-    VersionUpdateGatewayError,
-)
-from vibe.core.config import SessionLoggingConfig, VibeConfig
-from vibe.core.modes import AgentMode
 
 
 async def _wait_for_notification(
-    app: VibeApp, pilot, *, timeout: float = 1.0, interval: float = 0.05
+    app: KinApp, pilot, *, timeout: float = 1.0, interval: float = 0.05
 ) -> Notification:
     loop = asyncio.get_running_loop()
     deadline = loop.time() + timeout
@@ -40,7 +40,7 @@ async def _wait_for_notification(
 
 
 async def _assert_no_notifications(
-    app: VibeApp, pilot, *, timeout: float = 1.0, interval: float = 0.05
+    app: KinApp, pilot, *, timeout: float = 1.0, interval: float = 0.05
 ) -> None:
     loop = asyncio.get_running_loop()
     deadline = loop.time() + timeout
@@ -54,26 +54,26 @@ async def _assert_no_notifications(
 
 
 @pytest.fixture
-def vibe_config_with_update_checks_enabled() -> VibeConfig:
-    return VibeConfig(
+def kin_config_with_update_checks_enabled() -> KinConfig:
+    return KinConfig(
         session_logging=SessionLoggingConfig(enabled=False), enable_update_checks=True
     )
 
 
-class VibeAppFactory(Protocol):
+class KinAppFactory(Protocol):
     def __call__(
         self,
         *,
         notifier: FakeVersionUpdateGateway,
         update_cache_repository: FakeUpdateCacheRepository | None = None,
-        config: VibeConfig | None = None,
+        config: KinConfig | None = None,
         initial_mode: AgentMode = AgentMode.DEFAULT,
         current_version: str = "0.1.0",
-    ) -> VibeApp: ...
+    ) -> KinApp: ...
 
 
 @pytest.fixture
-def make_vibe_app(vibe_config_with_update_checks_enabled: VibeConfig) -> VibeAppFactory:
+def make_kin_app(kin_config_with_update_checks_enabled: KinConfig) -> KinAppFactory:
     update_cache_repository = FakeUpdateCacheRepository()
 
     def _make_app(
@@ -81,12 +81,12 @@ def make_vibe_app(vibe_config_with_update_checks_enabled: VibeConfig) -> VibeApp
         notifier: FakeVersionUpdateGateway,
         update_cache_repository: FakeUpdateCacheRepository
         | None = update_cache_repository,
-        config: VibeConfig | None = None,
+        config: KinConfig | None = None,
         initial_mode: AgentMode = AgentMode.DEFAULT,
         current_version: str = "0.1.0",
-    ) -> VibeApp:
-        return VibeApp(
-            config=config or vibe_config_with_update_checks_enabled,
+    ) -> KinApp:
+        return KinApp(
+            config=config or kin_config_with_update_checks_enabled,
             initial_mode=initial_mode,
             version_update_notifier=notifier,
             update_cache_repository=update_cache_repository,
@@ -97,9 +97,9 @@ def make_vibe_app(vibe_config_with_update_checks_enabled: VibeConfig) -> VibeApp
 
 
 @pytest.mark.asyncio
-async def test_ui_displays_update_notification(make_vibe_app: VibeAppFactory) -> None:
+async def test_ui_displays_update_notification(make_kin_app: KinAppFactory) -> None:
     notifier = FakeVersionUpdateGateway(update=VersionUpdate(latest_version="0.2.0"))
-    app = make_vibe_app(notifier=notifier)
+    app = make_kin_app(notifier=notifier)
 
     async with app.run_test() as pilot:
         notification = await _wait_for_notification(app, pilot, timeout=0.3)
@@ -108,16 +108,16 @@ async def test_ui_displays_update_notification(make_vibe_app: VibeAppFactory) ->
     assert notification.title == "Update available"
     assert (
         notification.message
-        == '0.1.0 => 0.2.0\nRun "uv tool upgrade mistral-vibe" to update'
+        == '0.1.0 => 0.2.0\nRun "uv tool upgrade kin-code" to update'
     )
 
 
 @pytest.mark.asyncio
 async def test_ui_does_not_display_update_notification_when_not_available(
-    make_vibe_app: VibeAppFactory,
+    make_kin_app: KinAppFactory,
 ) -> None:
     notifier = FakeVersionUpdateGateway(update=None)
-    app = make_vibe_app(notifier=notifier)
+    app = make_kin_app(notifier=notifier)
 
     async with app.run_test() as pilot:
         await _assert_no_notifications(app, pilot, timeout=0.3)
@@ -126,12 +126,12 @@ async def test_ui_does_not_display_update_notification_when_not_available(
 
 @pytest.mark.asyncio
 async def test_ui_displays_warning_toast_when_check_fails(
-    make_vibe_app: VibeAppFactory,
+    make_kin_app: KinAppFactory,
 ) -> None:
     notifier = FakeVersionUpdateGateway(
         error=VersionUpdateGatewayError(cause=VersionUpdateGatewayCause.FORBIDDEN)
     )
-    app = make_vibe_app(notifier=notifier)
+    app = make_kin_app(notifier=notifier)
 
     async with app.run_test() as pilot:
         await pilot.pause(0.3)
@@ -145,12 +145,12 @@ async def test_ui_displays_warning_toast_when_check_fails(
 
 @pytest.mark.asyncio
 async def test_ui_does_not_invoke_gateway_nor_show_error_notification_when_update_checks_are_disabled(
-    vibe_config_with_update_checks_enabled: VibeConfig, make_vibe_app: VibeAppFactory
+    kin_config_with_update_checks_enabled: KinConfig, make_kin_app: KinAppFactory
 ) -> None:
-    config = vibe_config_with_update_checks_enabled
+    config = kin_config_with_update_checks_enabled
     config.enable_update_checks = False
     notifier = FakeVersionUpdateGateway(update=VersionUpdate(latest_version="0.2.0"))
-    app = make_vibe_app(notifier=notifier, config=config)
+    app = make_kin_app(notifier=notifier, config=config)
 
     async with app.run_test() as pilot:
         await _assert_no_notifications(app, pilot, timeout=0.3)
@@ -160,12 +160,12 @@ async def test_ui_does_not_invoke_gateway_nor_show_error_notification_when_updat
 
 @pytest.mark.asyncio
 async def test_ui_does_not_invoke_gateway_nor_show_update_notification_when_update_checks_are_disabled(
-    vibe_config_with_update_checks_enabled: VibeConfig, make_vibe_app: VibeAppFactory
+    kin_config_with_update_checks_enabled: KinConfig, make_kin_app: KinAppFactory
 ) -> None:
-    config = vibe_config_with_update_checks_enabled
+    config = kin_config_with_update_checks_enabled
     config.enable_update_checks = False
     notifier = FakeVersionUpdateGateway(update=VersionUpdate(latest_version="0.2.0"))
-    app = make_vibe_app(notifier=notifier, config=config)
+    app = make_kin_app(notifier=notifier, config=config)
 
     async with app.run_test() as pilot:
         await _assert_no_notifications(app, pilot, timeout=0.3)
@@ -175,7 +175,7 @@ async def test_ui_does_not_invoke_gateway_nor_show_update_notification_when_upda
 
 @pytest.mark.asyncio
 async def test_ui_does_not_show_toast_when_update_is_known_in_recent_cache_already(
-    make_vibe_app: VibeAppFactory,
+    make_kin_app: KinAppFactory,
 ) -> None:
     timestamp_two_hours_ago = int(time.time()) - 2 * 60 * 60
     notifier = FakeVersionUpdateGateway(update=VersionUpdate(latest_version="0.2.0"))
@@ -183,7 +183,7 @@ async def test_ui_does_not_show_toast_when_update_is_known_in_recent_cache_alrea
         latest_version="0.2.0", stored_at_timestamp=timestamp_two_hours_ago
     )
     update_cache_repository = FakeUpdateCacheRepository(update_cache=update_cache)
-    app = make_vibe_app(
+    app = make_kin_app(
         notifier=notifier, update_cache_repository=update_cache_repository
     )
 
@@ -195,7 +195,7 @@ async def test_ui_does_not_show_toast_when_update_is_known_in_recent_cache_alrea
 
 @pytest.mark.asyncio
 async def test_ui_does_show_toast_when_cache_entry_is_too_old(
-    make_vibe_app: VibeAppFactory,
+    make_kin_app: KinAppFactory,
 ) -> None:
     timestamp_two_days_ago = int(time.time()) - 2 * 24 * 60 * 60
     notifier = FakeVersionUpdateGateway(update=VersionUpdate(latest_version="0.2.0"))
@@ -203,7 +203,7 @@ async def test_ui_does_show_toast_when_cache_entry_is_too_old(
         latest_version="0.2.0", stored_at_timestamp=timestamp_two_days_ago
     )
     update_cache_repository = FakeUpdateCacheRepository(update_cache=update_cache)
-    app = make_vibe_app(
+    app = make_kin_app(
         notifier=notifier, update_cache_repository=update_cache_repository
     )
 
@@ -217,6 +217,6 @@ async def test_ui_does_show_toast_when_cache_entry_is_too_old(
     assert notification.title == "Update available"
     assert (
         notification.message
-        == '0.1.0 => 0.2.0\nRun "uv tool upgrade mistral-vibe" to update'
+        == '0.1.0 => 0.2.0\nRun "uv tool upgrade kin-code" to update'
     )
     assert notifier.fetch_update_calls == 1

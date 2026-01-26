@@ -17,13 +17,13 @@ from acp.schema import TextContentBlock
 import pytest
 from pytest import raises
 
+from kin_code.acp.acp_agent import KinAcpAgent
+from kin_code.core.agent import Agent
+from kin_code.core.config import KinConfig, ModelConfig
+from kin_code.core.types import Role
 from tests.mock.utils import mock_llm_chunk
 from tests.stubs.fake_backend import FakeBackend
 from tests.stubs.fake_connection import FakeAgentSideConnection
-from vibe.acp.acp_agent import VibeAcpAgent
-from vibe.core.agent import Agent
-from vibe.core.config import ModelConfig, VibeConfig
-from vibe.core.types import Role
 
 
 @pytest.fixture
@@ -33,8 +33,8 @@ def backend() -> FakeBackend:
 
 
 @pytest.fixture
-def acp_agent(backend: FakeBackend) -> VibeAcpAgent:
-    config = VibeConfig(
+def acp_agent(backend: FakeBackend) -> KinAcpAgent:
+    config = KinConfig(
         active_model="devstral-latest",
         models=[
             ModelConfig(
@@ -49,23 +49,23 @@ def acp_agent(backend: FakeBackend) -> VibeAcpAgent:
             self.backend = backend
             self.config = config
 
-    patch("vibe.acp.acp_agent.VibeAgent", side_effect=PatchedAgent).start()
+    patch("kin_code.acp.acp_agent.KinAgent", side_effect=PatchedAgent).start()
 
-    vibe_acp_agent: VibeAcpAgent | None = None
+    kin_acp_agent: KinAcpAgent | None = None
 
-    def _create_agent(connection: Any) -> VibeAcpAgent:
-        nonlocal vibe_acp_agent
-        vibe_acp_agent = VibeAcpAgent(connection)
-        return vibe_acp_agent
+    def _create_agent(connection: Any) -> KinAcpAgent:
+        nonlocal kin_acp_agent
+        kin_acp_agent = KinAcpAgent(connection)
+        return kin_acp_agent
 
     FakeAgentSideConnection(_create_agent)
-    return vibe_acp_agent  # pyright: ignore[reportReturnType]
+    return kin_acp_agent  # pyright: ignore[reportReturnType]
 
 
 class TestMultiSessionCore:
     @pytest.mark.asyncio
     async def test_different_sessions_use_different_agents(
-        self, acp_agent: VibeAcpAgent
+        self, acp_agent: KinAcpAgent
     ) -> None:
         await acp_agent.initialize(InitializeRequest(protocolVersion=PROTOCOL_VERSION))
         session1_response = await acp_agent.newSession(
@@ -83,7 +83,7 @@ class TestMultiSessionCore:
         assert id(session1.agent) != id(session2.agent)
 
     @pytest.mark.asyncio
-    async def test_error_on_nonexistent_session(self, acp_agent: VibeAcpAgent) -> None:
+    async def test_error_on_nonexistent_session(self, acp_agent: KinAcpAgent) -> None:
         await acp_agent.initialize(InitializeRequest(protocolVersion=PROTOCOL_VERSION))
         await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
@@ -104,7 +104,7 @@ class TestMultiSessionCore:
 
     @pytest.mark.asyncio
     async def test_simultaneous_message_processing(
-        self, acp_agent: VibeAcpAgent, backend: FakeBackend
+        self, acp_agent: KinAcpAgent, backend: FakeBackend
     ) -> None:
         await acp_agent.initialize(InitializeRequest(protocolVersion=PROTOCOL_VERSION))
         session1_response = await acp_agent.newSession(

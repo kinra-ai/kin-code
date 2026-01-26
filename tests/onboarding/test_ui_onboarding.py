@@ -10,10 +10,10 @@ from textual.geometry import Size
 from textual.pilot import Pilot
 from textual.widgets import Input
 
-from vibe.core.paths.global_paths import GLOBAL_CONFIG_FILE, GLOBAL_ENV_FILE
-from vibe.setup.onboarding import OnboardingApp
-from vibe.setup.onboarding.screens.api_key import ApiKeyScreen
-from vibe.setup.onboarding.screens.theme_selection import ThemeSelectionScreen
+from kin_code.core.paths.global_paths import GLOBAL_CONFIG_FILE, GLOBAL_ENV_FILE
+from kin_code.setup.onboarding import OnboardingApp
+from kin_code.setup.onboarding.screens.api_key import ApiKeyScreen
+from kin_code.setup.onboarding.screens.theme_selection import ThemeSelectionScreen
 
 
 async def _wait_for(

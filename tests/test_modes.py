@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from tests.mock.utils import mock_llm_chunk
-from tests.stubs.fake_backend import FakeBackend
-from vibe.core.agent import Agent
-from vibe.core.config import SessionLoggingConfig, VibeConfig
-from vibe.core.llm.format import get_active_tool_classes
-from vibe.core.modes import (
+from kin_code.core.agent import Agent
+from kin_code.core.config import KinConfig, SessionLoggingConfig
+from kin_code.core.llm.format import get_active_tool_classes
+from kin_code.core.modes import (
     MODE_CONFIGS,
     PLAN_MODE_TOOLS,
     AgentMode,
@@ -16,8 +14,8 @@ from vibe.core.modes import (
     get_mode_order,
     next_mode,
 )
-from vibe.core.tools.base import ToolPermission
-from vibe.core.types import (
+from kin_code.core.tools.base import ToolPermission
+from kin_code.core.types import (
     FunctionCall,
     LLMChunk,
     LLMMessage,
@@ -26,6 +24,8 @@ from vibe.core.types import (
     ToolCall,
     ToolResultEvent,
 )
+from tests.mock.utils import mock_llm_chunk
+from tests.stubs.fake_backend import FakeBackend
 
 
 class TestModeSafety:
@@ -144,8 +144,8 @@ class TestModeConfig:
 
 class TestAgentSwitchMode:
     @pytest.fixture
-    def base_config(self) -> VibeConfig:
-        return VibeConfig(
+    def base_config(self) -> KinConfig:
+        return KinConfig(
             session_logging=SessionLoggingConfig(enabled=False),
             auto_compact_threshold=0,
             include_project_context=False,
@@ -163,7 +163,7 @@ class TestAgentSwitchMode:
 
     @pytest.mark.asyncio
     async def test_switch_to_plan_mode_restricts_tools(
-        self, base_config: VibeConfig, backend: FakeBackend
+        self, base_config: KinConfig, backend: FakeBackend
     ) -> None:
         agent = Agent(base_config, mode=AgentMode.DEFAULT, backend=backend)
         initial_tools = get_active_tool_classes(agent.tool_manager, agent.config)
@@ -179,9 +179,9 @@ class TestAgentSwitchMode:
 
     @pytest.mark.asyncio
     async def test_switch_from_plan_to_normal_restores_tools(
-        self, base_config: VibeConfig, backend: FakeBackend
+        self, base_config: KinConfig, backend: FakeBackend
     ) -> None:
-        plan_config = VibeConfig.model_validate({
+        plan_config = KinConfig.model_validate({
             **base_config.model_dump(),
             **AgentMode.PLAN.config_overrides,
         })
@@ -197,7 +197,7 @@ class TestAgentSwitchMode:
 
     @pytest.mark.asyncio
     async def test_switch_mode_preserves_conversation_history(
-        self, base_config: VibeConfig, backend: FakeBackend
+        self, base_config: KinConfig, backend: FakeBackend
     ) -> None:
         agent = Agent(base_config, mode=AgentMode.DEFAULT, backend=backend)
         user_msg = LLMMessage(role=Role.user, content="Hello")
@@ -213,7 +213,7 @@ class TestAgentSwitchMode:
 
     @pytest.mark.asyncio
     async def test_switch_to_same_mode_is_noop(
-        self, base_config: VibeConfig, backend: FakeBackend
+        self, base_config: KinConfig, backend: FakeBackend
     ) -> None:
         agent = Agent(base_config, mode=AgentMode.DEFAULT, backend=backend)
         original_config = agent.config
@@ -240,7 +240,7 @@ class TestAcceptEditsMode:
     async def test_accept_edits_mode_auto_approves_write_file(self) -> None:
         backend = FakeBackend([])
 
-        config = VibeConfig(
+        config = KinConfig(
             session_logging=SessionLoggingConfig(enabled=False),
             auto_compact_threshold=0,
             enabled_tools=["write_file"],
@@ -255,7 +255,7 @@ class TestAcceptEditsMode:
     async def test_accept_edits_mode_requires_approval_for_other_tools(self) -> None:
         backend = FakeBackend([])
 
-        config = VibeConfig(
+        config = KinConfig(
             session_logging=SessionLoggingConfig(enabled=False),
             auto_compact_threshold=0,
             enabled_tools=["bash"],
@@ -276,7 +276,7 @@ class TestPlanModeToolRestriction:
                 usage=LLMUsage(prompt_tokens=10, completion_tokens=5),
             )
         ])
-        config = VibeConfig(
+        config = KinConfig(
             session_logging=SessionLoggingConfig(enabled=False),
             auto_compact_threshold=0,
             **AgentMode.PLAN.config_overrides,
@@ -304,7 +304,7 @@ class TestPlanModeToolRestriction:
             mock_llm_chunk(content="Tool not available"),
         ])
 
-        config = VibeConfig(
+        config = KinConfig(
             session_logging=SessionLoggingConfig(enabled=False),
             auto_compact_threshold=0,
             **AgentMode.PLAN.config_overrides,

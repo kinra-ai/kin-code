@@ -6,12 +6,12 @@ from unittest.mock import patch
 from acp import AgentSideConnection, NewSessionRequest, SetSessionModeRequest
 import pytest
 
+from kin_code.acp.acp_agent import KinAcpAgent
+from kin_code.core.agent import Agent
+from kin_code.core.modes import AgentMode
+from kin_code.core.types import LLMChunk, LLMMessage, LLMUsage, Role
 from tests.stubs.fake_backend import FakeBackend
 from tests.stubs.fake_connection import FakeAgentSideConnection
-from vibe.acp.acp_agent import VibeAcpAgent
-from vibe.core.agent import Agent
-from vibe.core.modes import AgentMode
-from vibe.core.types import LLMChunk, LLMMessage, LLMUsage, Role
 
 
 @pytest.fixture
@@ -26,27 +26,27 @@ def backend() -> FakeBackend:
 
 
 @pytest.fixture
-def acp_agent(backend: FakeBackend) -> VibeAcpAgent:
+def acp_agent(backend: FakeBackend) -> KinAcpAgent:
     class PatchedAgent(Agent):
         def __init__(self, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs, backend=backend)
 
-    patch("vibe.acp.acp_agent.VibeAgent", side_effect=PatchedAgent).start()
+    patch("kin_code.acp.acp_agent.KinAgent", side_effect=PatchedAgent).start()
 
-    vibe_acp_agent: VibeAcpAgent | None = None
+    kin_acp_agent: KinAcpAgent | None = None
 
-    def _create_agent(connection: AgentSideConnection) -> VibeAcpAgent:
-        nonlocal vibe_acp_agent
-        vibe_acp_agent = VibeAcpAgent(connection)
-        return vibe_acp_agent
+    def _create_agent(connection: AgentSideConnection) -> KinAcpAgent:
+        nonlocal kin_acp_agent
+        kin_acp_agent = KinAcpAgent(connection)
+        return kin_acp_agent
 
     FakeAgentSideConnection(_create_agent)
-    return vibe_acp_agent  # pyright: ignore[reportReturnType]
+    return kin_acp_agent  # pyright: ignore[reportReturnType]
 
 
 class TestACPSetMode:
     @pytest.mark.asyncio
-    async def test_set_mode_to_default(self, acp_agent: VibeAcpAgent) -> None:
+    async def test_set_mode_to_default(self, acp_agent: KinAcpAgent) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
         )
@@ -67,7 +67,7 @@ class TestACPSetMode:
         assert acp_session.agent.auto_approve is False
 
     @pytest.mark.asyncio
-    async def test_set_mode_to_auto_approve(self, acp_agent: VibeAcpAgent) -> None:
+    async def test_set_mode_to_auto_approve(self, acp_agent: KinAcpAgent) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
         )
@@ -91,7 +91,7 @@ class TestACPSetMode:
         assert acp_session.agent.auto_approve is True
 
     @pytest.mark.asyncio
-    async def test_set_mode_to_plan(self, acp_agent: VibeAcpAgent) -> None:
+    async def test_set_mode_to_plan(self, acp_agent: KinAcpAgent) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
         )
@@ -114,7 +114,7 @@ class TestACPSetMode:
         )  # Plan mode auto-approves read-only tools
 
     @pytest.mark.asyncio
-    async def test_set_mode_to_accept_edits(self, acp_agent: VibeAcpAgent) -> None:
+    async def test_set_mode_to_accept_edits(self, acp_agent: KinAcpAgent) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
         )
@@ -140,7 +140,7 @@ class TestACPSetMode:
 
     @pytest.mark.asyncio
     async def test_set_mode_invalid_mode_returns_none(
-        self, acp_agent: VibeAcpAgent
+        self, acp_agent: KinAcpAgent
     ) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
@@ -163,7 +163,7 @@ class TestACPSetMode:
         assert acp_session.agent.auto_approve == initial_auto_approve
 
     @pytest.mark.asyncio
-    async def test_set_mode_to_same_mode(self, acp_agent: VibeAcpAgent) -> None:
+    async def test_set_mode_to_same_mode(self, acp_agent: KinAcpAgent) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
         )
@@ -185,7 +185,7 @@ class TestACPSetMode:
         assert acp_session.agent.auto_approve is False
 
     @pytest.mark.asyncio
-    async def test_set_mode_with_empty_string(self, acp_agent: VibeAcpAgent) -> None:
+    async def test_set_mode_with_empty_string(self, acp_agent: KinAcpAgent) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
         )

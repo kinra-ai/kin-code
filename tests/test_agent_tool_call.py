@@ -6,15 +6,12 @@ import json
 from pydantic import BaseModel
 import pytest
 
-from tests.mock.utils import mock_llm_chunk
-from tests.stubs.fake_backend import FakeBackend
-from tests.stubs.fake_tool import FakeTool
-from vibe.core.agent import Agent
-from vibe.core.config import SessionLoggingConfig, VibeConfig
-from vibe.core.modes import AgentMode
-from vibe.core.tools.base import BaseToolConfig, ToolPermission
-from vibe.core.tools.builtins.todo import TodoItem
-from vibe.core.types import (
+from kin_code.core.agent import Agent
+from kin_code.core.config import KinConfig, SessionLoggingConfig
+from kin_code.core.modes import AgentMode
+from kin_code.core.tools.base import BaseToolConfig, ToolPermission
+from kin_code.core.tools.builtins.todo import TodoItem
+from kin_code.core.types import (
     ApprovalResponse,
     AssistantEvent,
     BaseEvent,
@@ -26,14 +23,17 @@ from vibe.core.types import (
     ToolCallEvent,
     ToolResultEvent,
 )
+from tests.mock.utils import mock_llm_chunk
+from tests.stubs.fake_backend import FakeBackend
+from tests.stubs.fake_tool import FakeTool
 
 
 async def act_and_collect_events(agent: Agent, prompt: str) -> list[BaseEvent]:
     return [ev async for ev in agent.act(prompt)]
 
 
-def make_config(todo_permission: ToolPermission = ToolPermission.ALWAYS) -> VibeConfig:
-    return VibeConfig(
+def make_config(todo_permission: ToolPermission = ToolPermission.ALWAYS) -> KinConfig:
+    return KinConfig(
         session_logging=SessionLoggingConfig(enabled=False),
         auto_compact_threshold=0,
         enabled_tools=["todo"],
@@ -395,7 +395,7 @@ async def test_tool_call_can_be_interrupted(
     tool_call = ToolCall(
         id="call_8", index=0, function=FunctionCall(name="stub_tool", arguments="{}")
     )
-    config = VibeConfig(
+    config = KinConfig(
         session_logging=SessionLoggingConfig(enabled=False),
         auto_compact_threshold=0,
         enabled_tools=["stub_tool"],

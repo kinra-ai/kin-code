@@ -6,12 +6,12 @@ import tomllib
 
 import tomli_w
 
-from vibe.core import config
-from vibe.core.config import VibeConfig
+from kin_code.core import config
+from kin_code.core.config import KinConfig
 
 
 def _restore_dump_config(config_file: Path):
-    original_dump_config = VibeConfig.dump_config
+    original_dump_config = KinConfig.dump_config
 
     def real_dump_config(cls, config_dict: dict) -> None:
         try:
@@ -25,7 +25,7 @@ def _restore_dump_config(config_file: Path):
                 encoding="utf-8",
             )
 
-    VibeConfig.dump_config = classmethod(real_dump_config)  # type: ignore[assignment]
+    KinConfig.dump_config = classmethod(real_dump_config)  # type: ignore[assignment]
     return original_dump_config
 
 
@@ -39,11 +39,11 @@ def _migrate_config_file(tmp_path: Path, content: str):
 
     try:
         config.CONFIG_FILE = config_file
-        VibeConfig._migrate()
+        KinConfig._migrate()
         yield config_file
     finally:
         config.CONFIG_FILE = original_config_file
-        VibeConfig.dump_config = original_dump_config
+        KinConfig.dump_config = original_dump_config
 
 
 def _load_migrated_config(config_file: Path) -> dict:

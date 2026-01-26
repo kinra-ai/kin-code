@@ -2,20 +2,20 @@ from __future__ import annotations
 
 import pytest
 
-from vibe.core.config import SessionLoggingConfig, VibeConfig
-from vibe.core.middleware import (
+from kin_code.core.config import KinConfig, SessionLoggingConfig
+from kin_code.core.middleware import (
     PLAN_MODE_REMINDER,
     ConversationContext,
     MiddlewareAction,
     MiddlewarePipeline,
     PlanModeMiddleware,
 )
-from vibe.core.modes import AgentMode
-from vibe.core.types import AgentStats
+from kin_code.core.modes import AgentMode
+from kin_code.core.types import AgentStats
 
 
 def make_context() -> ConversationContext:
-    config = VibeConfig(session_logging=SessionLoggingConfig(enabled=False))
+    config = KinConfig(session_logging=SessionLoggingConfig(enabled=False))
     return ConversationContext(messages=[], stats=AgentStats(), config=config)
 
 

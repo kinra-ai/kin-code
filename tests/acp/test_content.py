@@ -12,11 +12,11 @@ from acp.schema import (
 )
 import pytest
 
+from kin_code.acp.acp_agent import KinAcpAgent
+from kin_code.core.agent import Agent
+from kin_code.core.types import LLMChunk, LLMMessage, LLMUsage, Role
 from tests.stubs.fake_backend import FakeBackend
 from tests.stubs.fake_connection import FakeAgentSideConnection
-from vibe.acp.acp_agent import VibeAcpAgent
-from vibe.core.agent import Agent
-from vibe.core.types import LLMChunk, LLMMessage, LLMUsage, Role
 
 
 @pytest.fixture
@@ -31,28 +31,28 @@ def backend() -> FakeBackend:
 
 
 @pytest.fixture
-def acp_agent(backend: FakeBackend) -> VibeAcpAgent:
+def acp_agent(backend: FakeBackend) -> KinAcpAgent:
     class PatchedAgent(Agent):
         def __init__(self, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs, backend=backend)
 
-    patch("vibe.acp.acp_agent.VibeAgent", side_effect=PatchedAgent).start()
+    patch("kin_code.acp.acp_agent.KinAgent", side_effect=PatchedAgent).start()
 
-    vibe_acp_agent: VibeAcpAgent | None = None
+    kin_acp_agent: KinAcpAgent | None = None
 
-    def _create_agent(connection: AgentSideConnection) -> VibeAcpAgent:
-        nonlocal vibe_acp_agent
-        vibe_acp_agent = VibeAcpAgent(connection)
-        return vibe_acp_agent
+    def _create_agent(connection: AgentSideConnection) -> KinAcpAgent:
+        nonlocal kin_acp_agent
+        kin_acp_agent = KinAcpAgent(connection)
+        return kin_acp_agent
 
     FakeAgentSideConnection(_create_agent)
-    return vibe_acp_agent  # pyright: ignore[reportReturnType]
+    return kin_acp_agent  # pyright: ignore[reportReturnType]
 
 
 class TestACPContent:
     @pytest.mark.asyncio
     async def test_text_content(
-        self, acp_agent: VibeAcpAgent, backend: FakeBackend
+        self, acp_agent: KinAcpAgent, backend: FakeBackend
     ) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
@@ -74,7 +74,7 @@ class TestACPContent:
 
     @pytest.mark.asyncio
     async def test_resource_content(
-        self, acp_agent: VibeAcpAgent, backend: FakeBackend
+        self, acp_agent: KinAcpAgent, backend: FakeBackend
     ) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
@@ -111,7 +111,7 @@ class TestACPContent:
 
     @pytest.mark.asyncio
     async def test_resource_link_content(
-        self, acp_agent: VibeAcpAgent, backend: FakeBackend
+        self, acp_agent: KinAcpAgent, backend: FakeBackend
     ) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])
@@ -153,7 +153,7 @@ class TestACPContent:
 
     @pytest.mark.asyncio
     async def test_resource_link_minimal(
-        self, acp_agent: VibeAcpAgent, backend: FakeBackend
+        self, acp_agent: KinAcpAgent, backend: FakeBackend
     ) -> None:
         session_response = await acp_agent.newSession(
             NewSessionRequest(cwd=str(Path.cwd()), mcpServers=[])

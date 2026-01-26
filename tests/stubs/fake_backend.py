@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections.abc import AsyncGenerator, Callable, Iterable
 from typing import cast
 
+from kin_code.core.types import LLMChunk, LLMMessage, Role
 from tests.mock.utils import mock_llm_chunk
-from vibe.core.types import LLMChunk, LLMMessage, Role
 
 
 class FakeBackend:

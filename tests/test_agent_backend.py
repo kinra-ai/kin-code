@@ -2,19 +2,19 @@ from __future__ import annotations
 
 import pytest
 
+from kin_code.core.agent import Agent
+from kin_code.core.config import KinConfig, SessionLoggingConfig
 from tests.mock.utils import mock_llm_chunk
 from tests.stubs.fake_backend import FakeBackend
-from vibe.core.agent import Agent
-from vibe.core.config import SessionLoggingConfig, VibeConfig
 
 
 @pytest.fixture
-def vibe_config() -> VibeConfig:
-    return VibeConfig(session_logging=SessionLoggingConfig(enabled=False))
+def vibe_config() -> KinConfig:
+    return KinConfig(session_logging=SessionLoggingConfig(enabled=False))
 
 
 @pytest.mark.asyncio
-async def test_passes_x_affinity_header_when_asking_an_answer(vibe_config: VibeConfig):
+async def test_passes_x_affinity_header_when_asking_an_answer(vibe_config: KinConfig):
     backend = FakeBackend([mock_llm_chunk(content="Response")])
     agent = Agent(vibe_config, backend=backend)
 
@@ -29,7 +29,7 @@ async def test_passes_x_affinity_header_when_asking_an_answer(vibe_config: VibeC
 
 @pytest.mark.asyncio
 async def test_passes_x_affinity_header_when_asking_an_answer_streaming(
-    vibe_config: VibeConfig,
+    vibe_config: KinConfig,
 ):
     backend = FakeBackend([mock_llm_chunk(content="Response")])
     agent = Agent(vibe_config, backend=backend, enable_streaming=True)
@@ -44,7 +44,7 @@ async def test_passes_x_affinity_header_when_asking_an_answer_streaming(
 
 
 @pytest.mark.asyncio
-async def test_updates_tokens_stats_based_on_backend_response(vibe_config: VibeConfig):
+async def test_updates_tokens_stats_based_on_backend_response(vibe_config: KinConfig):
     chunk = mock_llm_chunk(content="Response", prompt_tokens=100, completion_tokens=50)
     backend = FakeBackend([chunk])
     agent = Agent(vibe_config, backend=backend)
@@ -56,7 +56,7 @@ async def test_updates_tokens_stats_based_on_backend_response(vibe_config: VibeC
 
 @pytest.mark.asyncio
 async def test_updates_tokens_stats_based_on_backend_response_streaming(
-    vibe_config: VibeConfig,
+    vibe_config: KinConfig,
 ):
     final_chunk = mock_llm_chunk(
         content="Complete", prompt_tokens=200, completion_tokens=75

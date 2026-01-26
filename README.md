@@ -1,56 +1,27 @@
-# Mistral Vibe
+# Kin Code
 
-[![PyPI Version](https://img.shields.io/pypi/v/mistral-vibe)](https://pypi.org/project/mistral-vibe)
+[![PyPI Version](https://img.shields.io/pypi/v/kin-code)](https://pypi.org/project/kin-code)
 [![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/downloads/release/python-3120/)
-[![CI Status](https://github.com/mistralai/mistral-vibe/actions/workflows/ci.yml/badge.svg)](https://github.com/mistralai/mistral-vibe/actions/workflows/ci.yml)
-[![License](https://img.shields.io/github/license/mistralai/mistral-vibe)](https://github.com/mistralai/mistral-vibe/blob/main/LICENSE)
+[![CI Status](https://github.com/kinra-ai/kin-code/actions/workflows/ci.yml/badge.svg)](https://github.com/kinra-ai/kin-code/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/kinra-ai/kin-code)](https://github.com/kinra-ai/kin-code/blob/main/LICENSE)
 
-```
-██████████████████░░
-██████████████████░░
-████  ██████  ████░░
-████    ██    ████░░
-████          ████░░
-████  ██  ██  ████░░
-██      ██      ██░░
-██████████████████░░
-██████████████████░░
-```
+**An open-source CLI coding assistant.**
 
-**Mistral's open-source CLI coding assistant.**
-
-Mistral Vibe is a command-line coding assistant powered by Mistral's models. It provides a conversational interface to your codebase, allowing you to use natural language to explore, modify, and interact with your projects through a powerful set of tools.
+Kin Code is a command-line coding assistant powered by Mistral's models. It provides a conversational interface to your codebase, allowing you to use natural language to explore, modify, and interact with your projects through a powerful set of tools.
 
 > [!WARNING]
-> Mistral Vibe works on Windows, but we officially support and target UNIX environments.
+> Kin Code works on Windows, but we officially support and target UNIX environments.
 
-### One-line install (recommended)
-
-**Linux and macOS**
+### Using uv (recommended)
 
 ```bash
-curl -LsSf https://mistral.ai/vibe/install.sh | bash
-```
-
-**Windows**
-
-First, install uv
-```bash
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-Then, use uv command below.
-
-### Using uv
-
-```bash
-uv tool install mistral-vibe
+uv tool install kin-code
 ```
 
 ### Using pip
 
 ```bash
-pip install mistral-vibe
+pip install kin-code
 ```
 
 ## Features
@@ -61,7 +32,7 @@ pip install mistral-vibe
   - Execute shell commands in a stateful terminal (`bash`).
   - Recursively search code with `grep` (with `ripgrep` support).
   - Manage a `todo` list to track the agent's work.
-- **Project-Aware Context**: Vibe automatically scans your project's file structure and Git status to provide relevant context to the agent, improving its understanding of your codebase.
+- **Project-Aware Context**: Kin automatically scans your project's file structure and Git status to provide relevant context to the agent, improving its understanding of your codebase.
 - **Advanced CLI Experience**: Built with modern libraries for a smooth and efficient workflow.
   - Autocompletion for slash commands (`/`) and file paths (`@`).
   - Persistent command history.
@@ -77,56 +48,56 @@ pip install mistral-vibe
    cd /path/to/your/project
    ```
 
-2. Run Vibe:
+2. Run Kin:
 
    ```bash
-   vibe
+   kin
    ```
 
-3. If this is your first time running Vibe, it will:
+3. If this is your first time running Kin, it will:
 
-   - Create a default configuration file at `~/.vibe/config.toml`
+   - Create a default configuration file at `~/.kin-code/config.toml`
    - Prompt you to enter your API key if it's not already configured
-   - Save your API key to `~/.vibe/.env` for future use
+   - Save your API key to `~/.kin-code/.env` for future use
 
 4. Start interacting with the agent!
 
    ```
    > Can you find all instances of the word "TODO" in the project?
 
-   🤖 The user wants to find all instances of "TODO". The `grep` tool is perfect for this. I will use it to search the current directory.
+   The user wants to find all instances of "TODO". The `grep` tool is perfect for this. I will use it to search the current directory.
 
    > grep(pattern="TODO", path=".")
 
    ... (grep tool output) ...
 
-   🤖 I found the following "TODO" comments in your project.
+   I found the following "TODO" comments in your project.
    ```
 
 ## Usage
 
 ### Interactive Mode
 
-Simply run `vibe` to enter the interactive chat loop.
+Simply run `kin` to enter the interactive chat loop.
 
 - **Multi-line Input**: Press `Ctrl+J` or `Shift+Enter` for select terminals to insert a newline.
 - **File Paths**: Reference files in your prompt using the `@` symbol for smart autocompletion (e.g., `> Read the file @src/agent.py`).
 - **Shell Commands**: Prefix any command with `!` to execute it directly in your shell, bypassing the agent (e.g., `> !ls -l`).
 
-You can start Vibe with a prompt with the following command:
+You can start Kin with a prompt with the following command:
 
 ```bash
-vibe "Refactor the main function in cli/main.py to be more modular."
+kin "Refactor the main function in cli/main.py to be more modular."
 ```
 
 **Note**: The `--auto-approve` flag automatically approves all tool executions without prompting. In interactive mode, you can also toggle auto-approve on/off using `Shift+Tab`.
 
 ### Programmatic Mode
 
-You can run Vibe non-interactively by piping input or using the `--prompt` flag. This is useful for scripting.
+You can run Kin non-interactively by piping input or using the `--prompt` flag. This is useful for scripting.
 
 ```bash
-vibe --prompt "Refactor the main function in cli/main.py to be more modular."
+kin --prompt "Refactor the main function in cli/main.py to be more modular."
 ```
 
 by default it will use `auto-approve` mode.
@@ -137,13 +108,13 @@ Use slash commands for meta-actions and configuration changes during a session.
 
 ## Configuration
 
-Vibe is configured via a `config.toml` file. It looks for this file first in `./.vibe/config.toml` and then falls back to `~/.vibe/config.toml`.
+Kin is configured via a `config.toml` file. It looks for this file first in `./.kin-code/config.toml` and then falls back to `~/.kin-code/config.toml`.
 
 ### API Key Configuration
 
-Vibe supports multiple ways to configure your API keys:
+Kin supports multiple ways to configure your API keys:
 
-1. **Interactive Setup (Recommended for first-time users)**: When you run Vibe for the first time or if your API key is missing, Vibe will prompt you to enter it. The key will be securely saved to `~/.vibe/.env` for future sessions.
+1. **Interactive Setup (Recommended for first-time users)**: When you run Kin for the first time or if your API key is missing, Kin will prompt you to enter it. The key will be securely saved to `~/.kin-code/.env` for future sessions.
 
 2. **Environment Variables**: Set your API key as an environment variable:
 
@@ -151,19 +122,19 @@ Vibe supports multiple ways to configure your API keys:
    export MISTRAL_API_KEY="your_mistral_api_key"
    ```
 
-3. **`.env` File**: Create a `.env` file in `~/.vibe/` and add your API keys:
+3. **`.env` File**: Create a `.env` file in `~/.kin-code/` and add your API keys:
 
    ```bash
    MISTRAL_API_KEY=your_mistral_api_key
    ```
 
-   Vibe automatically loads API keys from `~/.vibe/.env` on startup. Environment variables take precedence over the `.env` file if both are set.
+   Kin automatically loads API keys from `~/.kin-code/.env` on startup. Environment variables take precedence over the `.env` file if both are set.
 
-**Note**: The `.env` file is specifically for API keys and other provider credentials. General Vibe configuration should be done in `config.toml`.
+**Note**: The `.env` file is specifically for API keys and other provider credentials. General Kin configuration should be done in `config.toml`.
 
 ### Custom System Prompts
 
-You can create custom system prompts to replace the default one (`prompts/cli.md`). Create a markdown file in the `~/.vibe/prompts/` directory with your custom prompt content.
+You can create custom system prompts to replace the default one (`prompts/cli.md`). Create a markdown file in the `~/.kin-code/prompts/` directory with your custom prompt content.
 
 To use a custom system prompt, set the `system_prompt_id` in your configuration to match the filename (without the `.md` extension):
 
@@ -172,21 +143,21 @@ To use a custom system prompt, set the `system_prompt_id` in your configuration 
 system_prompt_id = "my_custom_prompt"
 ```
 
-This will load the prompt from `~/.vibe/prompts/my_custom_prompt.md`.
+This will load the prompt from `~/.kin-code/prompts/my_custom_prompt.md`.
 
 ### Custom Agent Configurations
 
-You can create custom agent configurations for specific use cases (e.g., red-teaming, specialized tasks) by adding agent-specific TOML files in the `~/.vibe/agents/` directory.
+You can create custom agent configurations for specific use cases (e.g., red-teaming, specialized tasks) by adding agent-specific TOML files in the `~/.kin-code/agents/` directory.
 
-To use a custom agent, run Vibe with the `--agent` flag:
+To use a custom agent, run Kin with the `--agent` flag:
 
 ```bash
-vibe --agent my_custom_agent
+kin --agent my_custom_agent
 ```
 
-Vibe will look for a file named `my_custom_agent.toml` in the agents directory and apply its configuration.
+Kin will look for a file named `my_custom_agent.toml` in the agents directory and apply its configuration.
 
-Example custom agent configuration (`~/.vibe/agents/redteam.toml`):
+Example custom agent configuration (`~/.kin-code/agents/redteam.toml`):
 
 ```toml
 # Custom agent configuration for red-teaming
@@ -204,11 +175,11 @@ permission = "always"
 permission = "always"
 ```
 
-Note: this implies that you have setup a redteam prompt names `~/.vibe/prompts/redteam.md`
+Note: this implies that you have setup a redteam prompt names `~/.kin-code/prompts/redteam.md`
 
 ### MCP Server Configuration
 
-You can configure MCP (Model Context Protocol) servers to extend Vibe's capabilities. Add MCP server configurations under the `mcp_servers` section:
+You can configure MCP (Model Context Protocol) servers to extend Kin's capabilities. Add MCP server configurations under the `mcp_servers` section:
 
 ```toml
 # Example MCP server configurations
@@ -287,26 +258,26 @@ Notes:
 - MCP tool names use underscores, e.g., `serena_list` not `serena.list`.
 - Regex patterns are matched against the full tool name using fullmatch.
 
-### Custom Vibe Home Directory
+### Custom Kin Home Directory
 
-By default, Vibe stores its configuration in `~/.vibe/`. You can override this by setting the `VIBE_HOME` environment variable:
+By default, Kin stores its configuration in `~/.kin-code/`. You can override this by setting the `KIN_HOME` environment variable:
 
 ```bash
-export VIBE_HOME="/path/to/custom/vibe/home"
+export KIN_HOME="/path/to/custom/kin/home"
 ```
 
-This affects where Vibe looks for:
+This affects where Kin looks for:
 
 - `config.toml` - Main configuration
 - `.env` - API keys
 - `agents/` - Custom agent configurations
 - `prompts/` - Custom system prompts
 - `tools/` - Custom tools
-- `logs/` - Session logsRetryTo run code, enable code execution and file creation in Settings > Capabilities.
+- `logs/` - Session logs
 
 ## Editors/IDEs
 
-Mistral Vibe can be used in text editors and IDEs that support [Agent Client Protocol](https://agentclientprotocol.com/overview/clients). See the [ACP Setup documentation](docs/acp-setup.md) for setup instructions for various editors and IDEs.
+Kin Code can be used in text editors and IDEs that support [Agent Client Protocol](https://agentclientprotocol.com/overview/clients). See the [ACP Setup documentation](docs/acp-setup.md) for setup instructions for various editors and IDEs.
 
 ## Resources
 
@@ -315,7 +286,7 @@ Mistral Vibe can be used in text editors and IDEs that support [Agent Client Pro
 
 ## License
 
-Copyright 2025 Mistral AI
+Copyright 2025 Kinra
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

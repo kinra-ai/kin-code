@@ -7,23 +7,27 @@ import mistralai
 import pytest
 import respx
 
-from tests.mock.utils import mock_llm_chunk
-from tests.stubs.fake_backend import FakeBackend
-from vibe.core.agent import Agent
-from vibe.core.config import (
+from kin_code.core.agent import Agent
+from kin_code.core.config import (
+    KinConfig,
     ModelConfig,
     ProviderConfig,
     SessionLoggingConfig,
-    VibeConfig,
 )
-from vibe.core.llm.backend.generic import GenericBackend, OpenAIAdapter
-from vibe.core.llm.backend.mistral import MistralBackend, MistralMapper, ParsedContent
-from vibe.core.llm.format import APIToolFormatHandler
-from vibe.core.types import AssistantEvent, LLMMessage, ReasoningEvent, Role
+from kin_code.core.llm.backend.generic import GenericBackend, OpenAIAdapter
+from kin_code.core.llm.backend.mistral import (
+    MistralBackend,
+    MistralMapper,
+    ParsedContent,
+)
+from kin_code.core.llm.format import APIToolFormatHandler
+from kin_code.core.types import AssistantEvent, LLMMessage, ReasoningEvent, Role
+from tests.mock.utils import mock_llm_chunk
+from tests.stubs.fake_backend import FakeBackend
 
 
-def make_config() -> VibeConfig:
-    return VibeConfig(
+def make_config() -> KinConfig:
+    return KinConfig(
         session_logging=SessionLoggingConfig(enabled=False),
         auto_compact_threshold=0,
         system_prompt_id="tests",

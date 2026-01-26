@@ -4,19 +4,17 @@ from collections.abc import Callable
 
 import pytest
 
-from tests.mock.utils import mock_llm_chunk
-from tests.stubs.fake_backend import FakeBackend
-from vibe.core.agent import Agent
-from vibe.core.config import (
+from kin_code.core.agent import Agent
+from kin_code.core.config import (
     Backend,
+    KinConfig,
     ModelConfig,
     ProviderConfig,
     SessionLoggingConfig,
-    VibeConfig,
 )
-from vibe.core.modes import AgentMode
-from vibe.core.tools.base import BaseToolConfig, ToolPermission
-from vibe.core.types import (
+from kin_code.core.modes import AgentMode
+from kin_code.core.tools.base import BaseToolConfig, ToolPermission
+from kin_code.core.types import (
     AgentStats,
     AssistantEvent,
     CompactEndEvent,
@@ -26,6 +24,8 @@ from vibe.core.types import (
     Role,
     ToolCall,
 )
+from tests.mock.utils import mock_llm_chunk
+from tests.stubs.fake_backend import FakeBackend
 
 
 def make_config(
@@ -40,10 +40,10 @@ def make_config(
     include_prompt_detail: bool = False,
     enabled_tools: list[str] | None = None,
     todo_permission: ToolPermission = ToolPermission.ALWAYS,
-) -> VibeConfig:
+) -> KinConfig:
     models = [
         ModelConfig(
-            name="mistral-vibe-cli-latest",
+            name="kin-code-cli-latest",
             provider="mistral",
             alias="devstral-latest",
             input_price=input_price,
@@ -78,7 +78,7 @@ def make_config(
             backend=Backend.MISTRAL,
         ),
     ]
-    return VibeConfig(
+    return KinConfig(
         session_logging=SessionLoggingConfig(enabled=not disable_logging),
         auto_compact_threshold=auto_compact_threshold,
         system_prompt_id=system_prompt_id,
@@ -501,7 +501,7 @@ class TestAutoCompactIntegration:
             [mock_llm_chunk(content="<summary>")],
             [mock_llm_chunk(content="<final>")],
         ])
-        cfg = VibeConfig(
+        cfg = KinConfig(
             session_logging=SessionLoggingConfig(enabled=False),
             auto_compact_threshold=1,
         )

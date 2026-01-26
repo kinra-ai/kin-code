@@ -2,21 +2,21 @@ from __future__ import annotations
 
 import pytest
 
-from tests.update_notifier.adapters.fake_update_cache_repository import (
-    FakeUpdateCacheRepository,
-)
-from tests.update_notifier.adapters.fake_version_update_gateway import (
-    FakeVersionUpdateGateway,
-)
-from vibe.cli.update_notifier import (
+from kin_code.cli.update_notifier import (
     UpdateCache,
     VersionUpdate,
     VersionUpdateGatewayCause,
     VersionUpdateGatewayError,
 )
-from vibe.cli.update_notifier.version_update import (
+from kin_code.cli.update_notifier.version_update import (
     VersionUpdateError,
     get_update_if_available,
+)
+from tests.update_notifier.adapters.fake_update_cache_repository import (
+    FakeUpdateCacheRepository,
+)
+from tests.update_notifier.adapters.fake_version_update_gateway import (
+    FakeVersionUpdateGateway,
 )
 
 

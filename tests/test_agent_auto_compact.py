@@ -2,17 +2,17 @@ from __future__ import annotations
 
 import pytest
 
-from tests.mock.utils import mock_llm_chunk
-from tests.stubs.fake_backend import FakeBackend
-from vibe.core.agent import Agent
-from vibe.core.config import SessionLoggingConfig, VibeConfig
-from vibe.core.types import (
+from kin_code.core.agent import Agent
+from kin_code.core.config import KinConfig, SessionLoggingConfig
+from kin_code.core.types import (
     AssistantEvent,
     CompactEndEvent,
     CompactStartEvent,
     LLMMessage,
     Role,
 )
+from tests.mock.utils import mock_llm_chunk
+from tests.stubs.fake_backend import FakeBackend
 
 
 @pytest.mark.asyncio
@@ -26,7 +26,7 @@ async def test_auto_compact_triggers_and_batches_observer() -> None:
         [mock_llm_chunk(content="<summary>")],
         [mock_llm_chunk(content="<final>")],
     ])
-    cfg = VibeConfig(
+    cfg = KinConfig(
         session_logging=SessionLoggingConfig(enabled=False), auto_compact_threshold=1
     )
     agent = Agent(cfg, message_observer=observer, backend=backend)

@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import pytest
 
+from kin_code.core import run_programmatic
+from kin_code.core.config import Backend, KinConfig, SessionLoggingConfig
+from kin_code.core.types import LLMMessage, OutputFormat, Role
 from tests.mock.mock_backend_factory import mock_backend_factory
 from tests.mock.utils import mock_llm_chunk
 from tests.stubs.fake_backend import FakeBackend
-from vibe.core import run_programmatic
-from vibe.core.config import Backend, SessionLoggingConfig, VibeConfig
-from vibe.core.types import LLMMessage, OutputFormat, Role
 
 
 class SpyStreamingFormatter:
@@ -29,7 +29,7 @@ def test_run_programmatic_preload_streaming_is_batched(
 ) -> None:
     spy = SpyStreamingFormatter()
     monkeypatch.setattr(
-        "vibe.core.programmatic.create_formatter", lambda *_args, **_kwargs: spy
+        "kin_code.core.programmatic.create_formatter", lambda *_args, **_kwargs: spy
     )
 
     with mock_backend_factory(
@@ -40,7 +40,7 @@ def test_run_programmatic_preload_streaming_is_batched(
             )
         ),
     ):
-        cfg = VibeConfig(
+        cfg = KinConfig(
             session_logging=SessionLoggingConfig(enabled=False),
             system_prompt_id="tests",
             include_project_context=False,
@@ -94,14 +94,14 @@ def test_run_programmatic_ignores_system_messages_in_previous(
 ) -> None:
     spy = SpyStreamingFormatter()
     monkeypatch.setattr(
-        "vibe.core.programmatic.create_formatter", lambda *_args, **_kwargs: spy
+        "kin_code.core.programmatic.create_formatter", lambda *_args, **_kwargs: spy
     )
 
     with mock_backend_factory(
         Backend.MISTRAL,
         lambda provider, **kwargs: FakeBackend([mock_llm_chunk(content="Understood.")]),
     ):
-        cfg = VibeConfig(
+        cfg = KinConfig(
             session_logging=SessionLoggingConfig(enabled=False),
             system_prompt_id="tests",
             include_project_context=False,

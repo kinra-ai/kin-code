@@ -9,26 +9,26 @@ from acp.schema import (
 )
 import pytest
 
+from kin_code.acp.acp_agent import KinAcpAgent
 from tests.stubs.fake_connection import FakeAgentSideConnection
-from vibe.acp.acp_agent import VibeAcpAgent
 
 
 @pytest.fixture
-def acp_agent() -> VibeAcpAgent:
-    vibe_acp_agent: VibeAcpAgent | None = None
+def acp_agent() -> KinAcpAgent:
+    kin_acp_agent: KinAcpAgent | None = None
 
-    def _create_agent(connection: AgentSideConnection) -> VibeAcpAgent:
-        nonlocal vibe_acp_agent
-        vibe_acp_agent = VibeAcpAgent(connection)
-        return vibe_acp_agent
+    def _create_agent(connection: AgentSideConnection) -> KinAcpAgent:
+        nonlocal kin_acp_agent
+        kin_acp_agent = KinAcpAgent(connection)
+        return kin_acp_agent
 
     FakeAgentSideConnection(_create_agent)
-    return vibe_acp_agent  # pyright: ignore[reportReturnType]
+    return kin_acp_agent  # pyright: ignore[reportReturnType]
 
 
 class TestACPInitialize:
     @pytest.mark.asyncio
-    async def test_initialize(self, acp_agent: VibeAcpAgent) -> None:
+    async def test_initialize(self, acp_agent: KinAcpAgent) -> None:
         """Test regular initialize without terminal-auth capabilities."""
         request = InitializeRequest(protocolVersion=PROTOCOL_VERSION)
         response = await acp_agent.initialize(request)
@@ -41,13 +41,13 @@ class TestACPInitialize:
             ),
         )
         assert response.agentInfo == Implementation(
-            name="@mistralai/mistral-vibe", title="Mistral Vibe", version="1.3.5"
+            name="@kinra/kin-code", title="Kin Code", version="1.3.5"
         )
 
         assert response.authMethods == []
 
     @pytest.mark.asyncio
-    async def test_initialize_with_terminal_auth(self, acp_agent: VibeAcpAgent) -> None:
+    async def test_initialize_with_terminal_auth(self, acp_agent: KinAcpAgent) -> None:
         """Test initialize with terminal-auth capabilities to check it was included."""
         client_capabilities = ClientCapabilities(field_meta={"terminal-auth": True})
         request = InitializeRequest(
@@ -63,7 +63,7 @@ class TestACPInitialize:
             ),
         )
         assert response.agentInfo == Implementation(
-            name="@mistralai/mistral-vibe", title="Mistral Vibe", version="1.3.5"
+            name="@kinra/kin-code", title="Kin Code", version="1.3.5"
         )
 
         assert response.authMethods is not None
@@ -71,10 +71,10 @@ class TestACPInitialize:
         auth_method = response.authMethods[0]
         assert auth_method.id == "vibe-setup"
         assert auth_method.name == "Register your API Key"
-        assert auth_method.description == "Register your API Key inside Mistral Vibe"
+        assert auth_method.description == "Register your API Key inside Kin Code"
         assert auth_method.field_meta is not None
         assert "terminal-auth" in auth_method.field_meta
         terminal_auth_meta = auth_method.field_meta["terminal-auth"]
         assert "command" in terminal_auth_meta
         assert "args" in terminal_auth_meta
-        assert terminal_auth_meta["label"] == "Mistral Vibe Setup"
+        assert terminal_auth_meta["label"] == "Kin Code Setup"

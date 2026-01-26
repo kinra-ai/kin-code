@@ -5,14 +5,17 @@ from pathlib import Path
 from acp import ReadTextFileRequest, ReadTextFileResponse, WriteTextFileRequest
 import pytest
 
-from vibe.acp.tools.builtins.search_replace import AcpSearchReplaceState, SearchReplace
-from vibe.core.tools.base import ToolError
-from vibe.core.tools.builtins.search_replace import (
+from kin_code.acp.tools.builtins.search_replace import (
+    AcpSearchReplaceState,
+    SearchReplace,
+)
+from kin_code.core.tools.base import ToolError
+from kin_code.core.tools.builtins.search_replace import (
     SearchReplaceArgs,
     SearchReplaceConfig,
     SearchReplaceResult,
 )
-from vibe.core.types import ToolCallEvent, ToolResultEvent
+from kin_code.core.types import ToolCallEvent, ToolResultEvent
 
 
 class MockConnection:

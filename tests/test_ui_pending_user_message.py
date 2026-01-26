@@ -7,12 +7,12 @@ from types import SimpleNamespace
 
 import pytest
 
-from vibe.cli.textual_ui.app import VibeApp
-from vibe.cli.textual_ui.widgets.chat_input.container import ChatInputContainer
-from vibe.cli.textual_ui.widgets.messages import InterruptMessage, UserMessage
-from vibe.core.agent import Agent
-from vibe.core.config import SessionLoggingConfig, VibeConfig
-from vibe.core.types import BaseEvent
+from kin_code.cli.textual_ui.app import KinApp
+from kin_code.cli.textual_ui.widgets.chat_input.container import ChatInputContainer
+from kin_code.cli.textual_ui.widgets.messages import InterruptMessage, UserMessage
+from kin_code.core.agent import Agent
+from kin_code.core.config import KinConfig, SessionLoggingConfig
+from kin_code.core.types import BaseEvent
 
 
 async def _wait_for(
@@ -42,21 +42,21 @@ class StubAgent(Agent):
 
 
 @pytest.fixture
-def vibe_config() -> VibeConfig:
-    return VibeConfig(
+def kin_config() -> KinConfig:
+    return KinConfig(
         session_logging=SessionLoggingConfig(enabled=False), enable_update_checks=False
     )
 
 
 @pytest.fixture
-def vibe_app(vibe_config: VibeConfig) -> VibeApp:
-    return VibeApp(config=vibe_config)
+def kin_app(kin_config: KinConfig) -> KinApp:
+    return KinApp(config=kin_config)
 
 
 def _patch_delayed_init(
     monkeypatch: pytest.MonkeyPatch, init_event: asyncio.Event
 ) -> None:
-    async def _fake_initialize(self: VibeApp) -> None:
+    async def _fake_initialize(self: KinApp) -> None:
         if self.agent or self._agent_initializing:
             return
 
@@ -71,24 +71,24 @@ def _patch_delayed_init(
             self._agent_initializing = False
             self._agent_init_task = None
 
-    monkeypatch.setattr(VibeApp, "_initialize_agent", _fake_initialize, raising=True)
+    monkeypatch.setattr(KinApp, "_initialize_agent", _fake_initialize, raising=True)
 
 
 @pytest.mark.asyncio
 async def test_shows_user_message_as_pending_until_agent_is_initialized(
-    vibe_app: VibeApp, monkeypatch: pytest.MonkeyPatch
+    kin_app: KinApp, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     init_event = asyncio.Event()
     _patch_delayed_init(monkeypatch, init_event)
 
-    async with vibe_app.run_test() as pilot:
-        chat_input = vibe_app.query_one(ChatInputContainer)
+    async with kin_app.run_test() as pilot:
+        chat_input = kin_app.query_one(ChatInputContainer)
         chat_input.value = "Hello"
 
         press_task = asyncio.create_task(pilot.press("enter"))
 
         user_message = await _wait_for(
-            pilot, lambda: next(iter(vibe_app.query(UserMessage)), None)
+            pilot, lambda: next(iter(kin_app.query(UserMessage)), None)
         )
         assert isinstance(user_message, UserMessage)
         assert user_message.has_class("pending")
@@ -99,19 +99,19 @@ async def test_shows_user_message_as_pending_until_agent_is_initialized(
 
 @pytest.mark.asyncio
 async def test_can_interrupt_pending_message_during_initialization(
-    vibe_app: VibeApp, monkeypatch: pytest.MonkeyPatch
+    kin_app: KinApp, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     init_event = asyncio.Event()
     _patch_delayed_init(monkeypatch, init_event)
 
-    async with vibe_app.run_test() as pilot:
-        chat_input = vibe_app.query_one(ChatInputContainer)
+    async with kin_app.run_test() as pilot:
+        chat_input = kin_app.query_one(ChatInputContainer)
         chat_input.value = "Hello"
 
         press_task = asyncio.create_task(pilot.press("enter"))
 
         user_message = await _wait_for(
-            pilot, lambda: next(iter(vibe_app.query(UserMessage)), None)
+            pilot, lambda: next(iter(kin_app.query(UserMessage)), None)
         )
         assert isinstance(user_message, UserMessage)
         assert user_message.has_class("pending")
@@ -119,33 +119,33 @@ async def test_can_interrupt_pending_message_during_initialization(
         await pilot.press("escape")
         await press_task
         assert not user_message.has_class("pending")
-        assert vibe_app.query(InterruptMessage)
-        assert vibe_app.agent is None
+        assert kin_app.query(InterruptMessage)
+        assert kin_app.agent is None
 
 
 @pytest.mark.asyncio
 async def test_retry_initialization_after_interrupt(
-    vibe_app: VibeApp, monkeypatch: pytest.MonkeyPatch
+    kin_app: KinApp, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     init_event = asyncio.Event()
     _patch_delayed_init(monkeypatch, init_event)
 
-    async with vibe_app.run_test() as pilot:
-        chat_input = vibe_app.query_one(ChatInputContainer)
+    async with kin_app.run_test() as pilot:
+        chat_input = kin_app.query_one(ChatInputContainer)
         chat_input.value = "First Message"
         press_task = asyncio.create_task(pilot.press("enter"))
 
-        await _wait_for(pilot, lambda: next(iter(vibe_app.query(UserMessage)), None))
+        await _wait_for(pilot, lambda: next(iter(kin_app.query(UserMessage)), None))
         await pilot.press("escape")
         await press_task
-        assert vibe_app.agent is None
-        assert vibe_app._agent_init_task is None
+        assert kin_app.agent is None
+        assert kin_app._agent_init_task is None
 
         chat_input.value = "Second Message"
         press_task_2 = asyncio.create_task(pilot.press("enter"))
 
         def get_second_message():
-            messages = list(vibe_app.query(UserMessage))
+            messages = list(kin_app.query(UserMessage))
             if len(messages) >= 2:
                 return messages[-1]
             return None
@@ -153,9 +153,9 @@ async def test_retry_initialization_after_interrupt(
         user_message_2 = await _wait_for(pilot, get_second_message)
         assert isinstance(user_message_2, UserMessage)
         assert user_message_2.has_class("pending")
-        assert vibe_app.agent is None
+        assert kin_app.agent is None
 
         init_event.set()
         await press_task_2
         assert not user_message_2.has_class("pending")
-        assert vibe_app.agent is not None
+        assert kin_app.agent is not None

@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import pytest
 
-from vibe.core.config import SessionLoggingConfig, VibeConfig
-from vibe.core.tools.base import BaseToolConfig, ToolPermission
-from vibe.core.tools.manager import ToolManager
+from kin_code.core.config import KinConfig, SessionLoggingConfig
+from kin_code.core.tools.base import BaseToolConfig, ToolPermission
+from kin_code.core.tools.manager import ToolManager
 
 
 @pytest.fixture
 def config():
-    return VibeConfig(
+    return KinConfig(
         session_logging=SessionLoggingConfig(enabled=False),
         system_prompt_id="tests",
         include_project_context=False,
@@ -33,7 +33,7 @@ def test_returns_default_config_when_no_overrides(tool_manager):
 
 
 def test_merges_user_overrides_with_defaults():
-    vibe_config = VibeConfig(
+    vibe_config = KinConfig(
         session_logging=SessionLoggingConfig(enabled=False),
         system_prompt_id="tests",
         include_project_context=False,
@@ -51,7 +51,7 @@ def test_merges_user_overrides_with_defaults():
 
 
 def test_preserves_tool_specific_fields_from_overrides():
-    vibe_config = VibeConfig(
+    vibe_config = KinConfig(
         session_logging=SessionLoggingConfig(enabled=False),
         system_prompt_id="tests",
         include_project_context=False,
@@ -74,7 +74,7 @@ def test_falls_back_to_base_config_for_unknown_tool(tool_manager):
 
 
 def test_applies_workdir_from_vibe_config(tmp_path):
-    vibe_config = VibeConfig(
+    vibe_config = KinConfig(
         session_logging=SessionLoggingConfig(enabled=False),
         system_prompt_id="tests",
         include_project_context=False,
