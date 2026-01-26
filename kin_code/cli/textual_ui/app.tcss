@@ -913,3 +913,72 @@ ContextProgress {
     margin: 0;
     color: $foreground;
 }
+
+#model-app {
+    width: 100%;
+    height: auto;
+    max-height: 20;
+    background: $background;
+    border: round $foreground-muted;
+    padding: 0 1;
+    margin: 0 0 1 0;
+}
+
+#model-content {
+    width: 100%;
+    height: auto;
+}
+
+#model-list-scroll {
+    width: 100%;
+    height: auto;
+    max-height: 12;
+    scrollbar-visibility: hidden;
+}
+
+.model-title {
+    height: auto;
+    text-style: bold;
+    color: $primary;
+}
+
+.model-separator {
+    height: auto;
+    color: $foreground-muted;
+}
+
+.model-option {
+    height: auto;
+    color: $foreground;
+}
+
+.model-option-selected {
+    color: $primary;
+    text-style: bold;
+}
+
+.model-option-active {
+    color: $success;
+}
+
+.model-help {
+    height: auto;
+    color: $text-muted;
+}
+
+#model-search {
+    width: 100%;
+    height: auto;
+    background: $surface;
+    border: none;
+    padding: 0;
+    margin: 1 0 0 0;
+}
+
+.model-error {
+    color: $error;
+}
+
+.model-loading {
+    color: $warning;
+}

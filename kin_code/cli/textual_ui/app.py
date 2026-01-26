@@ -27,6 +27,7 @@ from kin_code.cli.textual_ui.widgets.approval_app import ApprovalApp
 from kin_code.cli.textual_ui.widgets.chat_input import ChatInputContainer
 from kin_code.cli.textual_ui.widgets.compact import CompactMessage
 from kin_code.cli.textual_ui.widgets.config_app import ConfigApp
+from kin_code.cli.textual_ui.widgets.model_app import ModelApp
 from kin_code.cli.textual_ui.widgets.context_progress import ContextProgress, TokenState
 from kin_code.cli.textual_ui.widgets.loading import LoadingWidget
 from kin_code.cli.textual_ui.widgets.messages import (
@@ -73,6 +74,7 @@ class BottomApp(StrEnum):
     Approval = auto()
     Config = auto()
     Input = auto()
+    Model = auto()
 
 
 class KinApp(App):  # noqa: PLR0904
@@ -319,6 +321,56 @@ class KinApp(App):  # noqa: PLR0904
                 UserCommandMessage("Configuration closed (no changes saved).")
             )
 
+        await self._switch_to_input_app()
+
+    async def on_model_app_model_selected(
+        self, message: ModelApp.ModelSelected
+    ) -> None:
+        """Handle model selection from ModelApp."""
+        if message.alias != self.config.active_model:
+            KinConfig.save_updates({"active_model": message.alias})
+            await self._reload_config()
+            await self._mount_and_scroll(
+                UserCommandMessage(f"Switched to model: {message.alias}")
+            )
+        await self._switch_to_input_app()
+
+    async def on_model_app_model_added(self, message: ModelApp.ModelAdded) -> None:
+        """Handle model addition from ModelApp."""
+        from kin_code.core.config import ModelConfig
+
+        new_model = ModelConfig(
+            name=message.model_id,
+            provider=message.provider,
+            alias=message.alias,
+            context_window=message.context_window,
+        )
+
+        current_models = [m.model_dump() for m in self.config.models]
+        existing_aliases = {m["alias"] for m in current_models}
+        if message.alias in existing_aliases:
+            await self._mount_and_scroll(
+                ErrorMessage(
+                    f"Model alias '{message.alias}' already exists",
+                    collapsed=self._tools_collapsed,
+                )
+            )
+            return
+
+        current_models.append(new_model.model_dump())
+        KinConfig.save_updates({"models": current_models, "active_model": message.alias})
+        await self._reload_config()
+        await self._mount_and_scroll(
+            UserCommandMessage(f"Added and switched to model: {message.alias}")
+        )
+        await self._switch_to_input_app()
+
+    async def on_model_app_model_closed(self, message: ModelApp.ModelClosed) -> None:
+        """Handle ModelApp close."""
+        if not message.changed:
+            await self._mount_and_scroll(
+                UserCommandMessage("Model selection closed.")
+            )
         await self._switch_to_input_app()
 
     async def on_compact_message_completed(
@@ -947,6 +999,34 @@ class KinApp(App):  # noqa: PLR0904
 
         self.call_after_refresh(config_app.focus)
 
+    async def _show_model(self) -> None:
+        """Switch to the model management app in the bottom panel."""
+        if self._current_bottom_app == BottomApp.Model:
+            return
+        await self._switch_to_model_app()
+
+    async def _switch_to_model_app(self) -> None:
+        if self._current_bottom_app == BottomApp.Model:
+            return
+
+        bottom_container = self.query_one("#bottom-app-container")
+        await self._mount_and_scroll(UserCommandMessage("Model selection opened..."))
+
+        try:
+            chat_input_container = self.query_one(ChatInputContainer)
+            await chat_input_container.remove()
+        except Exception:
+            pass
+
+        if self._mode_indicator:
+            self._mode_indicator.display = False
+
+        model_app = ModelApp(self.config)
+        await bottom_container.mount(model_app)
+        self._current_bottom_app = BottomApp.Model
+
+        self.call_after_refresh(model_app.focus)
+
     async def _switch_to_approval_app(
         self, tool_name: str, tool_args: BaseModel
     ) -> None:
@@ -988,6 +1068,12 @@ class KinApp(App):  # noqa: PLR0904
         except Exception:
             pass
 
+        try:
+            model_app = self.query_one("#model-app")
+            await model_app.remove()
+        except Exception:
+            pass
+
         if self._mode_indicator:
             self._mode_indicator.display = True
 
@@ -1022,6 +1108,8 @@ class KinApp(App):  # noqa: PLR0904
                     self.query_one(ConfigApp).focus()
                 case BottomApp.Approval:
                     self.query_one(ApprovalApp).focus()
+                case BottomApp.Model:
+                    self.query_one(ModelApp).focus()
                 case app:
                     assert_never(app)
         except Exception:
@@ -1043,6 +1131,15 @@ class KinApp(App):  # noqa: PLR0904
             try:
                 approval_app = self.query_one(ApprovalApp)
                 approval_app.action_reject()
+            except Exception:
+                pass
+            self._last_escape_time = None
+            return
+
+        if self._current_bottom_app == BottomApp.Model:
+            try:
+                model_app = self.query_one(ModelApp)
+                model_app.action_back()
             except Exception:
                 pass
             self._last_escape_time = None
