@@ -194,4 +194,9 @@ class OpenAIModelScreen(OnboardingScreen):
         if self._models and not self._manual_input.value.strip():
             selected_model = self._models[self._selected_index]
             app.openai_model_context_window = selected_model.context_window  # type: ignore[attr-defined]
-        self.action_next()
+
+        # Check if next screen exists (AddProviderApp doesn't have theme_selection)
+        if self.NEXT_SCREEN and self.app.is_screen_installed(self.NEXT_SCREEN):
+            self.action_next()
+        else:
+            self.app.exit("completed")
