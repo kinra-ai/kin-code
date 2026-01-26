@@ -469,11 +469,18 @@ def get_universal_system_prompt(
         sections.append(_get_date_info())
         tool_prompts = []
         active_tools = get_active_tool_classes(tool_manager, config)
+        tool_names = [tool_class.get_name() for tool_class in active_tools]
         for tool_class in active_tools:
             if prompt := tool_class.get_tool_prompt():
                 tool_prompts.append(prompt)
         if tool_prompts:
-            sections.append("\n---\n".join(tool_prompts))
+            tools_header = (
+                "# Available Tools\n\n"
+                "You have access to the following tools that you can call directly using function calling: "
+                f"{', '.join(f'`{name}`' for name in sorted(tool_names))}.\n\n"
+                "Below are usage guidelines for each tool:"
+            )
+            sections.append(tools_header + "\n\n---\n".join([""] + tool_prompts))
 
         user_instructions = config.instructions.strip() or _load_user_instructions()
         if user_instructions.strip():
