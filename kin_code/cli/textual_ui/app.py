@@ -207,9 +207,9 @@ class KinApp(App):  # noqa: PLR0904
         self._context_progress = self.query_one(ContextProgress)
         self._model_display = self.query_one(ModelDisplay)
 
-        if self.config.auto_compact_threshold > 0:
+        if (effective_context := self.config.get_effective_context_window()) > 0:
             self._context_progress.tokens = TokenState(
-                max_tokens=self.config.auto_compact_threshold, current_tokens=0
+                max_tokens=effective_context, current_tokens=0
             )
 
         chat_input_container = self.query_one(ChatInputContainer)
@@ -788,12 +788,12 @@ class KinApp(App):  # noqa: PLR0904
             else:
                 self._config = new_config
             if self._context_progress:
-                if self.config.auto_compact_threshold > 0:
+                if (effective_context := self.config.get_effective_context_window()) > 0:
                     current_tokens = (
                         self.agent.stats.context_tokens if self.agent else 0
                     )
                     self._context_progress.tokens = TokenState(
-                        max_tokens=self.config.auto_compact_threshold,
+                        max_tokens=effective_context,
                         current_tokens=current_tokens,
                     )
                 else:
