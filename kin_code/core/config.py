@@ -407,6 +407,13 @@ class VibeConfig(BaseSettings):
             raise MissingPromptFileError(self.system_prompt_id, str(PROMPT_DIR.path))
         return custom_sp_path.read_text()
 
+    @property
+    def effective_workdir(self) -> Path:
+        """Get the effective working directory, using override if set."""
+        if self.workdir:
+            return self.workdir.expanduser().resolve()
+        return Path.cwd()
+
     def get_active_model(self) -> ModelConfig:
         for model in self.models:
             if model.alias == self.active_model:

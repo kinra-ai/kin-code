@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 from time import monotonic
 
 from rich.align import Align
@@ -10,8 +9,8 @@ from rich.text import Text
 from textual.color import Color
 from textual.widgets import Static
 
-from vibe import __version__
-from kin_code.core.config import VibeConfig
+from kin_code import __version__
+from kin_code.core.config import KinConfig
 
 
 def hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
@@ -44,11 +43,15 @@ class LineAnimationState:
 
 class WelcomeBanner(Static):
     FLASH_COLOR = "#FFFFFF"
-    TARGET_COLORS = ("#FFD800", "#FFAF00", "#FF8205", "#FA500F", "#E10500")
-    BORDER_TARGET_COLOR = "#b05800"
+    # Minnesota flag colors with saturated midtones (lakes + night sky)
+    TARGET_COLORS = ("#73c6e5", "#52b5dc", "#3a9fc8", "#2b82ae", "#1a6490", "#002c5a")
+    # Gold shimmer accent for the North Star
+    BORDER_TARGET_COLOR = "#e5c366"
+    # Frost text color (matches flag light blue)
+    TEXT_COLOR = "#73c6e5"
 
     LINE_ANIMATION_DURATION_MS = 200
-    LINE_STAGGER_MS = 280
+    LINE_STAGGER_MS = 220
     FLASH_RESET_DURATION_MS = 400
     ANIMATION_TICK_INTERVAL = 0.1
 
@@ -57,11 +60,16 @@ class WelcomeBanner(Static):
     COLOR_CACHE_THRESHOLD = 0.001
     BORDER_PROGRESS_THRESHOLD = 0.01
 
-    BLOCK = "▇▇"
-    SPACE = "  "
-    LOGO_TEXT_GAP = "   "
+    LOGO_LINES = (
+        "██╗  ██╗██╗███╗   ██╗     ██████╗ ██████╗ ██████╗ ███████╗",
+        "██║ ██╔╝██║████╗  ██║    ██╔════╝██╔═══██╗██╔══██╗██╔════╝",
+        "█████╔╝ ██║██╔██╗ ██║    ██║     ██║   ██║██║  ██║█████╗  ",
+        "██╔═██╗ ██║██║╚██╗██║    ██║     ██║   ██║██║  ██║██╔══╝  ",
+        "██║  ██╗██║██║ ╚████║    ╚██████╗╚██████╔╝██████╔╝███████╗",
+        "╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝     ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝",
+    )
 
-    def __init__(self, config: VibeConfig) -> None:
+    def __init__(self, config: KinConfig) -> None:
         super().__init__(" ")
         self.config = config
         self.animation_timer = None
@@ -89,23 +97,24 @@ class WelcomeBanner(Static):
             + self.LINE_ANIMATION_DURATION_MS
         ) / 1000
 
-        self._cached_text_lines: list[Text | None] = [None] * 7
-        self._initialize_static_line_suffixes()
+        # 6 logo lines + 1 blank + 1 info line + 1 blank + 1 help line = 10 lines
+        self._cached_text_lines: list[Text | None] = [None] * 10
+        self._initialize_static_lines()
 
-    def _initialize_static_line_suffixes(self) -> None:
-        self._static_line1_suffix = (
-            f"{self.LOGO_TEXT_GAP}[b]Mistral Vibe v{__version__}[/]"
-        )
-        self._static_line2_suffix = (
-            f"{self.LOGO_TEXT_GAP}[dim]{self.config.active_model}[/]"
-        )
+    def _initialize_static_lines(self) -> None:
         mcp_count = len(self.config.mcp_servers)
         model_count = len(self.config.models)
-        self._static_line3_suffix = f"{self.LOGO_TEXT_GAP}[dim]{model_count} models · {mcp_count} MCP servers[/]"
-        self._static_line5_suffix = (
-            f"{self.LOGO_TEXT_GAP}[dim]{self.config.displayed_workdir or Path.cwd()}[/]"
+        self._static_info_line = (
+            f"[b]v{__version__}[/] [dim]·[/] "
+            f"[dim]{self.config.active_model}[/] [dim]·[/] "
+            f"[dim]{model_count} models · {mcp_count} MCP servers[/] [dim]·[/] "
+            f"[dim]{self.config.effective_workdir}[/]"
         )
-        self._static_line7 = f"[dim]Type[/] [{self.BORDER_TARGET_COLOR}]/help[/] [dim]for more information • [/][{self.BORDER_TARGET_COLOR}]/terminal-setup[/][dim] for shift+enter[/]"
+        self._static_help_line = (
+            f"[{self.TEXT_COLOR}]Type[/] [{self.BORDER_TARGET_COLOR}]/help[/] "
+            f"[{self.TEXT_COLOR}]for more information • [/]"
+            f"[{self.BORDER_TARGET_COLOR}]/terminal-setup[/][{self.TEXT_COLOR}] for shift+enter[/]"
+        )
 
     @property
     def skeleton_color(self) -> str:
@@ -121,8 +130,11 @@ class WelcomeBanner(Static):
 
     def _init_after_styles(self) -> None:
         self._cache_skeleton_color()
-        self._cached_text_lines[5] = Text("")
-        self._cached_text_lines[6] = Text.from_markup(self._static_line7)
+        # Static lines below the logo
+        self._cached_text_lines[6] = Text("")
+        self._cached_text_lines[7] = Text.from_markup(self._static_info_line)
+        self._cached_text_lines[8] = Text("")
+        self._cached_text_lines[9] = Text.from_markup(self._static_help_line)
         self._update_display()
         self._start_animation()
 
@@ -132,7 +144,7 @@ class WelcomeBanner(Static):
             if (
                 hasattr(border, "top")
                 and isinstance(edge := border.top, tuple)
-                and len(edge) >= 2  # noqa: PLR2004
+                and len(edge) >= 2
                 and isinstance(color := edge[1], Color)
             ):
                 self._cached_skeleton_color = color.hex
@@ -236,7 +248,7 @@ class WelcomeBanner(Static):
         return interpolate_color(self._flash_rgb, target_rgb, phase)
 
     def _update_display(self) -> None:
-        for idx in range(5):
+        for idx in range(6):
             self._update_colored_line(idx, idx)
 
         lines = [line if line else Text("") for line in self._cached_text_lines]
@@ -270,14 +282,4 @@ class WelcomeBanner(Static):
         )
 
     def _build_line(self, line_idx: int, color: str) -> str:
-        B = self.BLOCK
-        S = self.SPACE
-
-        patterns = [
-            f"{S}[{color}]{B}[/]{S}{S}{S}[{color}]{B}[/]{S}{self._static_line1_suffix}",
-            f"{S}[{color}]{B}{B}[/]{S}[{color}]{B}{B}[/]{S}{self._static_line2_suffix}",
-            f"{S}[{color}]{B}{B}{B}{B}{B}[/]{S}{self._static_line3_suffix}",
-            f"{S}[{color}]{B}[/]{S}[{color}]{B}[/]{S}[{color}]{B}[/]{S}",
-            f"[{color}]{B}{B}{B}[/]{S}[{color}]{B}{B}{B}[/]{self._static_line5_suffix}",
-        ]
-        return patterns[line_idx]
+        return f"[{color}]{self.LOGO_LINES[line_idx]}[/]"
