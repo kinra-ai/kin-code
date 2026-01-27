@@ -2,16 +2,16 @@ from __future__ import annotations
 
 import pytest
 
-from vibe.core.agents.models import BUILTIN_AGENTS, AgentProfile, BuiltinAgentName
-from vibe.core.config import SessionLoggingConfig, VibeConfig
-from vibe.core.middleware import (
+from kin_code.core.agents.models import BUILTIN_AGENTS, AgentProfile, BuiltinAgentName
+from kin_code.core.config import SessionLoggingConfig, VibeConfig
+from kin_code.core.middleware import (
     PLAN_AGENT_REMINDER,
     ConversationContext,
     MiddlewareAction,
     MiddlewarePipeline,
     PlanAgentMiddleware,
 )
-from vibe.core.types import AgentStats
+from kin_code.core.types import AgentStats
 
 
 def make_context() -> ConversationContext:

@@ -5,8 +5,8 @@ from unittest.mock import MagicMock
 from pydantic import ValidationError
 import pytest
 
-from vibe.core.config import MCPHttp, MCPStdio, MCPStreamableHttp
-from vibe.core.tools.mcp import (
+from kin_code.core.config import MCPHttp, MCPStdio, MCPStreamableHttp
+from kin_code.core.tools.mcp import (
     MCPToolResult,
     RemoteTool,
     _parse_call_result,

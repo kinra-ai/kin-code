@@ -4,13 +4,13 @@ from textual.pilot import Pilot
 
 from tests.snapshots.base_snapshot_test_app import BaseSnapshotTestApp
 from tests.snapshots.snap_compare import SnapCompare
-from vibe.cli.textual_ui.widgets.tools import ToolResultMessage
-from vibe.core.tools.builtins.ask_user_question import (
+from kin_code.cli.textual_ui.widgets.tools import ToolResultMessage
+from kin_code.core.tools.builtins.ask_user_question import (
     Answer,
     AskUserQuestion,
     AskUserQuestionResult,
 )
-from vibe.core.types import ToolResultEvent
+from kin_code.core.types import ToolResultEvent
 
 
 class AskUserQuestionResultApp(BaseSnapshotTestApp):

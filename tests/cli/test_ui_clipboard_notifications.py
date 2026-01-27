@@ -6,10 +6,10 @@ import pytest
 from textual.selection import Selection
 from textual.widget import Widget
 
-from vibe.cli.clipboard import copy_selection_to_clipboard
-from vibe.cli.textual_ui.app import VibeApp
-from vibe.core.agent_loop import AgentLoop
-from vibe.core.config import SessionLoggingConfig, VibeConfig
+from kin_code.cli.clipboard import copy_selection_to_clipboard
+from kin_code.cli.textual_ui.app import VibeApp
+from kin_code.core.agent_loop import AgentLoop
+from kin_code.core.config import SessionLoggingConfig, VibeConfig
 
 
 class ClipboardSelectionWidget(Widget):

@@ -7,10 +7,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from vibe.cli.textual_ui.app import VibeApp
-from vibe.cli.textual_ui.widgets.chat_input.container import ChatInputContainer
-from vibe.core.agent_loop import AgentLoop
-from vibe.core.config import SessionLoggingConfig, VibeConfig
+from kin_code.cli.textual_ui.app import VibeApp
+from kin_code.cli.textual_ui.widgets.chat_input.container import ChatInputContainer
+from kin_code.core.agent_loop import AgentLoop
+from kin_code.core.config import SessionLoggingConfig, VibeConfig
 
 
 @pytest.fixture

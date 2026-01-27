@@ -5,7 +5,7 @@ from collections.abc import Callable
 import httpx
 import pytest
 
-from vibe.cli.update_notifier import (
+from kin_code.cli.update_notifier import (
     GitHubUpdateGateway,
     UpdateGatewayCause,
     UpdateGatewayError,

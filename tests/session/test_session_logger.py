@@ -8,11 +8,11 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from vibe.core.agents.models import AgentProfile, AgentSafety
-from vibe.core.config import SessionLoggingConfig, VibeConfig
-from vibe.core.session.session_logger import SessionLogger
-from vibe.core.tools.manager import ToolManager
-from vibe.core.types import AgentStats, LLMMessage, Role, SessionMetadata
+from kin_code.core.agents.models import AgentProfile, AgentSafety
+from kin_code.core.config import SessionLoggingConfig, VibeConfig
+from kin_code.core.session.session_logger import SessionLogger
+from kin_code.core.tools.manager import ToolManager
+from kin_code.core.types import AgentStats, LLMMessage, Role, SessionMetadata
 
 
 @pytest.fixture

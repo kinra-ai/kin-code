@@ -4,9 +4,9 @@ import pytest
 
 from tests.mock.utils import mock_llm_chunk
 from tests.stubs.fake_backend import FakeBackend
-from vibe.core.agent_loop import AgentLoop
-from vibe.core.agents.manager import AgentManager
-from vibe.core.agents.models import (
+from kin_code.core.agent_loop import AgentLoop
+from kin_code.core.agents.manager import AgentManager
+from kin_code.core.agents.models import (
     BUILTIN_AGENTS,
     PLAN_AGENT_TOOLS,
     AgentProfile,
@@ -15,9 +15,9 @@ from vibe.core.agents.models import (
     BuiltinAgentName,
     _deep_merge,
 )
-from vibe.core.config import SessionLoggingConfig, VibeConfig
-from vibe.core.tools.base import ToolPermission
-from vibe.core.types import (
+from kin_code.core.config import SessionLoggingConfig, VibeConfig
+from kin_code.core.tools.base import ToolPermission
+from kin_code.core.types import (
     FunctionCall,
     LLMChunk,
     LLMMessage,

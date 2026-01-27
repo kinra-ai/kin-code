@@ -12,7 +12,7 @@ from tests.update_notifier.adapters.fake_update_cache_repository import (
     FakeUpdateCacheRepository,
 )
 from tests.update_notifier.adapters.fake_update_gateway import FakeUpdateGateway
-from vibe.cli.update_notifier import UpdateCache
+from kin_code.cli.update_notifier import UpdateCache
 
 
 class SnapshotTestAppWithWhatsNew(BaseSnapshotTestApp):

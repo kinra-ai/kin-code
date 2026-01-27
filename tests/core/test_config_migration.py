@@ -6,8 +6,8 @@ import tomllib
 
 import tomli_w
 
-from vibe.core import config
-from vibe.core.config import VibeConfig
+from kin_code.core import config
+from kin_code.core.config import VibeConfig
 
 
 def _restore_dump_config(config_file: Path):

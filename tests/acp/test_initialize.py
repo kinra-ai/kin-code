@@ -9,7 +9,7 @@ from acp.schema import (
 )
 import pytest
 
-from vibe.acp.acp_agent_loop import VibeAcpAgentLoop
+from kin_code.acp.acp_agent_loop import VibeAcpAgentLoop
 
 
 class TestACPInitialize:

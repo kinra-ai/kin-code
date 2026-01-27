@@ -4,11 +4,11 @@ import sys
 
 import pytest
 
-from vibe.core.agents import AgentManager
-from vibe.core.config import VibeConfig
-from vibe.core.skills.manager import SkillManager
-from vibe.core.system_prompt import get_universal_system_prompt
-from vibe.core.tools.manager import ToolManager
+from kin_code.core.agents import AgentManager
+from kin_code.core.config import VibeConfig
+from kin_code.core.skills.manager import SkillManager
+from kin_code.core.system_prompt import get_universal_system_prompt
+from kin_code.core.tools.manager import ToolManager
 
 
 def test_get_universal_system_prompt_includes_windows_prompt_on_windows(

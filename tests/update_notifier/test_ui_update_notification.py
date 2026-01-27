@@ -13,17 +13,17 @@ from tests.update_notifier.adapters.fake_update_cache_repository import (
     FakeUpdateCacheRepository,
 )
 from tests.update_notifier.adapters.fake_update_gateway import FakeUpdateGateway
-from vibe.cli.textual_ui.app import VibeApp
-from vibe.cli.textual_ui.widgets.messages import WhatsNewMessage
-from vibe.cli.update_notifier import (
+from kin_code.cli.textual_ui.app import VibeApp
+from kin_code.cli.textual_ui.widgets.messages import WhatsNewMessage
+from kin_code.cli.update_notifier import (
     Update,
     UpdateCache,
     UpdateGatewayCause,
     UpdateGatewayError,
 )
-from vibe.core.agent_loop import AgentLoop
-from vibe.core.agents.models import BuiltinAgentName
-from vibe.core.config import SessionLoggingConfig, VibeConfig
+from kin_code.core.agent_loop import AgentLoop
+from kin_code.core.agents.models import BuiltinAgentName
+from kin_code.core.config import SessionLoggingConfig, VibeConfig
 
 
 async def _wait_for_notification(

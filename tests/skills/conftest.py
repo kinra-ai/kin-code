@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from vibe.core.config import SessionLoggingConfig, VibeConfig
+from kin_code.core.config import SessionLoggingConfig, VibeConfig
 
 
 @pytest.fixture

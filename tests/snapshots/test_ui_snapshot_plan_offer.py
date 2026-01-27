@@ -13,8 +13,8 @@ from tests.snapshots.snap_compare import SnapCompare
 from tests.update_notifier.adapters.fake_update_cache_repository import (
     FakeUpdateCacheRepository,
 )
-from vibe.cli.plan_offer.ports.whoami_gateway import WhoAmIResponse
-from vibe.cli.update_notifier import UpdateCache
+from kin_code.cli.plan_offer.ports.whoami_gateway import WhoAmIResponse
+from kin_code.cli.update_notifier import UpdateCache
 
 
 class PlanOfferSnapshotApp(BaseSnapshotTestApp):

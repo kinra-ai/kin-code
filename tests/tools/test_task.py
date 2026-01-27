@@ -5,12 +5,12 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from tests.mock.utils import collect_result
-from vibe.core.agents.manager import AgentManager
-from vibe.core.agents.models import BUILTIN_AGENTS, AgentType
-from vibe.core.config import VibeConfig
-from vibe.core.tools.base import BaseToolState, InvokeContext, ToolError
-from vibe.core.tools.builtins.task import Task, TaskArgs, TaskResult, TaskToolConfig
-from vibe.core.types import AssistantEvent, LLMMessage, Role
+from kin_code.core.agents.manager import AgentManager
+from kin_code.core.agents.models import BUILTIN_AGENTS, AgentType
+from kin_code.core.config import VibeConfig
+from kin_code.core.tools.base import BaseToolState, InvokeContext, ToolError
+from kin_code.core.tools.builtins.task import Task, TaskArgs, TaskResult, TaskToolConfig
+from kin_code.core.types import AssistantEvent, LLMMessage, Role
 
 
 @pytest.fixture

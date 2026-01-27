@@ -9,17 +9,17 @@ import respx
 
 from tests.mock.utils import mock_llm_chunk
 from tests.stubs.fake_backend import FakeBackend
-from vibe.core.agent_loop import AgentLoop
-from vibe.core.config import (
+from kin_code.core.agent_loop import AgentLoop
+from kin_code.core.config import (
     ModelConfig,
     ProviderConfig,
     SessionLoggingConfig,
     VibeConfig,
 )
-from vibe.core.llm.backend.generic import GenericBackend, OpenAIAdapter
-from vibe.core.llm.backend.mistral import MistralBackend, MistralMapper, ParsedContent
-from vibe.core.llm.format import APIToolFormatHandler
-from vibe.core.types import AssistantEvent, LLMMessage, ReasoningEvent, Role
+from kin_code.core.llm.backend.generic import GenericBackend, OpenAIAdapter
+from kin_code.core.llm.backend.mistral import MistralBackend, MistralMapper, ParsedContent
+from kin_code.core.llm.format import APIToolFormatHandler
+from kin_code.core.types import AssistantEvent, LLMMessage, ReasoningEvent, Role
 
 
 def make_config() -> VibeConfig:

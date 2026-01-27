@@ -3,8 +3,8 @@ from __future__ import annotations
 import pytest
 
 from tests.mock.utils import collect_result
-from vibe.core.tools.base import BaseToolState, ToolError, ToolPermission
-from vibe.core.tools.builtins.bash import Bash, BashArgs, BashToolConfig
+from kin_code.core.tools.base import BaseToolState, ToolError, ToolPermission
+from kin_code.core.tools.builtins.bash import Bash, BashArgs, BashToolConfig
 
 
 @pytest.fixture

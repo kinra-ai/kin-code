@@ -6,17 +6,17 @@ import pytest
 
 from tests.mock.utils import mock_llm_chunk
 from tests.stubs.fake_backend import FakeBackend
-from vibe.core.agent_loop import AgentLoop
-from vibe.core.agents.models import BuiltinAgentName
-from vibe.core.config import (
+from kin_code.core.agent_loop import AgentLoop
+from kin_code.core.agents.models import BuiltinAgentName
+from kin_code.core.config import (
     Backend,
     ModelConfig,
     ProviderConfig,
     SessionLoggingConfig,
     VibeConfig,
 )
-from vibe.core.tools.base import BaseToolConfig, ToolPermission
-from vibe.core.types import (
+from kin_code.core.tools.base import BaseToolConfig, ToolPermission
+from kin_code.core.types import (
     AgentStats,
     AssistantEvent,
     CompactEndEvent,

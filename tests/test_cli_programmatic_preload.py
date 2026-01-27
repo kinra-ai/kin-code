@@ -5,9 +5,9 @@ import pytest
 from tests.mock.mock_backend_factory import mock_backend_factory
 from tests.mock.utils import mock_llm_chunk
 from tests.stubs.fake_backend import FakeBackend
-from vibe.core import run_programmatic
-from vibe.core.config import Backend, SessionLoggingConfig, VibeConfig
-from vibe.core.types import LLMMessage, OutputFormat, Role
+from kin_code.core import run_programmatic
+from kin_code.core.config import Backend, SessionLoggingConfig, VibeConfig
+from kin_code.core.types import LLMMessage, OutputFormat, Role
 
 
 class SpyStreamingFormatter:

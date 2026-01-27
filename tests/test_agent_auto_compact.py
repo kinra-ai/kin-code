@@ -4,9 +4,9 @@ import pytest
 
 from tests.mock.utils import mock_llm_chunk
 from tests.stubs.fake_backend import FakeBackend
-from vibe.core.agent_loop import AgentLoop
-from vibe.core.config import SessionLoggingConfig, VibeConfig
-from vibe.core.types import (
+from kin_code.core.agent_loop import AgentLoop
+from kin_code.core.config import SessionLoggingConfig, VibeConfig
+from kin_code.core.types import (
     AssistantEvent,
     CompactEndEvent,
     CompactStartEvent,

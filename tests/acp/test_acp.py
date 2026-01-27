@@ -33,8 +33,8 @@ import tomli_w
 from tests import TESTS_ROOT
 from tests.conftest import get_base_config
 from tests.mock.utils import get_mocking_env, mock_llm_chunk
-from vibe.acp.utils import ToolOption
-from vibe.core.types import FunctionCall, ToolCall
+from kin_code.acp.utils import ToolOption
+from kin_code.core.types import FunctionCall, ToolCall
 
 RESPONSE_TIMEOUT = 2.0
 MOCK_ENTRYPOINT_PATH = "tests/mock/mock_entrypoint.py"
@@ -64,7 +64,7 @@ def deep_merge(target: dict, source: dict) -> None:
 
 def _create_vibe_home_dir(tmp_path: Path, *sections: dict[str, Any]) -> Path:
     """Create a temporary vibe home directory with a minimal config file."""
-    vibe_home = tmp_path / ".vibe"
+    vibe_home = tmp_path / ".kin-code"
     vibe_home.mkdir()
 
     config_file = vibe_home / "config.toml"

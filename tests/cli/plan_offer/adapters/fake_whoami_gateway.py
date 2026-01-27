@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from vibe.cli.plan_offer.ports.whoami_gateway import (
+from kin_code.cli.plan_offer.ports.whoami_gateway import (
     WhoAmIGatewayError,
     WhoAmIGatewayUnauthorized,
     WhoAmIResponse,

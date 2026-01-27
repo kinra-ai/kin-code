@@ -5,8 +5,8 @@ import logging
 import pytest
 
 from tests.cli.plan_offer.adapters.fake_whoami_gateway import FakeWhoAmIGateway
-from vibe.cli.plan_offer.decide_plan_offer import PlanOfferAction, decide_plan_offer
-from vibe.cli.plan_offer.ports.whoami_gateway import WhoAmIResponse
+from kin_code.cli.plan_offer.decide_plan_offer import PlanOfferAction, decide_plan_offer
+from kin_code.cli.plan_offer.ports.whoami_gateway import WhoAmIResponse
 
 
 @pytest.mark.asyncio

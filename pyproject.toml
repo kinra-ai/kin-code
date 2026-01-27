@@ -1,16 +1,15 @@
 [project]
-name = "mistral-vibe"
+name = "kin-code"
 version = "2.0.0"
-description = "Minimal CLI coding agent by Mistral"
+description = "Minimal CLI coding agent"
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
-authors = [{ name = "Mistral AI" }]
+authors = [{ name = "Blake Elias" }]
 keywords = [
     "ai",
     "cli",
     "coding-assistant",
-    "mistral",
     "llm",
     "developer-tools",
 ]
@@ -39,6 +38,7 @@ dependencies = [
     "pyyaml>=6.0.0",
     "python-dotenv>=1.0.0",
     "rich>=14.0.0",
+    "simpleeval>=1.0.3",
     "textual>=1.0.0",
     "tomli-w>=1.2.0",
     "watchfiles>=1.1.1",
@@ -49,10 +49,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/mistralai/mistral-vibe"
-Repository = "https://github.com/mistralai/mistral-vibe"
-Issues = "https://github.com/mistralai/mistral-vibe/issues"
-Documentation = "https://github.com/mistralai/mistral-vibe#readme"
+Homepage = "https://github.com/blakeelias/kin-code"
+Repository = "https://github.com/blakeelias/kin-code"
+Issues = "https://github.com/blakeelias/kin-code/issues"
+Documentation = "https://github.com/blakeelias/kin-code#readme"
 
 
 [build-system]
@@ -63,12 +63,12 @@ build-backend = "hatchling.build"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-include = ["vibe/"]
+include = ["kin_code/"]
 
 
 [project.scripts]
-vibe = "vibe.cli.entrypoint:main"
-vibe-acp = "vibe.acp.entrypoint:main"
+kin = "kin_code.cli.entrypoint:main"
+kin-acp = "kin_code.acp.entrypoint:main"
 
 
 [tool.uv]
@@ -99,12 +99,12 @@ build = ["pyinstaller>=6.17.0"]
 pythonVersion = "3.12"
 reportMissingTypeStubs = false
 reportPrivateImportUsage = false
-include = ["vibe/**/*.py", "tests/**/*.py"]
+include = ["kin_code/**/*.py", "tests/**/*.py"]
 venvPath = "."
 venv = ".venv"
 
 [tool.ruff]
-include = ["vibe/**/*.py", "tests/**/*.py"]
+include = ["kin_code/**/*.py", "tests/**/*.py"]
 line-length = 88
 target-version = "py312"
 preview = true
@@ -139,7 +139,7 @@ ignore = ["D203", "D205", "D213", "ANN401", "PLR6301"]
 ban-relative-imports = "all"
 
 [tool.ruff.lint.isort]
-known-first-party = ["vibe"]
+known-first-party = ["kin_code"]
 force-sort-within-sections = true
 split-on-trailing-comma = true
 combine-as-imports = true

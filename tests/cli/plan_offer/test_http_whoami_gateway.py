@@ -4,8 +4,8 @@ import httpx
 import pytest
 import respx
 
-from vibe.cli.plan_offer.adapters.http_whoami_gateway import HttpWhoAmIGateway
-from vibe.cli.plan_offer.ports.whoami_gateway import (
+from kin_code.cli.plan_offer.adapters.http_whoami_gateway import HttpWhoAmIGateway
+from kin_code.cli.plan_offer.ports.whoami_gateway import (
     WhoAmIGatewayError,
     WhoAmIGatewayUnauthorized,
     WhoAmIResponse,

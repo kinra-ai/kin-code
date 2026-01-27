@@ -6,10 +6,10 @@ from unittest.mock import patch
 import pytest
 
 from tests.acp.conftest import _create_acp_agent
-from vibe.acp.acp_agent_loop import VibeAcpAgentLoop
-from vibe.core.agent_loop import AgentLoop
-from vibe.core.agents.models import BuiltinAgentName
-from vibe.core.config import ModelConfig, VibeConfig
+from kin_code.acp.acp_agent_loop import VibeAcpAgentLoop
+from kin_code.core.agent_loop import AgentLoop
+from kin_code.core.agents.models import BuiltinAgentName
+from kin_code.core.config import ModelConfig, VibeConfig
 
 
 @pytest.fixture

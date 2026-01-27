@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from vibe.core.agents.manager import AgentManager
-from vibe.core.agents.models import BUILTIN_AGENTS, EXPLORE, AgentSafety, AgentType
-from vibe.core.config import VibeConfig
+from kin_code.core.agents.manager import AgentManager
+from kin_code.core.agents.models import BUILTIN_AGENTS, EXPLORE, AgentSafety, AgentType
+from kin_code.core.config import VibeConfig
 
 
 class TestAgentProfile:

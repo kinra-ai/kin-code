@@ -4,11 +4,11 @@ import pytest
 
 from tests.cli.plan_offer.adapters.fake_whoami_gateway import FakeWhoAmIGateway
 from tests.stubs.fake_backend import FakeBackend
-from vibe.cli.plan_offer.ports.whoami_gateway import WhoAmIResponse
-from vibe.cli.textual_ui.app import VibeApp
-from vibe.cli.textual_ui.widgets.messages import PlanOfferMessage
-from vibe.core.agent_loop import AgentLoop
-from vibe.core.config import SessionLoggingConfig, VibeConfig
+from kin_code.cli.plan_offer.ports.whoami_gateway import WhoAmIResponse
+from kin_code.cli.textual_ui.app import VibeApp
+from kin_code.cli.textual_ui.widgets.messages import PlanOfferMessage
+from kin_code.core.agent_loop import AgentLoop
+from kin_code.core.config import SessionLoggingConfig, VibeConfig
 
 
 def _make_app(gateway: FakeWhoAmIGateway, config: VibeConfig | None = None) -> VibeApp:

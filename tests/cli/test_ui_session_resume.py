@@ -3,12 +3,12 @@ from __future__ import annotations
 import pytest
 
 from tests.cli.plan_offer.adapters.fake_whoami_gateway import FakeWhoAmIGateway
-from vibe.cli.textual_ui.app import VibeApp
-from vibe.cli.textual_ui.widgets.messages import AssistantMessage, UserMessage
-from vibe.cli.textual_ui.widgets.tools import ToolCallMessage, ToolResultMessage
-from vibe.core.agent_loop import AgentLoop
-from vibe.core.config import SessionLoggingConfig, VibeConfig
-from vibe.core.types import FunctionCall, LLMMessage, Role, ToolCall
+from kin_code.cli.textual_ui.app import VibeApp
+from kin_code.cli.textual_ui.widgets.messages import AssistantMessage, UserMessage
+from kin_code.cli.textual_ui.widgets.tools import ToolCallMessage, ToolResultMessage
+from kin_code.core.agent_loop import AgentLoop
+from kin_code.core.config import SessionLoggingConfig, VibeConfig
+from kin_code.core.types import FunctionCall, LLMMessage, Role, ToolCall
 
 
 @pytest.fixture

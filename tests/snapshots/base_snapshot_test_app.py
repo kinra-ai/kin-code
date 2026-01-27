@@ -5,11 +5,11 @@ from textual.widgets.text_area import TextAreaTheme
 
 from tests.cli.plan_offer.adapters.fake_whoami_gateway import FakeWhoAmIGateway
 from tests.stubs.fake_backend import FakeBackend
-from vibe.cli.textual_ui.app import VibeApp
-from vibe.cli.textual_ui.widgets.chat_input import ChatTextArea
-from vibe.core.agent_loop import AgentLoop
-from vibe.core.agents.models import BuiltinAgentName
-from vibe.core.config import SessionLoggingConfig, VibeConfig
+from kin_code.cli.textual_ui.app import VibeApp
+from kin_code.cli.textual_ui.widgets.chat_input import ChatTextArea
+from kin_code.core.agent_loop import AgentLoop
+from kin_code.core.agents.models import BuiltinAgentName
+from kin_code.core.config import SessionLoggingConfig, VibeConfig
 
 
 def default_config() -> VibeConfig:
