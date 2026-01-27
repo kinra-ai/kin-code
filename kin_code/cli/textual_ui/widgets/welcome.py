@@ -141,10 +141,11 @@ class WelcomeBanner(Static):
     def _cache_skeleton_color(self) -> None:
         try:
             border = self.styles.border
+            _MIN_BORDER_TUPLE_LEN = 2
             if (
                 hasattr(border, "top")
                 and isinstance(edge := border.top, tuple)
-                and len(edge) >= 2
+                and len(edge) >= _MIN_BORDER_TUPLE_LEN
                 and isinstance(color := edge[1], Color)
             ):
                 self._cached_skeleton_color = color.hex

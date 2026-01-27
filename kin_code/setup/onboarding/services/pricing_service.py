@@ -151,6 +151,41 @@ class PricingCache:
 _pricing_cache = PricingCache()
 
 
+def _parse_openrouter_pricing(
+    data: dict, model_name: str
+) -> ModelPricing | None:
+    """Parse pricing data from OpenRouter API response.
+
+    Args:
+        data: The JSON response from OpenRouter's /api/v1/models endpoint.
+        model_name: The model ID to find pricing for.
+
+    Returns:
+        ModelPricing if found and valid, None otherwise.
+    """
+    for model_data in data.get("data", []):
+        if model_data.get("id") != model_name:
+            continue
+
+        pricing = model_data.get("pricing", {})
+        prompt_price = pricing.get("prompt")
+        completion_price = pricing.get("completion")
+
+        if prompt_price is None or completion_price is None:
+            return None
+
+        # Convert from per-token to per-million-tokens
+        input_price = float(prompt_price) * 1_000_000
+        output_price = float(completion_price) * 1_000_000
+        return ModelPricing(
+            input_price=input_price,
+            output_price=output_price,
+            fetched_at=int(time.time()),
+        )
+
+    return None
+
+
 async def fetch_openrouter_pricing(
     model_name: str, api_key: str | None
 ) -> ModelPricing | None:
@@ -177,23 +212,7 @@ async def fetch_openrouter_pricing(
             response = await client.get(url, headers=headers)
             response.raise_for_status()
             data = response.json()
-
-            for model_data in data.get("data", []):
-                if model_data.get("id") == model_name:
-                    pricing = model_data.get("pricing", {})
-                    prompt_price = pricing.get("prompt")
-                    completion_price = pricing.get("completion")
-
-                    if prompt_price is not None and completion_price is not None:
-                        # Convert from per-token to per-million-tokens
-                        input_price = float(prompt_price) * 1_000_000
-                        output_price = float(completion_price) * 1_000_000
-                        return ModelPricing(
-                            input_price=input_price,
-                            output_price=output_price,
-                            fetched_at=int(time.time()),
-                        )
-            return None
+            return _parse_openrouter_pricing(data, model_name)
 
     except (httpx.HTTPError, ValueError, KeyError):
         return None

@@ -33,6 +33,11 @@ class ModelApp(Container):
     can_focus = True
     can_focus_children = True
 
+    # Focus field indices for add form
+    _FOCUS_PROVIDER = 0
+    _FOCUS_MODEL_ID = 1
+    _FOCUS_ALIAS = 2
+
     BINDINGS: ClassVar[list[BindingType]] = [
         Binding("up", "move_up", "Up", show=False),
         Binding("down", "move_down", "Down", show=False),
@@ -93,7 +98,7 @@ class ModelApp(Container):
         self._add_provider_index = 0
         self._add_model_id = ""
         self._add_alias = ""
-        self._add_focus_field = 0  # 0=provider, 1=model_id, 2=alias
+        self._add_focus_field = self._FOCUS_PROVIDER
 
         # Widget references
         self._title_widget: Static | None = None
@@ -294,9 +299,9 @@ class ModelApp(Container):
         )
 
         lines: list[str] = []
-        p_cursor = "> " if self._add_focus_field == 0 else "  "
-        m_cursor = "> " if self._add_focus_field == 1 else "  "
-        a_cursor = "> " if self._add_focus_field == 2 else "  "
+        p_cursor = "> " if self._add_focus_field == self._FOCUS_PROVIDER else "  "
+        m_cursor = "> " if self._add_focus_field == self._FOCUS_MODEL_ID else "  "
+        a_cursor = "> " if self._add_focus_field == self._FOCUS_ALIAS else "  "
 
         lines.append(f"{p_cursor}Provider: [{provider_name}]  <-/->")
         lines.append(f"{m_cursor}Model ID: [{self._add_model_id or '_' * 30}]")
@@ -556,13 +561,13 @@ class ModelApp(Container):
                 self._add_focus_field = (self._add_focus_field + 1) % 3
                 self._update_display()
                 event.prevent_default()
-            elif event.character and self._add_focus_field > 0:
-                if self._add_focus_field == 1:
+            elif event.character and self._add_focus_field > self._FOCUS_PROVIDER:
+                if self._add_focus_field == self._FOCUS_MODEL_ID:
                     if event.key == "backspace":
                         self._add_model_id = self._add_model_id[:-1]
                     elif len(event.character) == 1 and event.character.isprintable():
                         self._add_model_id += event.character
-                elif self._add_focus_field == 2:
+                elif self._add_focus_field == self._FOCUS_ALIAS:
                     if event.key == "backspace":
                         self._add_alias = self._add_alias[:-1]
                     elif len(event.character) == 1 and event.character.isprintable():

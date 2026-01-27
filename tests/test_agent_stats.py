@@ -68,7 +68,7 @@ def make_config(
         ProviderConfig(
             name="openrouter",
             api_base="https://openrouter.ai/api/v1",
-            api_key_env_var="OPENROUTER_API_KEY",
+            api_key_env_var="",  # No API key required for tests
         ),
     ]
     return VibeConfig(

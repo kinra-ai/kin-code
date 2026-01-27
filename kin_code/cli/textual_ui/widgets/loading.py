@@ -107,7 +107,7 @@ class LoadingWidget(SpinnerMixin, Static):
             HALLOWEEN_DAY = 31
             DECEMBER = 12
             now = datetime.now()
-            if now.month in (JANUARY, FEBRUARY):
+            if now.month in {JANUARY, FEBRUARY}:
                 available_eggs.extend(self.EASTER_EGGS_WINTER)
             if now.month == OCTOBER and now.day == HALLOWEEN_DAY:
                 available_eggs.extend(self.EASTER_EGGS_HALLOWEEN)
