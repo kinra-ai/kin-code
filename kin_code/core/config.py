@@ -231,8 +231,9 @@ class ModelConfig(BaseModel):
     provider: str
     alias: str
     temperature: float = 0.2
-    input_price: float = 0.0  # Price per million input tokens
-    output_price: float = 0.0  # Price per million output tokens
+    input_price: float | None = None  # Price per million input tokens (None = auto-fetch)
+    output_price: float | None = None  # Price per million output tokens (None = auto-fetch)
+    context_window: int | None = None  # Context window size (None = unknown)
 
     @model_validator(mode="before")
     @classmethod
@@ -249,6 +250,16 @@ DEFAULT_PROVIDERS = [
         api_base="https://api.mistral.ai/v1",
         api_key_env_var="MISTRAL_API_KEY",
         backend=Backend.MISTRAL,
+    ),
+    ProviderConfig(
+        name="openrouter",
+        api_base="https://openrouter.ai/api/v1",
+        api_key_env_var="OPENROUTER_API_KEY",
+    ),
+    ProviderConfig(
+        name="openai",
+        api_base="https://api.openai.com/v1",
+        api_key_env_var="OPENAI_API_KEY",
     ),
     ProviderConfig(
         name="llamacpp",
@@ -276,8 +287,6 @@ DEFAULT_MODELS = [
         name="devstral",
         provider="llamacpp",
         alias="local",
-        input_price=0.0,
-        output_price=0.0,
     ),
 ]
 
@@ -288,6 +297,7 @@ class VibeConfig(BaseSettings):
     vim_keybindings: bool = False
     disable_welcome_banner_animation: bool = False
     displayed_workdir: str = ""
+    workdir: Path | None = None  # Override working directory
     auto_compact_threshold: int = 200_000
     context_warnings: bool = False
     auto_approve: bool = False
