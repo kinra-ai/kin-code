@@ -43,6 +43,7 @@ from kin_code.cli.textual_ui.widgets.messages import (
     WarningMessage,
     WhatsNewMessage,
 )
+from kin_code.cli.textual_ui.widgets.model_app import ModelApp
 from kin_code.cli.textual_ui.widgets.no_markup_static import NoMarkupStatic
 from kin_code.cli.textual_ui.widgets.path_display import PathDisplay
 from kin_code.cli.textual_ui.widgets.question_app import QuestionApp
@@ -90,6 +91,7 @@ class BottomApp(StrEnum):
     Approval = auto()
     Config = auto()
     Input = auto()
+    Model = auto()
     Question = auto()
 
 
@@ -344,6 +346,58 @@ class VibeApp(App):  # noqa: PLR0904
                 UserCommandMessage("Configuration closed (no changes saved).")
             )
 
+        await self._switch_to_input_app()
+
+    async def on_model_app_model_selected(
+        self, message: ModelApp.ModelSelected
+    ) -> None:
+        VibeConfig.save_updates({"active_model": message.alias})
+        await self._reload_config()
+        await self._mount_and_scroll(
+            UserCommandMessage(f"Active model changed to: {message.alias}")
+        )
+        await self._switch_to_input_app()
+
+    async def on_model_app_model_added(self, message: ModelApp.ModelAdded) -> None:
+        # Add the new model to the config
+        from kin_code.core.config import ModelConfig
+
+        new_model = ModelConfig(
+            name=message.model_id,
+            provider=message.provider,
+            alias=message.alias,
+            context_window=message.context_window,
+        )
+        current_models = list(self.config.models)
+        current_models.append(new_model)
+        VibeConfig.save_updates({"models": [m.model_dump() for m in current_models]})
+        await self._reload_config()
+        await self._mount_and_scroll(
+            UserCommandMessage(f"Model added: {message.alias}")
+        )
+
+    async def on_model_app_model_updated(
+        self, message: ModelApp.ModelUpdated
+    ) -> None:
+        # Update the context_window for an existing model
+        current_models = []
+        for m in self.config.models:
+            if m.alias == message.alias:
+                updated = m.model_copy(update={"context_window": message.context_window})
+                current_models.append(updated)
+            else:
+                current_models.append(m)
+        VibeConfig.save_updates({"models": [m.model_dump() for m in current_models]})
+        await self._reload_config()
+        await self._mount_and_scroll(
+            UserCommandMessage(f"Model updated: {message.alias}")
+        )
+
+    async def on_model_app_model_closed(self, message: ModelApp.ModelClosed) -> None:
+        if not message.changed:
+            await self._mount_and_scroll(
+                UserCommandMessage("Model manager closed.")
+            )
         await self._switch_to_input_app()
 
     async def on_compact_message_completed(
@@ -645,6 +699,12 @@ class VibeApp(App):  # noqa: PLR0904
             return
         await self._switch_to_config_app()
 
+    async def _show_model(self) -> None:
+        """Switch to the model management app in the bottom panel."""
+        if self._current_bottom_app == BottomApp.Model:
+            return
+        await self._switch_to_model_app()
+
     async def _reload_config(self) -> None:
         try:
             base_config = VibeConfig.load()
@@ -812,6 +872,13 @@ class VibeApp(App):  # noqa: PLR0904
             ConfigApp(self.config, has_terminal_theme=self._terminal_theme is not None)
         )
 
+    async def _switch_to_model_app(self) -> None:
+        if self._current_bottom_app == BottomApp.Model:
+            return
+
+        await self._mount_and_scroll(UserCommandMessage("Model manager opened..."))
+        await self._switch_from_input(ModelApp(self.config))
+
     async def _switch_to_approval_app(
         self, tool_name: str, tool_args: BaseModel
     ) -> None:
@@ -849,6 +916,8 @@ class VibeApp(App):  # noqa: PLR0904
                     self.query_one(ConfigApp).focus()
                 case BottomApp.Approval:
                     self.query_one(ApprovalApp).focus()
+                case BottomApp.Model:
+                    self.query_one(ModelApp).focus()
                 case BottomApp.Question:
                     self.query_one(QuestionApp).focus()
                 case app:
@@ -863,6 +932,15 @@ class VibeApp(App):  # noqa: PLR0904
             try:
                 config_app = self.query_one(ConfigApp)
                 config_app.action_close()
+            except Exception:
+                pass
+            self._last_escape_time = None
+            return
+
+        if self._current_bottom_app == BottomApp.Model:
+            try:
+                model_app = self.query_one(ModelApp)
+                model_app.action_close()
             except Exception:
                 pass
             self._last_escape_time = None

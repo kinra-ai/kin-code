@@ -22,9 +22,14 @@ class CommandRegistry:
                 handler="_show_help",
             ),
             "config": Command(
-                aliases=frozenset(["/config", "/theme", "/model"]),
+                aliases=frozenset(["/config", "/theme"]),
                 description="Edit config settings",
                 handler="_show_config",
+            ),
+            "model": Command(
+                aliases=frozenset(["/model", "/models"]),
+                description="Manage and select models",
+                handler="_show_model",
             ),
             "reload": Command(
                 aliases=frozenset(["/reload"]),
