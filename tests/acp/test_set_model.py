@@ -43,12 +43,12 @@ def acp_agent_loop(backend) -> VibeAcpAgentLoop:
             self.agent_manager.invalidate_config()
             try:
                 active_model = config.get_active_model()
-                self.stats.input_price_per_million = active_model.input_price
-                self.stats.output_price_per_million = active_model.output_price
+                self.stats.input_price_per_million = active_model.input_price or 0.0
+                self.stats.output_price_per_million = active_model.output_price or 0.0
             except ValueError:
                 pass
 
-    patch("vibe.acp.acp_agent_loop.AgentLoop", side_effect=PatchedAgentLoop).start()
+    patch("kin_code.acp.acp_agent_loop.AgentLoop", side_effect=PatchedAgentLoop).start()
 
     return _create_acp_agent()
 
@@ -125,7 +125,7 @@ class TestACPSetModel:
         )
         session_id = session_response.session_id
 
-        with patch("vibe.acp.acp_agent_loop.VibeConfig.save_updates") as mock_save:
+        with patch("kin_code.acp.acp_agent_loop.VibeConfig.save_updates") as mock_save:
             response = await acp_agent_loop.set_session_model(
                 session_id=session_id, model_id="devstral-small"
             )
@@ -142,7 +142,7 @@ class TestACPSetModel:
         )
         session_id = session_response.session_id
 
-        with patch("vibe.acp.acp_agent_loop.VibeConfig.save_updates") as mock_save:
+        with patch("kin_code.acp.acp_agent_loop.VibeConfig.save_updates") as mock_save:
             response = await acp_agent_loop.set_session_model(
                 session_id=session_id, model_id="non-existent-model"
             )

@@ -32,7 +32,7 @@ def acp_agent_loop(backend) -> VibeAcpAgentLoop:
             self._base_config = config
             self.agent_manager.invalidate_config()
 
-    patch("vibe.acp.acp_agent_loop.AgentLoop", side_effect=PatchedAgentLoop).start()
+    patch("kin_code.acp.acp_agent_loop.AgentLoop", side_effect=PatchedAgentLoop).start()
 
     return _create_acp_agent()
 

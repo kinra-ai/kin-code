@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import StrEnum, auto
 from pathlib import Path
 
-from vibe import VIBE_ROOT
+from kin_code import VIBE_ROOT
 
 _PROMPTS_DIR = VIBE_ROOT / "core" / "prompts"
 

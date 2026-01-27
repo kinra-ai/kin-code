@@ -565,8 +565,16 @@ class VibeConfig(BaseSettings):
 
     @classmethod
     def dump_config(cls, config: dict[str, Any]) -> None:
+        # Filter out None values recursively since TOML doesn't support None
+        def filter_none(obj: Any) -> Any:
+            if isinstance(obj, dict):
+                return {k: filter_none(v) for k, v in obj.items() if v is not None}
+            if isinstance(obj, list):
+                return [filter_none(item) for item in obj]
+            return obj
+
         with CONFIG_FILE.path.open("wb") as f:
-            tomli_w.dump(config, f)
+            tomli_w.dump(filter_none(config), f)
 
     @classmethod
     def _migrate(cls) -> None:

@@ -7,7 +7,7 @@ import sys
 
 from rich import print as rprint
 
-from vibe import __version__
+from kin_code import __version__
 from kin_code.core.agents.models import BuiltinAgentName
 from kin_code.core.paths.config_paths import unlock_config_paths
 from kin_code.core.trusted_folders import has_trustable_content, trusted_folders_manager

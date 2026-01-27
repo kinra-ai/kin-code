@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from vibe import VIBE_ROOT
+from kin_code import VIBE_ROOT
 from kin_code.acp.tools.base import AcpToolState, BaseAcpTool
 from kin_code.core.tools.base import ToolError
 from kin_code.core.tools.builtins.read_file import (

@@ -122,7 +122,14 @@ class SpinnerMixin:
             raise TypeError(
                 "SpinnerMixin requires a class that implements HasSetInterval protocol"
             )
-        self._spinner_timer = self.set_interval(0.1, self._update_spinner_frame)
+        if self._spinner_timer is None:
+            self._spinner_timer = self.set_interval(0.1, self._update_spinner_frame)
+
+    def stop_spinner_timer(self) -> None:
+        """Pause the spinner animation without changing visual state."""
+        if self._spinner_timer:
+            self._spinner_timer.stop()
+            self._spinner_timer = None
 
     def _update_spinner_frame(self) -> None:
         if not self._is_spinning or not self._indicator_widget:

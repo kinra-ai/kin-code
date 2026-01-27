@@ -44,19 +44,19 @@ if __name__ == "__main__":
         yield next(chunk_iterable)
 
     patch(
-        "vibe.core.llm.backend.mistral.MistralBackend.complete",
+        "kin_code.core.llm.backend.mistral.MistralBackend.complete",
         side_effect=mock_complete,
     ).start()
     patch(
-        "vibe.core.llm.backend.generic.GenericBackend.complete",
+        "kin_code.core.llm.backend.generic.GenericBackend.complete",
         side_effect=mock_complete,
     ).start()
     patch(
-        "vibe.core.llm.backend.mistral.MistralBackend.complete_streaming",
+        "kin_code.core.llm.backend.mistral.MistralBackend.complete_streaming",
         side_effect=mock_complete_streaming,
     ).start()
     patch(
-        "vibe.core.llm.backend.generic.GenericBackend.complete_streaming",
+        "kin_code.core.llm.backend.generic.GenericBackend.complete_streaming",
         side_effect=mock_complete_streaming,
     ).start()
 

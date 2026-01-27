@@ -39,7 +39,7 @@ async def test_ui_clipboard_notification_does_not_crash_on_markup_text(
 
     async with app.run_test(notifications=True) as pilot:
         await app.mount(ClipboardSelectionWidget("[/]"))
-        with patch("vibe.cli.clipboard._get_copy_fns") as mock_get_copy_fns:
+        with patch("kin_code.cli.clipboard._get_copy_fns") as mock_get_copy_fns:
             mock_get_copy_fns.return_value = [MagicMock()]
             copy_selection_to_clipboard(app)
 

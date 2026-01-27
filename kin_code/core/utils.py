@@ -14,7 +14,7 @@ from typing import Any
 
 import httpx
 
-from vibe import __version__
+from kin_code import __version__
 from kin_code.core.config import Backend
 from kin_code.core.paths.global_paths import LOG_DIR, LOG_FILE
 from kin_code.core.types import BaseEvent, ToolResultEvent

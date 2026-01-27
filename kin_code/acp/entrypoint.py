@@ -5,9 +5,13 @@ from dataclasses import dataclass
 import os
 import sys
 
-from vibe import __version__
+from kin_code import __version__
 from kin_code.core.config import VibeConfig
-from kin_code.core.paths.config_paths import CONFIG_FILE, HISTORY_FILE, unlock_config_paths
+from kin_code.core.paths.config_paths import (
+    CONFIG_FILE,
+    HISTORY_FILE,
+    unlock_config_paths,
+)
 from kin_code.core.utils import logger
 
 # Configure line buffering for subprocess communication

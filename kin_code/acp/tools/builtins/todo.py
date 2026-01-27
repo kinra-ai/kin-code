@@ -5,7 +5,7 @@ from typing import cast
 from acp.helpers import SessionUpdate
 from acp.schema import AgentPlanUpdate, PlanEntry, PlanEntryPriority, PlanEntryStatus
 
-from vibe import VIBE_ROOT
+from kin_code import VIBE_ROOT
 from kin_code.acp.tools.base import AcpToolState, BaseAcpTool
 from kin_code.core.tools.builtins.todo import (
     Todo as CoreTodoTool,

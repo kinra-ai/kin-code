@@ -3,7 +3,9 @@ from __future__ import annotations
 from kin_code.cli.update_notifier.adapters.filesystem_update_cache_repository import (
     FileSystemUpdateCacheRepository,
 )
-from kin_code.cli.update_notifier.adapters.github_update_gateway import GitHubUpdateGateway
+from kin_code.cli.update_notifier.adapters.github_update_gateway import (
+    GitHubUpdateGateway,
+)
 from kin_code.cli.update_notifier.adapters.pypi_update_gateway import PyPIUpdateGateway
 from kin_code.cli.update_notifier.ports.update_cache_repository import (
     UpdateCache,

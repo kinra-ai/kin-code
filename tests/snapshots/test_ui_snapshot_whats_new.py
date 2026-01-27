@@ -44,7 +44,7 @@ def test_snapshot_shows_whats_new_message(
     async def run_before(pilot: Pilot) -> None:
         await pilot.pause(0.5)
 
-    with patch("vibe.cli.update_notifier.whats_new.VIBE_ROOT", tmp_path):
+    with patch("kin_code.cli.update_notifier.whats_new.VIBE_ROOT", tmp_path):
         assert snap_compare(
             "test_ui_snapshot_whats_new.py:SnapshotTestAppWithWhatsNew",
             terminal_size=(120, 36),

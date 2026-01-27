@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 
-from vibe import VIBE_ROOT
+from kin_code import VIBE_ROOT
 from kin_code.cli.update_notifier.ports.update_cache_repository import (
     UpdateCache,
     UpdateCacheRepository,

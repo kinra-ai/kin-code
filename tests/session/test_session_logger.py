@@ -106,8 +106,8 @@ class TestSessionLoggerInitialization:
 
 
 class TestSessionLoggerMetadata:
-    @patch("vibe.core.session.session_logger.subprocess.run")
-    @patch("vibe.core.session.session_logger.getpass.getuser")
+    @patch("kin_code.core.session.session_logger.subprocess.run")
+    @patch("kin_code.core.session.session_logger.getpass.getuser")
     def test_session_metadata_initialization(
         self, mock_getuser, mock_subprocess, session_config: SessionLoggingConfig
     ) -> None:
@@ -139,8 +139,8 @@ class TestSessionLoggerMetadata:
         assert "working_directory" in metadata.environment
         assert metadata.environment["working_directory"] == str(Path.cwd())
 
-    @patch("vibe.core.session.session_logger.subprocess.run")
-    @patch("vibe.core.session.session_logger.getpass.getuser")
+    @patch("kin_code.core.session.session_logger.subprocess.run")
+    @patch("kin_code.core.session.session_logger.getpass.getuser")
     def test_session_metadata_with_git_errors(
         self, mock_getuser, mock_subprocess, session_config: SessionLoggingConfig
     ) -> None:

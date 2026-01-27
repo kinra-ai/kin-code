@@ -17,10 +17,12 @@ class GlobalPath:
 
 
 _DEFAULT_KIN_HOME = Path.home() / ".kin-code"
+_DEFAULT_VIBE_HOME = _DEFAULT_KIN_HOME  # Backwards compatibility alias
 
 
 def _get_kin_home() -> Path:
-    if kin_home := os.getenv("KIN_HOME"):
+    # Check KIN_HOME first, then VIBE_HOME for backwards compatibility
+    if kin_home := os.getenv("KIN_HOME") or os.getenv("VIBE_HOME"):
         return Path(kin_home).expanduser().resolve()
     return _DEFAULT_KIN_HOME
 

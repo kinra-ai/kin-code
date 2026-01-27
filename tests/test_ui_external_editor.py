@@ -36,7 +36,7 @@ async def test_ctrl_g_opens_external_editor_and_updates_input(
 ) -> None:
     """Test that Ctrl+G triggers external editor and updates input with result."""
     with patch(
-        "vibe.cli.textual_ui.widgets.chat_input.text_area.ExternalEditor"
+        "kin_code.cli.textual_ui.widgets.chat_input.text_area.ExternalEditor"
     ) as MockEditor:
         mock_instance = MagicMock()
         mock_instance.is_available.return_value = True
@@ -61,7 +61,7 @@ async def test_ctrl_g_opens_external_editor_and_updates_input(
 async def test_ctrl_g_works_with_empty_input(vibe_app: VibeApp) -> None:
     """Test that Ctrl+G works when input is empty."""
     with patch(
-        "vibe.cli.textual_ui.widgets.chat_input.text_area.ExternalEditor"
+        "kin_code.cli.textual_ui.widgets.chat_input.text_area.ExternalEditor"
     ) as MockEditor:
         mock_instance = MagicMock()
         mock_instance.is_available.return_value = True

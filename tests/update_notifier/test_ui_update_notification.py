@@ -246,7 +246,7 @@ async def test_ui_displays_whats_new_message_when_content_exists(
     )
 
     whats_new_content = "# What's New\n\n- Feature 1\n- Feature 2"
-    with patch("vibe.cli.update_notifier.whats_new.VIBE_ROOT", tmp_path):
+    with patch("kin_code.cli.update_notifier.whats_new.VIBE_ROOT", tmp_path):
         whats_new_file = tmp_path / "whats_new.md"
         whats_new_file.write_text(whats_new_content)
 
@@ -275,7 +275,7 @@ async def test_ui_does_not_display_whats_new_when_seen_whats_new_version_matches
         notifier=notifier, update_cache_repository=repository, current_version="1.0.0"
     )
 
-    with patch("vibe.cli.update_notifier.whats_new.VIBE_ROOT", tmp_path):
+    with patch("kin_code.cli.update_notifier.whats_new.VIBE_ROOT", tmp_path):
         whats_new_file = tmp_path / "whats_new.md"
         whats_new_file.write_text("# What's New\n\n- Feature 1")
 
@@ -304,7 +304,7 @@ async def test_ui_does_not_display_whats_new_when_file_is_empty(
         notifier=notifier, update_cache_repository=repository, current_version="1.0.0"
     )
 
-    with patch("vibe.cli.update_notifier.whats_new.VIBE_ROOT", tmp_path):
+    with patch("kin_code.cli.update_notifier.whats_new.VIBE_ROOT", tmp_path):
         whats_new_file = tmp_path / "whats_new.md"
         whats_new_file.write_text("")
 
@@ -336,7 +336,7 @@ async def test_ui_does_not_display_whats_new_when_file_does_not_exist(
         notifier=notifier, update_cache_repository=repository, current_version="1.0.0"
     )
 
-    with patch("vibe.cli.update_notifier.whats_new.VIBE_ROOT", tmp_path):
+    with patch("kin_code.cli.update_notifier.whats_new.VIBE_ROOT", tmp_path):
         async with app.run_test() as pilot:
             await pilot.pause(0.5)
 
@@ -361,7 +361,7 @@ async def test_ui_displays_success_notification_when_auto_update_succeeds(
     )
     notifier = FakeUpdateGateway(update=Update(latest_version="0.2.0"))
 
-    with patch("vibe.cli.update_notifier.update.UPDATE_COMMANDS", ["true"]):
+    with patch("kin_code.cli.update_notifier.update.UPDATE_COMMANDS", ["true"]):
         app = make_vibe_app(notifier=notifier, config=config)
 
         async with app.run_test() as pilot:
@@ -389,7 +389,7 @@ async def test_ui_displays_update_notification_when_auto_update_fails(
     )
     notifier = FakeUpdateGateway(update=Update(latest_version="0.2.0"))
 
-    with patch("vibe.cli.update_notifier.update.UPDATE_COMMANDS", ["false"]):
+    with patch("kin_code.cli.update_notifier.update.UPDATE_COMMANDS", ["false"]):
         app = make_vibe_app(notifier=notifier, config=config)
 
         async with app.run_test() as pilot:

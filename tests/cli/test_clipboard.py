@@ -86,7 +86,7 @@ def test_copy_selection_to_clipboard_no_notification(
     mock_app.notify.assert_not_called()
 
 
-@patch("vibe.cli.clipboard._get_copy_fns")
+@patch("kin_code.cli.clipboard._get_copy_fns")
 def test_copy_selection_to_clipboard_success(
     mock_get_copy_fns: MagicMock, mock_app: MagicMock
 ) -> None:
@@ -109,7 +109,7 @@ def test_copy_selection_to_clipboard_success(
     )
 
 
-@patch("vibe.cli.clipboard._get_copy_fns")
+@patch("kin_code.cli.clipboard._get_copy_fns")
 def test_copy_selection_to_clipboard_tries_all(
     mock_get_copy_fns: MagicMock, mock_app: MagicMock
 ) -> None:
@@ -136,7 +136,7 @@ def test_copy_selection_to_clipboard_tries_all(
     )
 
 
-@patch("vibe.cli.clipboard._get_copy_fns")
+@patch("kin_code.cli.clipboard._get_copy_fns")
 def test_copy_selection_to_clipboard_all_methods_fail(
     mock_get_copy_fns: MagicMock, mock_app: MagicMock
 ) -> None:
@@ -171,7 +171,7 @@ def test_copy_selection_to_clipboard_multiple_widgets(mock_app: MagicMock) -> No
     widget3 = MockWidget(text_selection=None)
     mock_app.query.return_value = [widget1, widget2, widget3]
 
-    with patch("vibe.cli.clipboard._get_copy_fns") as mock_get_copy_fns:
+    with patch("kin_code.cli.clipboard._get_copy_fns") as mock_get_copy_fns:
         mock_copy_fn = MagicMock()
         mock_get_copy_fns.return_value = [mock_copy_fn]
         copy_selection_to_clipboard(mock_app)
@@ -192,7 +192,7 @@ def test_copy_selection_to_clipboard_preview_shortening(mock_app: MagicMock) -> 
     )
     mock_app.query.return_value = [widget]
 
-    with patch("vibe.cli.clipboard._get_copy_fns") as mock_get_copy_fns:
+    with patch("kin_code.cli.clipboard._get_copy_fns") as mock_get_copy_fns:
         mock_copy_fn = MagicMock()
         mock_get_copy_fns.return_value = [mock_copy_fn]
         copy_selection_to_clipboard(mock_app)
@@ -237,7 +237,7 @@ def test_copy_osc52_with_tmux(
     handle.write.assert_called_once_with(expected_seq)
 
 
-@patch("vibe.cli.clipboard.subprocess.run")
+@patch("kin_code.cli.clipboard.subprocess.run")
 def test_copy_x11_clipboard(mock_subprocess: MagicMock) -> None:
     test_text = "test text"
 
@@ -250,7 +250,7 @@ def test_copy_x11_clipboard(mock_subprocess: MagicMock) -> None:
     )
 
 
-@patch("vibe.cli.clipboard.subprocess.run")
+@patch("kin_code.cli.clipboard.subprocess.run")
 def test_copy_wayland_clipboard(mock_subprocess: MagicMock) -> None:
     test_text = "test text"
 
@@ -261,7 +261,7 @@ def test_copy_wayland_clipboard(mock_subprocess: MagicMock) -> None:
     )
 
 
-@patch("vibe.cli.clipboard.shutil.which")
+@patch("kin_code.cli.clipboard.shutil.which")
 def test_get_copy_fns_no_system_tools(mock_which: MagicMock, mock_app: App) -> None:
     mock_which.return_value = None
 
@@ -273,8 +273,8 @@ def test_get_copy_fns_no_system_tools(mock_which: MagicMock, mock_app: App) -> N
     assert copy_fns[2] == mock_app.copy_to_clipboard
 
 
-@patch("vibe.cli.clipboard.platform.system")
-@patch("vibe.cli.clipboard.shutil.which")
+@patch("kin_code.cli.clipboard.platform.system")
+@patch("kin_code.cli.clipboard.shutil.which")
 def test_get_copy_fns_with_xclip(
     mock_which: MagicMock, mock_platform_system: MagicMock, mock_app: App
 ) -> None:
@@ -294,8 +294,8 @@ def test_get_copy_fns_with_xclip(
     assert copy_fns[3] == mock_app.copy_to_clipboard
 
 
-@patch("vibe.cli.clipboard.platform.system")
-@patch("vibe.cli.clipboard.shutil.which")
+@patch("kin_code.cli.clipboard.platform.system")
+@patch("kin_code.cli.clipboard.shutil.which")
 def test_get_copy_fns_with_wl_copy(
     mock_which: MagicMock, mock_platform_system: MagicMock, mock_app: App
 ) -> None:
@@ -315,8 +315,8 @@ def test_get_copy_fns_with_wl_copy(
     assert copy_fns[3] == mock_app.copy_to_clipboard
 
 
-@patch("vibe.cli.clipboard.platform.system")
-@patch("vibe.cli.clipboard.shutil.which")
+@patch("kin_code.cli.clipboard.platform.system")
+@patch("kin_code.cli.clipboard.shutil.which")
 def test_get_copy_fns_with_both_system_tools(
     mock_which: MagicMock, mock_platform_system: MagicMock, mock_app: App
 ) -> None:

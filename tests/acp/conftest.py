@@ -38,5 +38,5 @@ def acp_agent_loop(backend: FakeBackend) -> VibeAcpAgentLoop:
         def __init__(self, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs, backend=backend)
 
-    patch("vibe.acp.acp_agent_loop.AgentLoop", side_effect=PatchedAgent).start()
+    patch("kin_code.acp.acp_agent_loop.AgentLoop", side_effect=PatchedAgent).start()
     return _create_acp_agent()

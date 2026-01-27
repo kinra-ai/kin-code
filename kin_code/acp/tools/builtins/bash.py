@@ -13,7 +13,7 @@ from acp.schema import (
     WaitForTerminalExitResponse,
 )
 
-from vibe import VIBE_ROOT
+from kin_code import VIBE_ROOT
 from kin_code.acp.tools.base import AcpToolState, BaseAcpTool
 from kin_code.core.tools.base import BaseToolState, InvokeContext, ToolError
 from kin_code.core.tools.builtins.bash import Bash as CoreBashTool, BashArgs, BashResult

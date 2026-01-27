@@ -79,4 +79,4 @@ def _mock_platform(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.fixture(autouse=True)
 def _mock_update_commands(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("vibe.cli.update_notifier.update.UPDATE_COMMANDS", ["true"])
+    monkeypatch.setattr("kin_code.cli.update_notifier.update.UPDATE_COMMANDS", ["true"])

@@ -14,7 +14,11 @@ from kin_code.core.agents.manager import AgentManager
 from kin_code.core.agents.models import AgentProfile, BuiltinAgentName
 from kin_code.core.config import VibeConfig
 from kin_code.core.llm.backend.factory import BACKEND_FACTORY
-from kin_code.core.llm.format import APIToolFormatHandler, ResolvedMessage, ResolvedToolCall
+from kin_code.core.llm.format import (
+    APIToolFormatHandler,
+    ResolvedMessage,
+    ResolvedToolCall,
+)
 from kin_code.core.llm.types import BackendLike
 from kin_code.core.middleware import (
     AutoCompactMiddleware,
@@ -138,8 +142,8 @@ class AgentLoop:
         self.stats = AgentStats()
         try:
             active_model = config.get_active_model()
-            self.stats.input_price_per_million = active_model.input_price
-            self.stats.output_price_per_million = active_model.output_price
+            self.stats.input_price_per_million = active_model.input_price or 0.0
+            self.stats.output_price_per_million = active_model.output_price or 0.0
         except ValueError:
             pass
 
@@ -796,7 +800,7 @@ class AgentLoop:
         try:
             active_model = self.config.get_active_model()
             self.stats.update_pricing(
-                active_model.input_price, active_model.output_price
+                active_model.input_price or 0.0, active_model.output_price or 0.0
             )
         except ValueError:
             pass
@@ -917,7 +921,7 @@ class AgentLoop:
         try:
             active_model = self.config.get_active_model()
             self.stats.update_pricing(
-                active_model.input_price, active_model.output_price
+                active_model.input_price or 0.0, active_model.output_price or 0.0
             )
         except ValueError:
             pass

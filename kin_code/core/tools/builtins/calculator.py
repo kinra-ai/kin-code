@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
 import math
 from typing import ClassVar
 
@@ -12,11 +13,12 @@ from kin_code.core.tools.base import (
     BaseTool,
     BaseToolConfig,
     BaseToolState,
+    InvokeContext,
     ToolError,
     ToolPermission,
 )
 from kin_code.core.tools.ui import ToolCallDisplay, ToolResultDisplay, ToolUIData
-from kin_code.core.types import ToolCallEvent, ToolResultEvent
+from kin_code.core.types import ToolCallEvent, ToolResultEvent, ToolStreamEvent
 
 
 class CalculatorConfig(BaseToolConfig):
@@ -94,13 +96,16 @@ class Calculator(
         evaluator.names.update({"pi": math.pi, "e": math.e, "tau": math.tau})
         return evaluator
 
-    async def run(self, args: CalculatorArgs) -> CalculatorResult:
+    async def run(
+        self, args: CalculatorArgs, ctx: InvokeContext | None = None
+    ) -> AsyncGenerator[ToolStreamEvent | CalculatorResult, None]:
         """Evaluate a mathematical expression safely.
 
         Args:
             args: Arguments containing the expression to evaluate.
+            ctx: Optional invoke context.
 
-        Returns:
+        Yields:
             CalculatorResult with the expression, numeric result, and formatted string.
 
         Raises:
@@ -126,7 +131,7 @@ class Calculator(
                 f"Expression did not produce a numeric result: {result}"
             ) from err
 
-        return CalculatorResult(
+        yield CalculatorResult(
             expression=args.expression,
             result=float_result,
             formatted=f"{float_result:.{self.config.precision}g}",

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import datetime
 import random
 from time import time
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from textual.app import ComposeResult
 from textual.containers import Horizontal
@@ -11,6 +13,22 @@ from textual.widgets import Static
 
 from kin_code.cli.textual_ui.widgets.no_markup_static import NoMarkupStatic
 from kin_code.cli.textual_ui.widgets.spinner import SpinnerMixin, SpinnerType
+
+if TYPE_CHECKING:
+    from kin_code.cli.textual_ui.widgets.loading import LoadingWidget
+
+
+@contextmanager
+def paused_timer(widget: LoadingWidget | None) -> Iterator[None]:
+    """Context manager to pause loading widget animation during modal dialogs."""
+    if widget is None:
+        yield
+        return
+    widget.stop_spinner_timer()
+    try:
+        yield
+    finally:
+        widget.start_spinner_timer()
 
 
 class LoadingWidget(SpinnerMixin, Static):

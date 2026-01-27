@@ -10,7 +10,7 @@ from acp.schema import (
     ToolCallStart,
 )
 
-from vibe import VIBE_ROOT
+from kin_code import VIBE_ROOT
 from kin_code.acp.tools.base import AcpToolState, BaseAcpTool
 from kin_code.core.tools.base import ToolError
 from kin_code.core.tools.builtins.search_replace import (

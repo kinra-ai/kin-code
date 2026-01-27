@@ -48,7 +48,7 @@ from acp.schema import (
 )
 from pydantic import BaseModel, ConfigDict
 
-from vibe import VIBE_ROOT, __version__
+from kin_code import VIBE_ROOT, __version__
 from kin_code.acp.tools.base import BaseAcpTool
 from kin_code.acp.tools.session_update import (
     tool_call_session_update,
