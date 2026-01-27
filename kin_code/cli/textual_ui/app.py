@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 from enum import StrEnum, auto
-from os import getenv
 from pathlib import Path
 import subprocess
 import time
@@ -16,16 +15,9 @@ from textual.events import AppBlur, AppFocus, MouseUp
 from textual.widget import Widget
 from textual.widgets import Static
 
-from vibe import __version__ as CORE_VERSION
+from kin_code import __version__ as CORE_VERSION
 from kin_code.cli.clipboard import copy_selection_to_clipboard
 from kin_code.cli.commands import CommandRegistry
-from kin_code.cli.plan_offer.adapters.http_whoami_gateway import HttpWhoAmIGateway
-from kin_code.cli.plan_offer.decide_plan_offer import (
-    ACTION_TO_URL,
-    PlanOfferAction,
-    decide_plan_offer,
-)
-from kin_code.cli.plan_offer.ports.whoami_gateway import WhoAmIGateway
 from kin_code.cli.terminal_setup import setup_terminal
 from kin_code.cli.textual_ui.handlers.event_handler import EventHandler
 from kin_code.cli.textual_ui.terminal_theme import (
@@ -44,7 +36,6 @@ from kin_code.cli.textual_ui.widgets.messages import (
     BashOutputMessage,
     ErrorMessage,
     InterruptMessage,
-    PlanOfferMessage,
     ReasoningMessage,
     StreamingMessageBase,
     UserCommandMessage,
@@ -126,7 +117,6 @@ class VibeApp(App):  # noqa: PLR0904
         update_notifier: UpdateGateway | None = None,
         update_cache_repository: UpdateCacheRepository | None = None,
         current_version: str = CORE_VERSION,
-        plan_offer_gateway: WhoAmIGateway | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -155,8 +145,6 @@ class VibeApp(App):  # noqa: PLR0904
         self._update_notifier = update_notifier
         self._update_cache_repository = update_cache_repository
         self._current_version = current_version
-        self._plan_offer_gateway = plan_offer_gateway
-        self._plan_offer_shown = False
         self._initial_prompt = initial_prompt
         self._auto_scroll = True
         self._last_escape_time: float | None = None
@@ -230,7 +218,6 @@ class VibeApp(App):  # noqa: PLR0904
         chat_input_container.focus_input()
         await self._show_dangerous_directory_warning()
         await self._check_and_show_whats_new()
-        await self._maybe_show_plan_offer()
         self._schedule_update_notification()
 
         await self._rebuild_history_from_messages()
@@ -1019,39 +1006,6 @@ class VibeApp(App):  # noqa: PLR0904
         if content is not None:
             await self._mount_and_scroll(WhatsNewMessage(content))
         await mark_version_as_seen(self._current_version, self._update_cache_repository)
-
-    async def _maybe_show_plan_offer(self) -> None:
-        if self._plan_offer_shown:
-            return
-        action = await self._resolve_plan_offer_action()
-        if action is PlanOfferAction.NONE:
-            return
-        url = ACTION_TO_URL[action]
-        match action:
-            case PlanOfferAction.UPGRADE:
-                text = f"Upgrade to [Pro]({url})"
-            case PlanOfferAction.SWITCH_TO_PRO_KEY:
-                text = f"Switch to your [Pro API key]({url})"
-        await self._mount_and_scroll(PlanOfferMessage(text))
-        self._plan_offer_shown = True
-
-    async def _resolve_plan_offer_action(self) -> PlanOfferAction:
-        try:
-            active_model = self.config.get_active_model()
-            provider = self.config.get_provider_for_model(active_model)
-        except ValueError:
-            return PlanOfferAction.NONE
-
-        api_key_env = provider.api_key_env_var
-        api_key = getenv(api_key_env) if api_key_env else None
-        gateway = self._plan_offer_gateway or HttpWhoAmIGateway()
-        try:
-            return await decide_plan_offer(api_key, gateway)
-        except Exception as exc:
-            logger.warning(
-                "Plan-offer check failed (%s).", type(exc).__name__, exc_info=True
-            )
-            return PlanOfferAction.NONE
 
     async def _finalize_current_streaming_message(self) -> None:
         if self._current_streaming_reasoning is not None:
