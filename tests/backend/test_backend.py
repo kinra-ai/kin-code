@@ -25,16 +25,8 @@ from tests.backend.data.fireworks import (
     STREAMED_TOOL_CONVERSATION_PARAMS as FIREWORKS_STREAMED_TOOL_CONVERSATION_PARAMS,
     TOOL_CONVERSATION_PARAMS as FIREWORKS_TOOL_CONVERSATION_PARAMS,
 )
-from tests.backend.data.mistral import (
-    SIMPLE_CONVERSATION_PARAMS as MISTRAL_SIMPLE_CONVERSATION_PARAMS,
-    STREAMED_SIMPLE_CONVERSATION_PARAMS as MISTRAL_STREAMED_SIMPLE_CONVERSATION_PARAMS,
-    STREAMED_TOOL_CONVERSATION_PARAMS as MISTRAL_STREAMED_TOOL_CONVERSATION_PARAMS,
-    TOOL_CONVERSATION_PARAMS as MISTRAL_TOOL_CONVERSATION_PARAMS,
-)
-from kin_code.core.config import Backend, ModelConfig, ProviderConfig
-from kin_code.core.llm.backend.factory import BACKEND_FACTORY
+from kin_code.core.config import ModelConfig, ProviderConfig
 from kin_code.core.llm.backend.generic import GenericBackend
-from kin_code.core.llm.backend.mistral import MistralBackend
 from kin_code.core.llm.exceptions import BackendError
 from kin_code.core.llm.types import BackendLike
 from kin_code.core.types import LLMChunk, LLMMessage, Role, ToolCall
@@ -48,8 +40,6 @@ class TestBackend:
         [
             *FIREWORKS_SIMPLE_CONVERSATION_PARAMS,
             *FIREWORKS_TOOL_CONVERSATION_PARAMS,
-            *MISTRAL_SIMPLE_CONVERSATION_PARAMS,
-            *MISTRAL_TOOL_CONVERSATION_PARAMS,
         ],
     )
     async def test_backend_complete(
@@ -65,50 +55,41 @@ class TestBackend:
                 api_key_env_var="API_KEY",
             )
 
-            BackendClasses = [
-                GenericBackend,
-                *([MistralBackend] if base_url == "https://api.mistral.ai" else []),
-            ]
-            for BackendClass in BackendClasses:
-                backend: BackendLike = BackendClass(provider=provider)
-                model = ModelConfig(
-                    name="model_name", provider="provider_name", alias="model_alias"
-                )
-                messages = [LLMMessage(role=Role.user, content="Just say hi")]
+            backend: BackendLike = GenericBackend(provider=provider)
+            model = ModelConfig(
+                name="model_name", provider="provider_name", alias="model_alias"
+            )
+            messages = [LLMMessage(role=Role.user, content="Just say hi")]
 
-                result = await backend.complete(
-                    model=model,
-                    messages=messages,
-                    temperature=0.2,
-                    tools=None,
-                    max_tokens=None,
-                    tool_choice=None,
-                    extra_headers=None,
-                )
+            result = await backend.complete(
+                model=model,
+                messages=messages,
+                temperature=0.2,
+                tools=None,
+                max_tokens=None,
+                tool_choice=None,
+                extra_headers=None,
+            )
 
-                assert result.message.content == result_data["message"]
-                assert result.usage is not None
+            assert result.message.content == result_data["message"]
+            assert result.usage is not None
+            assert result.usage.prompt_tokens == result_data["usage"]["prompt_tokens"]
+            assert (
+                result.usage.completion_tokens
+                == result_data["usage"]["completion_tokens"]
+            )
+
+            if result.message.tool_calls is None:
+                return
+
+            assert len(result.message.tool_calls) == len(result_data["tool_calls"])
+            for i, tool_call in enumerate[ToolCall](result.message.tool_calls):
+                assert tool_call.function.name == result_data["tool_calls"][i]["name"]
                 assert (
-                    result.usage.prompt_tokens == result_data["usage"]["prompt_tokens"]
+                    tool_call.function.arguments
+                    == result_data["tool_calls"][i]["arguments"]
                 )
-                assert (
-                    result.usage.completion_tokens
-                    == result_data["usage"]["completion_tokens"]
-                )
-
-                if result.message.tool_calls is None:
-                    return
-
-                assert len(result.message.tool_calls) == len(result_data["tool_calls"])
-                for i, tool_call in enumerate[ToolCall](result.message.tool_calls):
-                    assert (
-                        tool_call.function.name == result_data["tool_calls"][i]["name"]
-                    )
-                    assert (
-                        tool_call.function.arguments
-                        == result_data["tool_calls"][i]["arguments"]
-                    )
-                    assert tool_call.index == result_data["tool_calls"][i]["index"]
+                assert tool_call.index == result_data["tool_calls"][i]["index"]
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -116,8 +97,6 @@ class TestBackend:
         [
             *FIREWORKS_STREAMED_SIMPLE_CONVERSATION_PARAMS,
             *FIREWORKS_STREAMED_TOOL_CONVERSATION_PARAMS,
-            *MISTRAL_STREAMED_SIMPLE_CONVERSATION_PARAMS,
-            *MISTRAL_STREAMED_TOOL_CONVERSATION_PARAMS,
         ],
     )
     async def test_backend_complete_streaming(
@@ -136,59 +115,52 @@ class TestBackend:
                 api_base=f"{base_url}/v1",
                 api_key_env_var="API_KEY",
             )
-            BackendClasses = [
-                GenericBackend,
-                *([MistralBackend] if base_url == "https://api.mistral.ai" else []),
+            backend: BackendLike = GenericBackend(provider=provider)
+            model = ModelConfig(
+                name="model_name", provider="provider_name", alias="model_alias"
+            )
+
+            messages = [
+                LLMMessage(role=Role.user, content="List files in current dir")
             ]
-            for BackendClass in BackendClasses:
-                backend: BackendLike = BackendClass(provider=provider)
-                model = ModelConfig(
-                    name="model_name", provider="provider_name", alias="model_alias"
+
+            results: list[LLMChunk] = []
+            async for result in backend.complete_streaming(
+                model=model,
+                messages=messages,
+                temperature=0.2,
+                tools=None,
+                max_tokens=None,
+                tool_choice=None,
+                extra_headers=None,
+            ):
+                results.append(result)
+
+            for result, expected_result in zip(results, result_data, strict=True):
+                assert result.message.content == expected_result["message"]
+                assert result.usage is not None
+                assert (
+                    result.usage.prompt_tokens
+                    == expected_result["usage"]["prompt_tokens"]
+                )
+                assert (
+                    result.usage.completion_tokens
+                    == expected_result["usage"]["completion_tokens"]
                 )
 
-                messages = [
-                    LLMMessage(role=Role.user, content="List files in current dir")
-                ]
+                if result.message.tool_calls is None:
+                    continue
 
-                results: list[LLMChunk] = []
-                async for result in backend.complete_streaming(
-                    model=model,
-                    messages=messages,
-                    temperature=0.2,
-                    tools=None,
-                    max_tokens=None,
-                    tool_choice=None,
-                    extra_headers=None,
-                ):
-                    results.append(result)
-
-                for result, expected_result in zip(results, result_data, strict=True):
-                    assert result.message.content == expected_result["message"]
-                    assert result.usage is not None
+                for i, tool_call in enumerate(result.message.tool_calls):
                     assert (
-                        result.usage.prompt_tokens
-                        == expected_result["usage"]["prompt_tokens"]
+                        tool_call.function.name
+                        == expected_result["tool_calls"][i]["name"]
                     )
                     assert (
-                        result.usage.completion_tokens
-                        == expected_result["usage"]["completion_tokens"]
+                        tool_call.function.arguments
+                        == expected_result["tool_calls"][i]["arguments"]
                     )
-
-                    if result.message.tool_calls is None:
-                        continue
-
-                    for i, tool_call in enumerate(result.message.tool_calls):
-                        assert (
-                            tool_call.function.name
-                            == expected_result["tool_calls"][i]["name"]
-                        )
-                        assert (
-                            tool_call.function.arguments
-                            == expected_result["tool_calls"][i]["arguments"]
-                        )
-                        assert (
-                            tool_call.index == expected_result["tool_calls"][i]["index"]
-                        )
+                    assert tool_call.index == expected_result["tool_calls"][i]["index"]
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -204,22 +176,12 @@ class TestBackend:
                 GenericBackend,
                 httpx.Response(status_code=429, text="Rate Limit Exceeded"),
             ),
-            (
-                "https://api.mistral.ai",
-                MistralBackend,
-                httpx.Response(status_code=500, text="Internal Server Error"),
-            ),
-            (
-                "https://api.mistral.ai",
-                MistralBackend,
-                httpx.Response(status_code=429, text="Rate Limit Exceeded"),
-            ),
         ],
     )
     async def test_backend_complete_streaming_error(
         self,
         base_url: Url,
-        backend_class: type[MistralBackend | GenericBackend],
+        backend_class: type[GenericBackend],
         response: httpx.Response,
     ):
         with respx.mock(base_url=base_url) as mock_api:
@@ -254,11 +216,6 @@ class TestBackend:
         "base_url,provider_name,expected_stream_options",
         [
             ("https://api.fireworks.ai", "fireworks", {"include_usage": True}),
-            (
-                "https://api.mistral.ai",
-                "mistral",
-                {"include_usage": True, "stream_tool_calls": True},
-            ),
         ],
     )
     async def test_backend_streaming_payload_includes_stream_options(
@@ -302,9 +259,8 @@ class TestBackend:
             assert payload["stream_options"] == expected_stream_options
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("backend_type", [Backend.MISTRAL, Backend.GENERIC])
-    async def test_backend_user_agent(self, backend_type: Backend):
-        user_agent = get_user_agent(backend_type)
+    async def test_backend_user_agent(self):
+        user_agent = get_user_agent()
         base_url = "https://api.example.com"
         json_response = {
             "id": "fake_id_1234",
@@ -338,7 +294,7 @@ class TestBackend:
                 api_base=f"{base_url}/v1",
                 api_key_env_var="API_KEY",
             )
-            backend = BACKEND_FACTORY[backend_type](provider=provider)
+            backend = GenericBackend(provider=provider)
             model = ModelConfig(
                 name="model_name", provider="provider_name", alias="model_alias"
             )
@@ -357,9 +313,8 @@ class TestBackend:
             assert mock_api.calls.last.request.headers["user-agent"] == user_agent
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("backend_type", [Backend.MISTRAL, Backend.GENERIC])
-    async def test_backend_user_agent_when_streaming(self, backend_type: Backend):
-        user_agent = get_user_agent(backend_type)
+    async def test_backend_user_agent_when_streaming(self):
+        user_agent = get_user_agent()
 
         base_url = "https://api.example.com"
         with respx.mock(base_url=base_url) as mock_api:
@@ -378,7 +333,7 @@ class TestBackend:
                 api_base=f"{base_url}/v1",
                 api_key_env_var="API_KEY",
             )
-            backend = BACKEND_FACTORY[backend_type](provider=provider)
+            backend = GenericBackend(provider=provider)
             model = ModelConfig(
                 name="model_name", provider="provider_name", alias="model_alias"
             )

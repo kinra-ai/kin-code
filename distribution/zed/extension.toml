@@ -1,35 +1,35 @@
-id = "mistral-vibe"
-name = "Mistral Vibe"
-description = "Mistral's open-source coding assistant"
-version = "2.0.0"
+id = "kin-code"
+name = "Kin Code"
+description = "Open-source coding assistant"
+version = "1.1.0"
 schema_version = 1
-authors = ["Mistral AI"]
-repository = "https://github.com/mistralai/mistral-vibe"
+authors = ["Blake Gjerdingen"]
+repository = "https://github.com/kinra-ai/kin-code"
 
-[agent_servers.mistral-vibe]
-name = "Mistral Vibe"
-icon = "./icons/mistral_vibe.svg"
+[agent_servers.kin-code]
+name = "Kin Code"
+icon = "./icons/kin_code.svg"
 
-[agent_servers.mistral-vibe.targets.darwin-aarch64]
-archive = "https://github.com/mistralai/mistral-vibe/releases/download/v2.0.0/vibe-acp-darwin-aarch64-2.0.0.zip"
-cmd = "./vibe-acp"
+[agent_servers.kin-code.targets.darwin-aarch64]
+archive = "https://github.com/kinra-ai/kin-code/releases/download/v1.1.0/kin-acp-darwin-aarch64-1.1.0.zip"
+cmd = "./kin-acp"
 
-[agent_servers.mistral-vibe.targets.darwin-x86_64]
-archive = "https://github.com/mistralai/mistral-vibe/releases/download/v2.0.0/vibe-acp-darwin-x86_64-2.0.0.zip"
-cmd = "./vibe-acp"
+[agent_servers.kin-code.targets.darwin-x86_64]
+archive = "https://github.com/kinra-ai/kin-code/releases/download/v1.1.0/kin-acp-darwin-x86_64-1.1.0.zip"
+cmd = "./kin-acp"
 
-[agent_servers.mistral-vibe.targets.linux-aarch64]
-archive = "https://github.com/mistralai/mistral-vibe/releases/download/v2.0.0/vibe-acp-linux-aarch64-2.0.0.zip"
-cmd = "./vibe-acp"
+[agent_servers.kin-code.targets.linux-aarch64]
+archive = "https://github.com/kinra-ai/kin-code/releases/download/v1.1.0/kin-acp-linux-aarch64-1.1.0.zip"
+cmd = "./kin-acp"
 
-[agent_servers.mistral-vibe.targets.linux-x86_64]
-archive = "https://github.com/mistralai/mistral-vibe/releases/download/v2.0.0/vibe-acp-linux-x86_64-2.0.0.zip"
-cmd = "./vibe-acp"
+[agent_servers.kin-code.targets.linux-x86_64]
+archive = "https://github.com/kinra-ai/kin-code/releases/download/v1.1.0/kin-acp-linux-x86_64-1.1.0.zip"
+cmd = "./kin-acp"
 
-[agent_servers.mistral-vibe.targets.windows-aarch64]
-archive = "https://github.com/mistralai/mistral-vibe/releases/download/v2.0.0/vibe-acp-windows-aarch64-2.0.0.zip"
-cmd = "./vibe-acp.exe"
+[agent_servers.kin-code.targets.windows-aarch64]
+archive = "https://github.com/kinra-ai/kin-code/releases/download/v1.1.0/kin-acp-windows-aarch64-1.1.0.zip"
+cmd = "./kin-acp.exe"
 
-[agent_servers.mistral-vibe.targets.windows-x86_64]
-archive = "https://github.com/mistralai/mistral-vibe/releases/download/v2.0.0/vibe-acp-windows-x86_64-2.0.0.zip"
-cmd = "./vibe-acp.exe"
+[agent_servers.kin-code.targets.windows-x86_64]
+archive = "https://github.com/kinra-ai/kin-code/releases/download/v1.1.0/kin-acp-windows-x86_64-1.1.0.zip"
+cmd = "./kin-acp.exe"

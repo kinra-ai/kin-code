@@ -577,7 +577,7 @@ class AgentLoop:
                     tools=available_tools,
                     tool_choice=tool_choice,
                     extra_headers={
-                        "user-agent": get_user_agent(provider.backend),
+                        "user-agent": get_user_agent(),
                         "x-affinity": self.session_id,
                     },
                     max_tokens=max_tokens,
@@ -621,7 +621,7 @@ class AgentLoop:
                     tools=available_tools,
                     tool_choice=tool_choice,
                     extra_headers={
-                        "user-agent": get_user_agent(provider.backend),
+                        "user-agent": get_user_agent(),
                         "x-affinity": self.session_id,
                     },
                     max_tokens=max_tokens,
@@ -837,14 +837,13 @@ class AgentLoop:
             self.messages = [system_message, summary_message]
 
             active_model = self.config.get_active_model()
-            provider = self.config.get_provider_for_model(active_model)
 
             async with self.backend as backend:
                 actual_context_tokens = await backend.count_tokens(
                     model=active_model,
                     messages=self.messages,
                     tools=self.format_handler.get_available_tools(self.tool_manager),
-                    extra_headers={"user-agent": get_user_agent(provider.backend)},
+                    extra_headers={"user-agent": get_user_agent()},
                 )
 
             self.stats.context_tokens = actual_context_tokens

@@ -19,7 +19,7 @@ def get_base_config() -> dict[str, Any]:
                 "name": "mistral",
                 "api_base": "https://api.mistral.ai/v1",
                 "api_key_env_var": "MISTRAL_API_KEY",
-                "backend": "mistral",
+                "backend": "generic",
             }
         ],
         "models": [
@@ -52,7 +52,7 @@ def config_dir(
     config_file = config_dir / "config.toml"
     config_file.write_text(tomli_w.dumps(get_base_config()), encoding="utf-8")
 
-    monkeypatch.setattr(global_paths, "_DEFAULT_VIBE_HOME", config_dir)
+    monkeypatch.setattr(global_paths, "_DEFAULT_KIN_HOME", config_dir)
     return config_dir
 
 

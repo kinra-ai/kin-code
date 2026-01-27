@@ -8,7 +8,6 @@ Key Components:
     ModelPricing: Immutable dataclass representing pricing per million tokens.
     PricingCache: File-based cache with TTL support for storing pricing data.
     fetch_openrouter_pricing: Fetches pricing from OpenRouter's /api/v1/models endpoint.
-    get_mistral_pricing: Returns hardcoded pricing for known Mistral models.
     fetch_model_pricing: Main entry point that checks cache then fetches as needed.
     get_model_pricing_sync: Synchronous wrapper for use in non-async contexts.
 
@@ -21,8 +20,8 @@ Typical usage:
     # Async context
     pricing = await fetch_model_pricing("openrouter", "https://openrouter.ai/api/v1", "gpt-4o", api_key)
 
-    # Sync context (e.g., Agent.__init__)
-    pricing = get_model_pricing_sync("mistral", "https://api.mistral.ai/v1", "kin-code-latest", api_key)
+    # Sync context
+    pricing = get_model_pricing_sync("openrouter", "https://openrouter.ai/api/v1", "gpt-4o", api_key)
 """
 
 from __future__ import annotations
@@ -152,32 +151,6 @@ class PricingCache:
 _pricing_cache = PricingCache()
 
 
-# Hardcoded Mistral pricing (API doesn't expose pricing)
-_MISTRAL_PRICING: dict[str, ModelPricing] = {
-    "kin-code-latest": ModelPricing(0.4, 2.0, 0),
-    "devstral-small-latest": ModelPricing(0.1, 0.3, 0),
-    "devstral-small-2505": ModelPricing(0.1, 0.3, 0),
-    "devstral-latest": ModelPricing(0.4, 2.0, 0),
-    "codestral-latest": ModelPricing(0.3, 0.9, 0),
-    "codestral-2501": ModelPricing(0.3, 0.9, 0),
-    "mistral-large-latest": ModelPricing(2.0, 6.0, 0),
-    "mistral-small-latest": ModelPricing(0.1, 0.3, 0),
-    "pixtral-large-latest": ModelPricing(2.0, 6.0, 0),
-}
-
-
-def get_mistral_pricing(model_name: str) -> ModelPricing | None:
-    """Return hardcoded pricing for known Mistral models.
-
-    Args:
-        model_name: The Mistral model name.
-
-    Returns:
-        ModelPricing if the model is known, None otherwise.
-    """
-    return _MISTRAL_PRICING.get(model_name)
-
-
 async def fetch_openrouter_pricing(
     model_name: str, api_key: str | None
 ) -> ModelPricing | None:
@@ -231,11 +204,6 @@ def _is_openrouter_provider(api_base: str) -> bool:
     return "openrouter.ai" in api_base.lower()
 
 
-def _is_mistral_provider(provider_name: str, api_base: str) -> bool:
-    """Check if the provider is Mistral."""
-    return provider_name.lower() == "mistral" or "api.mistral.ai" in api_base.lower()
-
-
 async def fetch_model_pricing(
     provider_name: str,
     api_base: str,
@@ -246,12 +214,11 @@ async def fetch_model_pricing(
 
     This is the main entry point for fetching pricing. It:
     1. Checks the local cache for unexpired pricing data
-    2. For Mistral, returns hardcoded pricing (API doesn't expose prices)
-    3. For OpenRouter, fetches from their /api/v1/models endpoint
-    4. Caches successful fetches for 24 hours
+    2. For OpenRouter, fetches from their /api/v1/models endpoint
+    3. Caches successful fetches for 24 hours
 
     Args:
-        provider_name: Name of the provider (e.g., "mistral", "openrouter").
+        provider_name: Name of the provider (e.g., "openrouter").
         api_base: Base URL of the provider API.
         model_name: Name of the model to fetch pricing for.
         api_key: Optional API key for authentication.
@@ -266,9 +233,7 @@ async def fetch_model_pricing(
     pricing: ModelPricing | None = None
 
     # Handle different providers
-    if _is_mistral_provider(provider_name, api_base):
-        pricing = get_mistral_pricing(model_name)
-    elif _is_openrouter_provider(api_base):
+    if _is_openrouter_provider(api_base):
         pricing = await fetch_openrouter_pricing(model_name, api_key)
 
     # Cache the result if we got pricing
@@ -286,9 +251,9 @@ def get_model_pricing_sync(
 ) -> ModelPricing | None:
     """Synchronous wrapper for fetch_model_pricing.
 
-    Uses cached data or hardcoded pricing when available to avoid
-    blocking. Falls back to running the async fetch in an event loop
-    only when needed for providers that require API calls.
+    Uses cached data when available to avoid blocking. Falls back to
+    running the async fetch in an event loop only when needed for
+    providers that require API calls.
 
     Args:
         provider_name: Name of the provider.
@@ -302,10 +267,6 @@ def get_model_pricing_sync(
     # Check cache first (fast path)
     if cached := _pricing_cache.get(provider_name, model_name):
         return cached
-
-    # For Mistral, use hardcoded pricing (no async needed)
-    if _is_mistral_provider(provider_name, api_base):
-        return get_mistral_pricing(model_name)
 
     # For providers that need API calls, try to run async
     if _is_openrouter_provider(api_base):

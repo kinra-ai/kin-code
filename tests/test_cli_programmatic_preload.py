@@ -33,7 +33,7 @@ def test_run_programmatic_preload_streaming_is_batched(
     )
 
     with mock_backend_factory(
-        Backend.MISTRAL,
+        Backend.GENERIC,
         lambda provider, **kwargs: FakeBackend(
             mock_llm_chunk(
                 content="Decorators are wrappers that modify function behavior."
@@ -98,7 +98,7 @@ def test_run_programmatic_ignores_system_messages_in_previous(
     )
 
     with mock_backend_factory(
-        Backend.MISTRAL,
+        Backend.GENERIC,
         lambda provider, **kwargs: FakeBackend([mock_llm_chunk(content="Understood.")]),
     ):
         cfg = VibeConfig(

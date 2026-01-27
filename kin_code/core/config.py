@@ -53,14 +53,6 @@ class MissingPromptFileError(RuntimeError):
         self.prompt_dir = prompt_dir
 
 
-class WrongBackendError(RuntimeError):
-    def __init__(self, backend: Backend, is_mistral_api: bool) -> None:
-        super().__init__(
-            f"Wrong backend '{backend}' for {'' if is_mistral_api else 'non-'}"
-            f"mistral API. Use '{Backend.MISTRAL}' for mistral API and '{Backend.GENERIC}' for others."
-        )
-        self.backend = backend
-        self.is_mistral_api = is_mistral_api
 
 
 class TomlFileSettingsSource(PydanticBaseSettingsSource):
@@ -119,7 +111,6 @@ class SessionLoggingConfig(BaseSettings):
 
 
 class Backend(StrEnum):
-    MISTRAL = auto()
     GENERIC = auto()
 
 
@@ -246,53 +237,17 @@ class ModelConfig(BaseModel):
 
 DEFAULT_PROVIDERS = [
     ProviderConfig(
-        name="mistral",
-        api_base="https://api.mistral.ai/v1",
-        api_key_env_var="MISTRAL_API_KEY",
-        backend=Backend.MISTRAL,
-    ),
-    ProviderConfig(
         name="openrouter",
         api_base="https://openrouter.ai/api/v1",
         api_key_env_var="OPENROUTER_API_KEY",
     ),
-    ProviderConfig(
-        name="openai",
-        api_base="https://api.openai.com/v1",
-        api_key_env_var="OPENAI_API_KEY",
-    ),
-    ProviderConfig(
-        name="llamacpp",
-        api_base="http://127.0.0.1:8080/v1",
-        api_key_env_var="",  # NOTE: if you wish to use --api-key in llama-server, change this value
-    ),
 ]
 
-DEFAULT_MODELS = [
-    ModelConfig(
-        name="mistral-vibe-cli-latest",
-        provider="mistral",
-        alias="devstral-2",
-        input_price=0.4,
-        output_price=2.0,
-    ),
-    ModelConfig(
-        name="devstral-small-latest",
-        provider="mistral",
-        alias="devstral-small",
-        input_price=0.1,
-        output_price=0.3,
-    ),
-    ModelConfig(
-        name="devstral",
-        provider="llamacpp",
-        alias="local",
-    ),
-]
+DEFAULT_MODELS: list[ModelConfig] = []
 
 
 class VibeConfig(BaseSettings):
-    active_model: str = "devstral-2"
+    active_model: str = ""
     textual_theme: str = "terminal"
     vim_keybindings: bool = False
     disable_welcome_banner_animation: bool = False
@@ -465,26 +420,6 @@ class VibeConfig(BaseSettings):
             pass
         return self
 
-    @model_validator(mode="after")
-    def _check_api_backend_compatibility(self) -> KinConfig:
-        try:
-            active_model = self.get_active_model()
-            provider = self.get_provider_for_model(active_model)
-            MISTRAL_API_BASES = [
-                "https://codestral.mistral.ai",
-                "https://api.mistral.ai",
-            ]
-            is_mistral_api = any(
-                provider.api_base.startswith(api_base) for api_base in MISTRAL_API_BASES
-            )
-            if (is_mistral_api and provider.backend != Backend.MISTRAL) or (
-                not is_mistral_api and provider.backend != Backend.GENERIC
-            ):
-                raise WrongBackendError(provider.backend, is_mistral_api)
-
-        except ValueError:
-            pass
-        return self
 
     @field_validator("tool_paths", mode="before")
     @classmethod

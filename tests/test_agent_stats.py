@@ -9,7 +9,6 @@ from tests.stubs.fake_backend import FakeBackend
 from kin_code.core.agent_loop import AgentLoop
 from kin_code.core.agents.models import BuiltinAgentName
 from kin_code.core.config import (
-    Backend,
     ModelConfig,
     ProviderConfig,
     SessionLoggingConfig,
@@ -44,22 +43,22 @@ def make_config(
 ) -> VibeConfig:
     models = [
         ModelConfig(
-            name="mistral-vibe-cli-latest",
-            provider="mistral",
+            name="test-model-latest",
+            provider="openrouter",
             alias="devstral-latest",
             input_price=input_price,
             output_price=output_price,
         ),
         ModelConfig(
-            name="devstral-small-latest",
-            provider="mistral",
+            name="test-model-small",
+            provider="openrouter",
             alias="devstral-small",
             input_price=0.1,
             output_price=0.3,
         ),
         ModelConfig(
             name="strawberry",
-            provider="lechat",
+            provider="openrouter",
             alias="strawberry",
             input_price=2.5,
             output_price=10.0,
@@ -67,16 +66,9 @@ def make_config(
     ]
     providers = [
         ProviderConfig(
-            name="mistral",
-            api_base="https://api.mistral.ai/v1",
-            api_key_env_var="MISTRAL_API_KEY",
-            backend=Backend.MISTRAL,
-        ),
-        ProviderConfig(
-            name="lechat",
-            api_base="https://api.mistral.ai/v1",
-            api_key_env_var="LECHAT_API_KEY",
-            backend=Backend.MISTRAL,
+            name="openrouter",
+            api_base="https://openrouter.ai/api/v1",
+            api_key_env_var="OPENROUTER_API_KEY",
         ),
     ]
     return VibeConfig(

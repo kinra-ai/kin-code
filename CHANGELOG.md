@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-01-27
+
+### Changed
+- Simplified provider configuration (removed Mistral-specific backend)
+- Default provider is now OpenRouter only
+- Users can add any OpenAI-compatible endpoint via config
+
+### Removed
+- Mistral-specific backend and SDK dependency
+- Hardcoded Mistral pricing
+- Default Mistral models
+
+### Fixed
+- Version now reflects Kin Code versioning (not upstream)
+
 ## [2.0.0] - 2026-01-27
 
 ### Added
