@@ -42,6 +42,13 @@ PROVIDER_PRESETS = [
         api_key_env_var="",
     ),
     ProviderPreset(
+        id="lmstudio",
+        name="LM Studio (Local)",
+        base_url="http://localhost:1234/v1",
+        requires_api_key=False,
+        api_key_env_var="",
+    ),
+    ProviderPreset(
         id="custom",
         name="Custom OpenAI-Compatible",
         base_url="",
