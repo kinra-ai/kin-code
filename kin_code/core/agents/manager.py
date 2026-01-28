@@ -18,7 +18,7 @@ from kin_code.core.utils import name_matches
 if TYPE_CHECKING:
     from kin_code.core.config import VibeConfig
 
-logger = getLogger("vibe")
+logger = getLogger("kin_code")
 
 
 class AgentManager:

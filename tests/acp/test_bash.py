@@ -5,10 +5,10 @@ import asyncio
 from acp.schema import EnvVariable, TerminalOutputResponse, WaitForTerminalExitResponse
 import pytest
 
-from tests.mock.utils import collect_result
 from kin_code.acp.tools.builtins.bash import AcpBashState, Bash
 from kin_code.core.tools.base import ToolError
 from kin_code.core.tools.builtins.bash import BashArgs, BashResult, BashToolConfig
+from tests.mock.utils import collect_result
 
 
 class MockTerminalHandle:

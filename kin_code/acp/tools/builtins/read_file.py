@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from kin_code import VIBE_ROOT
+from kin_code import KIN_ROOT
 from kin_code.acp.tools.base import AcpToolState, BaseAcpTool
 from kin_code.core.tools.base import ToolError
 from kin_code.core.tools.builtins.read_file import (
@@ -22,7 +22,7 @@ class AcpReadFileState(ReadFileState, AcpToolState):
 
 class ReadFile(CoreReadFileTool, BaseAcpTool[AcpReadFileState]):
     state: AcpReadFileState
-    prompt_path = VIBE_ROOT / "core" / "tools" / "builtins" / "prompts" / "read_file.md"
+    prompt_path = KIN_ROOT / "core" / "tools" / "builtins" / "prompts" / "read_file.md"
 
     @classmethod
     def _get_tool_state_class(cls) -> type[AcpReadFileState]:

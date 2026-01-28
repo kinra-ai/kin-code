@@ -143,7 +143,7 @@ logging.basicConfig(
     handlers=[logging.FileHandler(LOG_FILE.path, "a", "utf-8")],
 )
 
-logger = logging.getLogger("vibe")
+logger = logging.getLogger("kin_code")
 
 
 def get_user_agent() -> str:

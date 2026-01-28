@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import pytest
 
-from tests.mock.utils import mock_llm_chunk
-from tests.stubs.fake_backend import FakeBackend
 from kin_code.core.agent_loop import AgentLoop
 from kin_code.core.agents.manager import AgentManager
 from kin_code.core.agents.models import (
@@ -26,6 +24,8 @@ from kin_code.core.types import (
     ToolCall,
     ToolResultEvent,
 )
+from tests.mock.utils import mock_llm_chunk
+from tests.stubs.fake_backend import FakeBackend
 
 
 class TestDeepMerge:

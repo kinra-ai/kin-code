@@ -10,7 +10,7 @@ from acp.schema import (
     ToolCallStart,
 )
 
-from kin_code import VIBE_ROOT
+from kin_code import KIN_ROOT
 from kin_code.acp.tools.base import AcpToolState, BaseAcpTool
 from kin_code.core.tools.base import ToolError
 from kin_code.core.tools.builtins.search_replace import (
@@ -29,7 +29,7 @@ class AcpSearchReplaceState(SearchReplaceState, AcpToolState):
 class SearchReplace(CoreSearchReplaceTool, BaseAcpTool[AcpSearchReplaceState]):
     state: AcpSearchReplaceState
     prompt_path = (
-        VIBE_ROOT / "core" / "tools" / "builtins" / "prompts" / "search_replace.md"
+        KIN_ROOT / "core" / "tools" / "builtins" / "prompts" / "search_replace.md"
     )
 
     @classmethod

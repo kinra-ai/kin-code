@@ -22,7 +22,7 @@ from kin_code.core.tools.mcp import (
 )
 from kin_code.core.utils import name_matches, run_sync
 
-logger = getLogger("vibe")
+logger = getLogger("kin_code")
 
 if TYPE_CHECKING:
     from kin_code.core.config import MCPHttp, MCPStdio, MCPStreamableHttp, VibeConfig

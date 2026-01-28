@@ -1223,14 +1223,14 @@ class VibeApp(App):  # noqa: PLR0904
 
         if self.config.enable_auto_update and await do_update():
             self.notify(
-                f"{update_message_prefix}\nVibe was updated successfully. Please restart to use the new version.",
+                f"{update_message_prefix}\nKin Code was updated successfully. Please restart to use the new version.",
                 title="Update successful",
                 severity="information",
                 timeout=10,
             )
             return
 
-        message = f"{update_message_prefix}\nPlease update mistral-vibe with your package manager"
+        message = f"{update_message_prefix}\nPlease update kin-code with your package manager"
 
         self.notify(
             message, title="Update available", severity="information", timeout=10
@@ -1253,12 +1253,12 @@ def _print_session_resume_message(session_id: str | None) -> None:
         return
 
     print()
-    print("To continue this session, run: vibe --continue")
-    print(f"Or: vibe --resume {session_id}")
+    print("To continue this session, run: kin --continue")
+    print(f"Or: kin --resume {session_id}")
 
 
 def run_textual_ui(agent_loop: AgentLoop, initial_prompt: str | None = None) -> None:
-    update_notifier = PyPIUpdateGateway(project_name="mistral-vibe")
+    update_notifier = PyPIUpdateGateway(project_name="kin-code")
     update_cache_repository = FileSystemUpdateCacheRepository()
     app = VibeApp(
         agent_loop=agent_loop,

@@ -12,7 +12,7 @@ class SnapshotTestAppWithConversation(BaseSnapshotTestApp):
     def __init__(self) -> None:
         fake_backend = FakeBackend(
             mock_llm_chunk(
-                content="I'm the Vibe agent and I'm ready to help.",
+                content="I'm the Kin Code agent and I'm ready to help.",
                 prompt_tokens=10_000,
                 completion_tokens=2_500,
             )

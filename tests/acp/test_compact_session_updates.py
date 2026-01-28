@@ -7,15 +7,15 @@ from unittest.mock import patch
 from acp.schema import TextContentBlock, ToolCallProgress, ToolCallStart
 import pytest
 
-from tests.stubs.fake_backend import FakeBackend
-from tests.stubs.fake_client import FakeClient
-from kin_code.acp.acp_agent_loop import VibeAcpAgentLoop
+from kin_code.acp.acp_agent_loop import KinAcpAgentLoop
 from kin_code.core.agent_loop import AgentLoop
 from kin_code.core.config import SessionLoggingConfig, VibeConfig
+from tests.stubs.fake_backend import FakeBackend
+from tests.stubs.fake_client import FakeClient
 
 
 @pytest.fixture
-def acp_agent_loop(backend: FakeBackend) -> VibeAcpAgentLoop:
+def acp_agent_loop(backend: FakeBackend) -> KinAcpAgentLoop:
     class PatchedAgent(AgentLoop):
         def __init__(self, *args, **kwargs) -> None:
             # Force our config with auto_compact_threshold=1
@@ -26,17 +26,17 @@ def acp_agent_loop(backend: FakeBackend) -> VibeAcpAgentLoop:
             super().__init__(*args, **kwargs, backend=backend)
 
     patch("kin_code.acp.acp_agent_loop.AgentLoop", side_effect=PatchedAgent).start()
-    vibe_acp_agent = VibeAcpAgentLoop()
+    kin_acp_agent = KinAcpAgentLoop()
     client = FakeClient()
-    vibe_acp_agent.on_connect(client)
-    client.on_connect(vibe_acp_agent)
-    return vibe_acp_agent
+    kin_acp_agent.on_connect(client)
+    client.on_connect(kin_acp_agent)
+    return kin_acp_agent
 
 
 class TestCompactEventHandling:
     @pytest.mark.asyncio
     async def test_prompt_handles_compact_events(
-        self, acp_agent_loop: VibeAcpAgentLoop
+        self, acp_agent_loop: KinAcpAgentLoop
     ) -> None:
         """Verify prompt() sends tool_call session updates for compact events."""
         session_response = await acp_agent_loop.new_session(

@@ -6,13 +6,13 @@ from unittest.mock import patch
 
 from textual.pilot import Pilot
 
+from kin_code.cli.update_notifier import UpdateCache
 from tests.snapshots.base_snapshot_test_app import BaseSnapshotTestApp, default_config
 from tests.snapshots.snap_compare import SnapCompare
 from tests.update_notifier.adapters.fake_update_cache_repository import (
     FakeUpdateCacheRepository,
 )
 from tests.update_notifier.adapters.fake_update_gateway import FakeUpdateGateway
-from kin_code.cli.update_notifier import UpdateCache
 
 
 class SnapshotTestAppWithWhatsNew(BaseSnapshotTestApp):
@@ -44,7 +44,7 @@ def test_snapshot_shows_whats_new_message(
     async def run_before(pilot: Pilot) -> None:
         await pilot.pause(0.5)
 
-    with patch("kin_code.cli.update_notifier.whats_new.VIBE_ROOT", tmp_path):
+    with patch("kin_code.cli.update_notifier.whats_new.KIN_ROOT", tmp_path):
         assert snap_compare(
             "test_ui_snapshot_whats_new.py:SnapshotTestAppWithWhatsNew",
             terminal_size=(120, 36),

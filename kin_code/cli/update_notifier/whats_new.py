@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 
-from kin_code import VIBE_ROOT
+from kin_code import KIN_ROOT
 from kin_code.cli.update_notifier.ports.update_cache_repository import (
     UpdateCache,
     UpdateCacheRepository,
@@ -19,7 +19,7 @@ async def should_show_whats_new(
 
 
 def load_whats_new_content() -> str | None:
-    whats_new_file = VIBE_ROOT / "whats_new.md"
+    whats_new_file = KIN_ROOT / "whats_new.md"
     if not whats_new_file.exists():
         return None
     try:

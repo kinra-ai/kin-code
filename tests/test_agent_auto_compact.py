@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import pytest
 
-from tests.mock.utils import mock_llm_chunk
-from tests.stubs.fake_backend import FakeBackend
 from kin_code.core.agent_loop import AgentLoop
 from kin_code.core.config import SessionLoggingConfig, VibeConfig
 from kin_code.core.types import (
@@ -14,6 +12,8 @@ from kin_code.core.types import (
     Role,
     UserMessageEvent,
 )
+from tests.mock.utils import mock_llm_chunk
+from tests.stubs.fake_backend import FakeBackend
 
 
 @pytest.mark.asyncio

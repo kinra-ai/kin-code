@@ -18,6 +18,12 @@ import httpx
 import pytest
 import respx
 
+from kin_code.core.config import ModelConfig, ProviderConfig
+from kin_code.core.llm.backend.generic import GenericBackend
+from kin_code.core.llm.exceptions import BackendError
+from kin_code.core.llm.types import BackendLike
+from kin_code.core.types import LLMChunk, LLMMessage, Role, ToolCall
+from kin_code.core.utils import get_user_agent
 from tests.backend.data import Chunk, JsonResponse, ResultData, Url
 from tests.backend.data.fireworks import (
     SIMPLE_CONVERSATION_PARAMS as FIREWORKS_SIMPLE_CONVERSATION_PARAMS,
@@ -25,12 +31,6 @@ from tests.backend.data.fireworks import (
     STREAMED_TOOL_CONVERSATION_PARAMS as FIREWORKS_STREAMED_TOOL_CONVERSATION_PARAMS,
     TOOL_CONVERSATION_PARAMS as FIREWORKS_TOOL_CONVERSATION_PARAMS,
 )
-from kin_code.core.config import ModelConfig, ProviderConfig
-from kin_code.core.llm.backend.generic import GenericBackend
-from kin_code.core.llm.exceptions import BackendError
-from kin_code.core.llm.types import BackendLike
-from kin_code.core.types import LLMChunk, LLMMessage, Role, ToolCall
-from kin_code.core.utils import get_user_agent
 
 
 class TestBackend:

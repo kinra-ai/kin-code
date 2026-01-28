@@ -3,12 +3,12 @@ from __future__ import annotations
 from rich.style import Style
 from textual.widgets.text_area import TextAreaTheme
 
-from tests.stubs.fake_backend import FakeBackend
 from kin_code.cli.textual_ui.app import VibeApp
 from kin_code.cli.textual_ui.widgets.chat_input import ChatTextArea
 from kin_code.core.agent_loop import AgentLoop
 from kin_code.core.agents.models import BuiltinAgentName
 from kin_code.core.config import SessionLoggingConfig, VibeConfig
+from tests.stubs.fake_backend import FakeBackend
 
 
 def default_config() -> VibeConfig:

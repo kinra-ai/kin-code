@@ -5,7 +5,7 @@ from typing import cast
 from acp.helpers import SessionUpdate
 from acp.schema import AgentPlanUpdate, PlanEntry, PlanEntryPriority, PlanEntryStatus
 
-from kin_code import VIBE_ROOT
+from kin_code import KIN_ROOT
 from kin_code.acp.tools.base import AcpToolState, BaseAcpTool
 from kin_code.core.tools.builtins.todo import (
     Todo as CoreTodoTool,
@@ -26,7 +26,7 @@ class AcpTodoState(TodoState, AcpToolState):
 
 class Todo(CoreTodoTool, BaseAcpTool[AcpTodoState]):
     state: AcpTodoState
-    prompt_path = VIBE_ROOT / "core" / "tools" / "builtins" / "prompts" / "todo.md"
+    prompt_path = KIN_ROOT / "core" / "tools" / "builtins" / "prompts" / "todo.md"
 
     @classmethod
     def _get_tool_state_class(cls) -> type[AcpTodoState]:

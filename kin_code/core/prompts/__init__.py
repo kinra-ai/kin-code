@@ -3,9 +3,9 @@ from __future__ import annotations
 from enum import StrEnum, auto
 from pathlib import Path
 
-from kin_code import VIBE_ROOT
+from kin_code import KIN_ROOT
 
-_PROMPTS_DIR = VIBE_ROOT / "core" / "prompts"
+_PROMPTS_DIR = KIN_ROOT / "core" / "prompts"
 
 
 class Prompt(StrEnum):

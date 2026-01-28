@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 
-from tests.mock.utils import collect_result
 from kin_code.acp.tools.builtins.write_file import AcpWriteFileState, WriteFile
 from kin_code.core.tools.base import ToolError
 from kin_code.core.tools.builtins.write_file import (
@@ -13,6 +12,7 @@ from kin_code.core.tools.builtins.write_file import (
     WriteFileResult,
 )
 from kin_code.core.types import ToolCallEvent, ToolResultEvent
+from tests.mock.utils import collect_result
 
 
 class MockClient:

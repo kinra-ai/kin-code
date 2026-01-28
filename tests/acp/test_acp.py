@@ -30,11 +30,11 @@ from pydantic import BaseModel
 import pytest
 import tomli_w
 
+from kin_code.acp.utils import ToolOption
+from kin_code.core.types import FunctionCall, ToolCall
 from tests import TESTS_ROOT
 from tests.conftest import get_base_config
 from tests.mock.utils import get_mocking_env, mock_llm_chunk
-from kin_code.acp.utils import ToolOption
-from kin_code.core.types import FunctionCall, ToolCall
 
 RESPONSE_TIMEOUT = 2.0
 MOCK_ENTRYPOINT_PATH = "tests/mock/mock_entrypoint.py"
@@ -73,7 +73,7 @@ def _create_vibe_home_dir(tmp_path: Path, *sections: dict[str, Any]) -> Path:
     base_config_dict["active_model"] = "devstral-latest"
     if base_config_dict.get("models"):
         for model in base_config_dict["models"]:
-            if model.get("name") == "mistral-vibe-cli-latest":
+            if model.get("name") == "kin-code-latest":
                 model["alias"] = "devstral-latest"
 
     if sections:

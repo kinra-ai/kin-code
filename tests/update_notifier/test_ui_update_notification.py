@@ -9,10 +9,6 @@ from unittest.mock import patch
 import pytest
 from textual.app import Notification
 
-from tests.update_notifier.adapters.fake_update_cache_repository import (
-    FakeUpdateCacheRepository,
-)
-from tests.update_notifier.adapters.fake_update_gateway import FakeUpdateGateway
 from kin_code.cli.textual_ui.app import VibeApp
 from kin_code.cli.textual_ui.widgets.messages import WhatsNewMessage
 from kin_code.cli.update_notifier import (
@@ -24,6 +20,10 @@ from kin_code.cli.update_notifier import (
 from kin_code.core.agent_loop import AgentLoop
 from kin_code.core.agents.models import BuiltinAgentName
 from kin_code.core.config import SessionLoggingConfig, VibeConfig
+from tests.update_notifier.adapters.fake_update_cache_repository import (
+    FakeUpdateCacheRepository,
+)
+from tests.update_notifier.adapters.fake_update_gateway import FakeUpdateGateway
 
 
 async def _wait_for_notification(
@@ -113,7 +113,7 @@ async def test_ui_displays_update_notification(make_vibe_app: VibeAppFactory) ->
     assert notification.title == "Update available"
     assert (
         notification.message
-        == "0.1.0 => 0.2.0\nPlease update mistral-vibe with your package manager"
+        == "0.1.0 => 0.2.0\nPlease update kin-code with your package manager"
     )
 
 
@@ -207,7 +207,7 @@ async def test_ui_does_show_toast_when_cache_entry_is_too_old(
     assert notification.title == "Update available"
     assert (
         notification.message
-        == "0.1.0 => 0.2.0\nPlease update mistral-vibe with your package manager"
+        == "0.1.0 => 0.2.0\nPlease update kin-code with your package manager"
     )
     assert notifier.fetch_update_calls == 1
 
@@ -246,7 +246,7 @@ async def test_ui_displays_whats_new_message_when_content_exists(
     )
 
     whats_new_content = "# What's New\n\n- Feature 1\n- Feature 2"
-    with patch("kin_code.cli.update_notifier.whats_new.VIBE_ROOT", tmp_path):
+    with patch("kin_code.cli.update_notifier.whats_new.KIN_ROOT", tmp_path):
         whats_new_file = tmp_path / "whats_new.md"
         whats_new_file.write_text(whats_new_content)
 
@@ -275,7 +275,7 @@ async def test_ui_does_not_display_whats_new_when_seen_whats_new_version_matches
         notifier=notifier, update_cache_repository=repository, current_version="1.0.0"
     )
 
-    with patch("kin_code.cli.update_notifier.whats_new.VIBE_ROOT", tmp_path):
+    with patch("kin_code.cli.update_notifier.whats_new.KIN_ROOT", tmp_path):
         whats_new_file = tmp_path / "whats_new.md"
         whats_new_file.write_text("# What's New\n\n- Feature 1")
 
@@ -304,7 +304,7 @@ async def test_ui_does_not_display_whats_new_when_file_is_empty(
         notifier=notifier, update_cache_repository=repository, current_version="1.0.0"
     )
 
-    with patch("kin_code.cli.update_notifier.whats_new.VIBE_ROOT", tmp_path):
+    with patch("kin_code.cli.update_notifier.whats_new.KIN_ROOT", tmp_path):
         whats_new_file = tmp_path / "whats_new.md"
         whats_new_file.write_text("")
 
@@ -336,7 +336,7 @@ async def test_ui_does_not_display_whats_new_when_file_does_not_exist(
         notifier=notifier, update_cache_repository=repository, current_version="1.0.0"
     )
 
-    with patch("kin_code.cli.update_notifier.whats_new.VIBE_ROOT", tmp_path):
+    with patch("kin_code.cli.update_notifier.whats_new.KIN_ROOT", tmp_path):
         async with app.run_test() as pilot:
             await pilot.pause(0.5)
 
@@ -374,7 +374,7 @@ async def test_ui_displays_success_notification_when_auto_update_succeeds(
     assert notification.title == "Update successful"
     assert (
         notification.message
-        == "0.1.0 => 0.2.0\nVibe was updated successfully. Please restart to use the new version."
+        == "0.1.0 => 0.2.0\nKin Code was updated successfully. Please restart to use the new version."
     )
 
 
@@ -402,5 +402,5 @@ async def test_ui_displays_update_notification_when_auto_update_fails(
     assert notification.title == "Update available"
     assert (
         notification.message
-        == "0.1.0 => 0.2.0\nPlease update mistral-vibe with your package manager"
+        == "0.1.0 => 0.2.0\nPlease update kin-code with your package manager"
     )

@@ -18,7 +18,7 @@ from kin_code.setup.trusted_folders.trust_folder_dialog import (
 
 
 def parse_arguments() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the Mistral Vibe interactive CLI")
+    parser = argparse.ArgumentParser(description="Run the Kin Code interactive CLI")
     parser.add_argument(
         "-v", "--version", action="version", version=f"%(prog)s {__version__}"
     )
@@ -106,7 +106,7 @@ def check_and_resolve_trusted_folder() -> None:
     except FileNotFoundError:
         rprint(
             "[red]Error: Current working directory no longer exists.[/]\n"
-            "[yellow]The directory you started vibe from has been deleted. "
+            "[yellow]The directory you started kin from has been deleted."
             "Please change to an existing directory and try again, "
             "or use --workdir to specify a working directory.[/]"
         )

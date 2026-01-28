@@ -4,13 +4,13 @@ from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.pilot import Pilot
 
-from tests.snapshots.snap_compare import SnapCompare
 from kin_code.cli.textual_ui.widgets.question_app import QuestionApp
 from kin_code.core.tools.builtins.ask_user_question import (
     AskUserQuestionArgs,
     Choice,
     Question,
 )
+from tests.snapshots.snap_compare import SnapCompare
 
 
 def single_question_args() -> AskUserQuestionArgs:
@@ -64,7 +64,7 @@ def multi_select_args() -> AskUserQuestionArgs:
 
 
 class QuestionAppTestApp(App):
-    CSS_PATH = "../../vibe/cli/textual_ui/app.tcss"
+    CSS_PATH = "../../kin_code/cli/textual_ui/app.tcss"
 
     def __init__(self, args: AskUserQuestionArgs):
         super().__init__()

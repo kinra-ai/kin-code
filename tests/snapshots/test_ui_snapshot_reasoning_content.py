@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from textual.pilot import Pilot
 
+from kin_code.cli.textual_ui.widgets.messages import ReasoningMessage
+from kin_code.core.agent_loop import AgentLoop
 from tests.mock.utils import mock_llm_chunk
 from tests.snapshots.base_snapshot_test_app import BaseSnapshotTestApp, default_config
 from tests.snapshots.snap_compare import SnapCompare
 from tests.stubs.fake_backend import FakeBackend
-from kin_code.cli.textual_ui.widgets.messages import ReasoningMessage
-from kin_code.core.agent_loop import AgentLoop
 
 
 class SnapshotTestAppWithReasoningContent(BaseSnapshotTestApp):

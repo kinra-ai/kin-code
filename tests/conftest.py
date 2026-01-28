@@ -24,7 +24,7 @@ def get_base_config() -> dict[str, Any]:
         ],
         "models": [
             {
-                "name": "mistral-vibe-cli-latest",
+                "name": "kin-code-latest",
                 "provider": "mistral",
                 "alias": "devstral-latest",
             }

@@ -13,7 +13,7 @@ from acp.schema import (
     WaitForTerminalExitResponse,
 )
 
-from kin_code import VIBE_ROOT
+from kin_code import KIN_ROOT
 from kin_code.acp.tools.base import AcpToolState, BaseAcpTool
 from kin_code.core.tools.base import BaseToolState, InvokeContext, ToolError
 from kin_code.core.tools.builtins.bash import Bash as CoreBashTool, BashArgs, BashResult
@@ -26,7 +26,7 @@ class AcpBashState(BaseToolState, AcpToolState):
 
 
 class Bash(CoreBashTool, BaseAcpTool[AcpBashState]):
-    prompt_path = VIBE_ROOT / "core" / "tools" / "builtins" / "prompts" / "bash.md"
+    prompt_path = KIN_ROOT / "core" / "tools" / "builtins" / "prompts" / "bash.md"
     state: AcpBashState
 
     @classmethod

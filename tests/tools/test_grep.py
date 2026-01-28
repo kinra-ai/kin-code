@@ -4,7 +4,6 @@ import shutil
 
 import pytest
 
-from tests.mock.utils import collect_result
 from kin_code.core.tools.base import ToolError
 from kin_code.core.tools.builtins.grep import (
     Grep,
@@ -13,6 +12,7 @@ from kin_code.core.tools.builtins.grep import (
     GrepState,
     GrepToolConfig,
 )
+from tests.mock.utils import collect_result
 
 
 @pytest.fixture

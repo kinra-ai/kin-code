@@ -9,12 +9,12 @@ from acp.schema import (
 )
 import pytest
 
-from kin_code.acp.acp_agent_loop import VibeAcpAgentLoop
+from kin_code.acp.acp_agent_loop import KinAcpAgentLoop
 
 
 class TestACPInitialize:
     @pytest.mark.asyncio
-    async def test_initialize(self, acp_agent_loop: VibeAcpAgentLoop) -> None:
+    async def test_initialize(self, acp_agent_loop: KinAcpAgentLoop) -> None:
         response = await acp_agent_loop.initialize(protocol_version=PROTOCOL_VERSION)
 
         assert response.protocol_version == PROTOCOL_VERSION
@@ -25,14 +25,14 @@ class TestACPInitialize:
             ),
         )
         assert response.agent_info == Implementation(
-            name="@mistralai/mistral-vibe", title="Mistral Vibe", version="2.0.0"
+            name="@kinra-ai/kin-code", title="Kin Code", version="1.1.0"
         )
 
         assert response.auth_methods == []
 
     @pytest.mark.asyncio
     async def test_initialize_with_terminal_auth(
-        self, acp_agent_loop: VibeAcpAgentLoop
+        self, acp_agent_loop: KinAcpAgentLoop
     ) -> None:
         """Test initialize with terminal-auth capabilities to check it was included."""
         client_capabilities = ClientCapabilities(field_meta={"terminal-auth": True})
@@ -48,18 +48,18 @@ class TestACPInitialize:
             ),
         )
         assert response.agent_info == Implementation(
-            name="@mistralai/mistral-vibe", title="Mistral Vibe", version="2.0.0"
+            name="@kinra-ai/kin-code", title="Kin Code", version="1.1.0"
         )
 
         assert response.auth_methods is not None
         assert len(response.auth_methods) == 1
         auth_method = response.auth_methods[0]
-        assert auth_method.id == "vibe-setup"
+        assert auth_method.id == "kin-setup"
         assert auth_method.name == "Register your API Key"
-        assert auth_method.description == "Register your API Key inside Mistral Vibe"
+        assert auth_method.description == "Register your API Key inside Kin Code"
         assert auth_method.field_meta is not None
         assert "terminal-auth" in auth_method.field_meta
         terminal_auth_meta = auth_method.field_meta["terminal-auth"]
         assert "command" in terminal_auth_meta
         assert "args" in terminal_auth_meta
-        assert terminal_auth_meta["label"] == "Mistral Vibe Setup"
+        assert terminal_auth_meta["label"] == "Kin Code Setup"

@@ -4,11 +4,11 @@ from unittest.mock import patch
 
 import pytest
 
-from tests.stubs.fake_backend import FakeBackend
-from tests.stubs.fake_client import FakeClient
-from kin_code.acp.acp_agent_loop import VibeAcpAgentLoop
+from kin_code.acp.acp_agent_loop import KinAcpAgentLoop
 from kin_code.core.agent_loop import AgentLoop
 from kin_code.core.types import LLMChunk, LLMMessage, LLMUsage, Role
+from tests.stubs.fake_backend import FakeBackend
+from tests.stubs.fake_client import FakeClient
 
 
 @pytest.fixture
@@ -22,18 +22,18 @@ def backend() -> FakeBackend:
     return backend
 
 
-def _create_acp_agent() -> VibeAcpAgentLoop:
-    vibe_acp_agent = VibeAcpAgentLoop()
+def _create_acp_agent() -> KinAcpAgentLoop:
+    kin_acp_agent = KinAcpAgentLoop()
     client = FakeClient()
 
-    vibe_acp_agent.on_connect(client)
-    client.on_connect(vibe_acp_agent)
+    kin_acp_agent.on_connect(client)
+    client.on_connect(kin_acp_agent)
 
-    return vibe_acp_agent  # pyright: ignore[reportReturnType]
+    return kin_acp_agent  # pyright: ignore[reportReturnType]
 
 
 @pytest.fixture
-def acp_agent_loop(backend: FakeBackend) -> VibeAcpAgentLoop:
+def acp_agent_loop(backend: FakeBackend) -> KinAcpAgentLoop:
     class PatchedAgent(AgentLoop):
         def __init__(self, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs, backend=backend)

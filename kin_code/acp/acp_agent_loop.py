@@ -48,7 +48,7 @@ from acp.schema import (
 )
 from pydantic import BaseModel, ConfigDict
 
-from kin_code import VIBE_ROOT, __version__
+from kin_code import KIN_ROOT, __version__
 from kin_code.acp.tools.base import BaseAcpTool
 from kin_code.acp.tools.session_update import (
     tool_call_session_update,
@@ -88,7 +88,7 @@ class AcpSessionLoop(BaseModel):
     task: asyncio.Task[None] | None = None
 
 
-class VibeAcpAgentLoop(AcpAgent):
+class KinAcpAgentLoop(AcpAgent):
     client: Client
 
     def __init__(self) -> None:
@@ -130,14 +130,14 @@ class VibeAcpAgentLoop(AcpAgent):
         auth_methods = (
             [
                 AuthMethod(
-                    id="vibe-setup",
+                    id="kin-setup",
                     name="Register your API Key",
-                    description="Register your API Key inside Mistral Vibe",
+                    description="Register your API Key inside Kin Code",
                     field_meta={
                         "terminal-auth": {
                             "command": command,
                             "args": args,
-                            "label": "Mistral Vibe Setup",
+                            "label": "Kin Code Setup",
                         }
                     },
                 )
@@ -155,8 +155,8 @@ class VibeAcpAgentLoop(AcpAgent):
             ),
             protocol_version=PROTOCOL_VERSION,
             agent_info=Implementation(
-                name="@mistralai/mistral-vibe",
-                title="Mistral Vibe",
+                name="@kinra-ai/kin-code",
+                title="Kin Code",
                 version=__version__,
             ),
             auth_methods=auth_methods,
@@ -232,7 +232,7 @@ class VibeAcpAgentLoop(AcpAgent):
                     overrides.extend(["write_file", "search_replace"])
 
         return [
-            VIBE_ROOT / "acp" / "tools" / "builtins" / f"{override}.py"
+            KIN_ROOT / "acp" / "tools" / "builtins" / f"{override}.py"
             for override in overrides
         ]
 
@@ -542,7 +542,7 @@ class VibeAcpAgentLoop(AcpAgent):
 
 def run_acp_server() -> None:
     try:
-        asyncio.run(run_agent(agent=VibeAcpAgentLoop(), use_unstable_protocol=True))
+        asyncio.run(run_agent(agent=KinAcpAgentLoop(), use_unstable_protocol=True))
     except KeyboardInterrupt:
         # This is expected when the server is terminated
         pass

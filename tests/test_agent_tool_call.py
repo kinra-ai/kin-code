@@ -6,9 +6,6 @@ import json
 from pydantic import BaseModel
 import pytest
 
-from tests.mock.utils import mock_llm_chunk
-from tests.stubs.fake_backend import FakeBackend
-from tests.stubs.fake_tool import FakeTool
 from kin_code.core.agent_loop import AgentLoop
 from kin_code.core.agents.models import BuiltinAgentName
 from kin_code.core.config import SessionLoggingConfig, VibeConfig
@@ -27,6 +24,9 @@ from kin_code.core.types import (
     ToolResultEvent,
     UserMessageEvent,
 )
+from tests.mock.utils import mock_llm_chunk
+from tests.stubs.fake_backend import FakeBackend
+from tests.stubs.fake_tool import FakeTool
 
 
 async def act_and_collect_events(agent_loop: AgentLoop, prompt: str) -> list[BaseEvent]:

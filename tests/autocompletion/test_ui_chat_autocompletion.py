@@ -139,9 +139,9 @@ def file_tree(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     (tmp_path / "src" / "utils" / "sanitize.py").write_text("", encoding="utf-8")
     (tmp_path / "src" / "utils" / "validate.py").write_text("", encoding="utf-8")
     (tmp_path / "src" / "main.py").write_text("", encoding="utf-8")
-    (tmp_path / "vibe" / "acp").mkdir(parents=True)
-    (tmp_path / "vibe" / "acp" / "entrypoint.py").write_text("", encoding="utf-8")
-    (tmp_path / "vibe" / "acp" / "agent.py").write_text("", encoding="utf-8")
+    (tmp_path / "kin_code" / "acp").mkdir(parents=True)
+    (tmp_path / "kin_code" / "acp" / "entrypoint.py").write_text("", encoding="utf-8")
+    (tmp_path / "kin_code" / "acp" / "agent.py").write_text("", encoding="utf-8")
     (tmp_path / "README.md").write_text("", encoding="utf-8")
     (tmp_path / ".env").write_text("", encoding="utf-8")
     monkeypatch.chdir(tmp_path)
@@ -260,7 +260,7 @@ async def test_finds_files_recursively_by_filename(
         await pilot.press(*"@entryp")
 
         popup_content = str(popup.render())
-        assert "@vibe/acp/entrypoint.py" in popup_content
+        assert "@kin_code/acp/entrypoint.py" in popup_content
         assert popup.styles.display == "block"
 
 
@@ -274,7 +274,7 @@ async def test_finds_files_recursively_with_partial_path(
         await pilot.press(*"@acp/entry")
 
         popup_content = str(popup.render())
-        assert "@vibe/acp/entrypoint.py" in popup_content
+        assert "@kin_code/acp/entrypoint.py" in popup_content
         assert popup.styles.display == "block"
 
 

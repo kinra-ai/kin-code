@@ -6,11 +6,9 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from tests.mock.utils import mock_llm_chunk
-from tests.stubs.fake_backend import FakeBackend
 from kin_code.core.agent_loop import AgentLoop
 from kin_code.core.agents.models import BuiltinAgentName
-from kin_code.core.config import SessionLoggingConfig, VibeConfig
+from kin_code.core.config import KinConfig, SessionLoggingConfig
 from kin_code.core.middleware import (
     ConversationContext,
     MiddlewareAction,
@@ -33,6 +31,8 @@ from kin_code.core.types import (
     UserMessageEvent,
 )
 from kin_code.core.utils import CancellationReason, get_user_cancellation_message
+from tests.mock.utils import mock_llm_chunk
+from tests.stubs.fake_backend import FakeBackend
 
 
 class InjectBeforeMiddleware:
@@ -56,8 +56,8 @@ def make_config(
     disable_logging: bool = True,
     enabled_tools: list[str] | None = None,
     tools: dict[str, BaseToolConfig] | None = None,
-) -> VibeConfig:
-    cfg = VibeConfig(
+) -> KinConfig:
+    cfg = KinConfig(
         session_logging=SessionLoggingConfig(enabled=not disable_logging),
         auto_compact_threshold=0,
         system_prompt_id="tests",
@@ -98,7 +98,7 @@ async def test_act_flushes_batched_messages_with_injection_middleware(
 
     assert len(observed) == 3
     assert [r for r, _ in observed] == [Role.system, Role.user, Role.assistant]
-    assert observed[0][1] == "You are Vibe, a super useful programming assistant."
+    assert observed[0][1] == "You are Kin Code, a super useful programming assistant."
     # injected content should be appended to the user's message before emission
     assert (
         observed[1][1]
@@ -125,7 +125,7 @@ async def test_stop_action_flushes_user_msg_before_returning(observer_capture) -
     assert len(observed) == 2
     # user's message should have been flushed before returning
     assert [r for r, _ in observed] == [Role.system, Role.user]
-    assert observed[0][1] == "You are Vibe, a super useful programming assistant."
+    assert observed[0][1] == "You are Kin Code, a super useful programming assistant."
     assert observed[1][1] == "Greet."
 
 
@@ -150,7 +150,7 @@ async def test_act_streams_batched_chunks_in_order() -> None:
     backend = FakeBackend([
         mock_llm_chunk(content="Hello"),
         mock_llm_chunk(content=" from"),
-        mock_llm_chunk(content=" Vibe"),
+        mock_llm_chunk(content=" Kin"),
         mock_llm_chunk(content="! "),
         mock_llm_chunk(content="More"),
         mock_llm_chunk(content=" and"),
@@ -163,11 +163,11 @@ async def test_act_streams_batched_chunks_in_order() -> None:
     assistant_events = [e for e in events if isinstance(e, AssistantEvent)]
     assert len(assistant_events) == 2
     assert [event.content for event in assistant_events] == [
-        "Hello from Vibe! More",
+        "Hello from Kin! More",
         " and end",
     ]
     assert agent.messages[-1].role == Role.assistant
-    assert agent.messages[-1].content == "Hello from Vibe! More and end"
+    assert agent.messages[-1].content == "Hello from Kin! More and end"
 
 
 @pytest.mark.asyncio

@@ -4,8 +4,6 @@ from collections.abc import Callable
 
 import pytest
 
-from tests.mock.utils import mock_llm_chunk
-from tests.stubs.fake_backend import FakeBackend
 from kin_code.core.agent_loop import AgentLoop
 from kin_code.core.agents.models import BuiltinAgentName
 from kin_code.core.config import (
@@ -26,6 +24,8 @@ from kin_code.core.types import (
     ToolCall,
     UserMessageEvent,
 )
+from tests.mock.utils import mock_llm_chunk
+from tests.stubs.fake_backend import FakeBackend
 
 
 def make_config(

@@ -115,7 +115,7 @@ def print_warning(new_version: str) -> None:
 
 Don't forget to fill in the changelog entry for version {new_version} in CHANGELOG.md! 📝
 
-Also, remember to fill in vibe/whats_new.md if needed (you can leave it blank). 📝
+Also, remember to fill in kin_code/whats_new.md if needed (you can leave it blank).
 
 {"=" * 80}
 """
@@ -123,7 +123,7 @@ Also, remember to fill in vibe/whats_new.md if needed (you can leave it blank). 
 
 
 def clean_up_whats_new_message() -> None:
-    whats_new_path = Path("vibe/whats_new.md")
+    whats_new_path = Path("kin_code/whats_new.md")
     if not whats_new_path.exists():
         raise FileNotFoundError("whats_new.md not found in current directory")
 
@@ -182,9 +182,9 @@ Examples:
             ".vscode/launch.json",
             [(f'"version": "{current_version}"', f'"version": "{new_version}"')],
         )
-        # Update vibe/core/__init__.py
+        # Update kin_code/__init__.py
         update_hard_values_files(
-            "vibe/__init__.py",
+            "kin_code/__init__.py",
             [(f'__version__ = "{current_version}"', f'__version__ = "{new_version}"')],
         )
         # Update tests/acp/test_initialize.py
