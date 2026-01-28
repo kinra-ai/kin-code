@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from dotenv import set_key
 from textual.app import ComposeResult
@@ -13,16 +13,14 @@ from textual.widgets import Input, Link, Static
 
 from kin_code.cli.clipboard import copy_selection_to_clipboard
 from kin_code.cli.textual_ui.widgets.no_markup_static import NoMarkupStatic
-from kin_code.core.config import VibeConfig
 from kin_code.core.paths.global_paths import GLOBAL_ENV_FILE
 from kin_code.setup.onboarding.base import OnboardingScreen
+from kin_code.setup.onboarding.presets import ProviderPreset
 
-PROVIDER_HELP = {
-    "mistral": ("https://console.mistral.ai/codestral/cli", "Mistral AI Studio")
-}
-CONFIG_DOCS_URL = (
-    "https://github.com/mistralai/mistral-vibe?tab=readme-ov-file#configuration"
-)
+if TYPE_CHECKING:
+    from kin_code.setup.onboarding import OnboardingApp
+
+CONFIG_DOCS_URL = "https://github.com/binarycodon/kin-code#configuration"
 
 
 def _save_api_key_to_env_file(env_key: str, api_key: str) -> None:
@@ -36,39 +34,42 @@ class ApiKeyScreen(OnboardingScreen):
         Binding("escape", "cancel", "Cancel", show=False),
     ]
 
-    NEXT_SCREEN = None
+    NEXT_SCREEN = "model_setup"
 
     def __init__(self) -> None:
         super().__init__()
-        config = VibeConfig.model_construct()
-        active_model = config.get_active_model()
-        self.provider = config.get_provider_for_model(active_model)
+        self._preset: ProviderPreset | None = None
 
-    def _compose_provider_link(self, provider_name: str) -> ComposeResult:
-        if self.provider.name not in PROVIDER_HELP:
+    @property
+    def preset(self) -> ProviderPreset:
+        if self._preset is None:
+            app: OnboardingApp = self.app  # type: ignore[assignment]
+            self._preset = app.selected_preset
+        return self._preset
+
+    def _compose_provider_link(self) -> ComposeResult:
+        if not self.preset.api_key_help_url:
             return
 
-        help_url, help_name = PROVIDER_HELP[self.provider.name]
-        yield NoMarkupStatic(f"Grab your {provider_name} API key from the {help_name}:")
+        provider_name = self.preset.name.split(" ")[0]
+        yield NoMarkupStatic(f"Grab your {provider_name} API key:")
         yield Center(
             Horizontal(
-                NoMarkupStatic("→ ", classes="link-chevron"),
-                Link(help_url, url=help_url),
+                NoMarkupStatic("\u2192 ", classes="link-chevron"),
+                Link(self.preset.api_key_help_url, url=self.preset.api_key_help_url),
                 classes="link-row",
             )
         )
 
     def _compose_config_docs(self) -> ComposeResult:
-        yield Static("[dim]Learn more about Vibe configuration:[/]")
+        yield Static("[dim]Learn more about Kin Code configuration:[/]")
         yield Horizontal(
-            NoMarkupStatic("→ ", classes="link-chevron"),
+            NoMarkupStatic("\u2192 ", classes="link-chevron"),
             Link(CONFIG_DOCS_URL, url=CONFIG_DOCS_URL),
             classes="link-row",
         )
 
     def compose(self) -> ComposeResult:
-        provider_name = self.provider.name.capitalize()
-
         self.input_widget = Input(
             password=True,
             id="key",
@@ -78,12 +79,12 @@ class ApiKeyScreen(OnboardingScreen):
 
         with Vertical(id="api-key-outer"):
             yield NoMarkupStatic("", classes="spacer")
-            yield Center(NoMarkupStatic("One last thing...", id="api-key-title"))
+            yield Center(NoMarkupStatic("API Key Required", id="api-key-title"))
             with Center():
                 with Vertical(id="api-key-content"):
-                    yield from self._compose_provider_link(provider_name)
+                    yield from self._compose_provider_link()
                     yield NoMarkupStatic(
-                        "...and paste it below to finish the setup:", id="paste-hint"
+                        "Paste your API key below:", id="paste-hint"
                     )
                     yield Center(Horizontal(self.input_widget, id="input-box"))
                     yield NoMarkupStatic("", id="feedback")
@@ -122,14 +123,16 @@ class ApiKeyScreen(OnboardingScreen):
             self._save_and_finish(event.value)
 
     def _save_and_finish(self, api_key: str) -> None:
-        env_key = self.provider.api_key_env_var
+        env_key = self.preset.api_key_env_var
         os.environ[env_key] = api_key
         try:
             _save_api_key_to_env_file(env_key, api_key)
         except OSError as err:
             self.app.exit(f"save_error:{err}")
             return
-        self.app.exit("completed")
+        # Push fresh ModelSetupScreen to avoid installed screen issues
+        app: OnboardingApp = self.app  # type: ignore[assignment]
+        app.push_model_setup()
 
-    def on_mouse_up(self, event: MouseUp) -> None:
+    def on_mouse_up(self, _: MouseUp) -> None:
         copy_selection_to_clipboard(self.app)

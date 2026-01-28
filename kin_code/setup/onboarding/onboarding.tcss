@@ -228,3 +228,349 @@ ThemeSelectionScreen #enter-hint {
 #config-docs-group .link-row {
     margin-top: 0;
 }
+
+/* =============================================================================
+   Provider Selection Screen
+   ============================================================================= */
+
+#provider-outer {
+    width: 100%;
+    height: 100%;
+    align: center middle;
+}
+
+#provider-content {
+    width: auto;
+    height: auto;
+    padding: 1 0;
+}
+
+#provider-title {
+    text-align: center;
+    width: 100%;
+    margin-bottom: 2;
+}
+
+#provider-row {
+    width: auto;
+    height: auto;
+}
+
+#provider-nav-hint {
+    color: $text-muted;
+    width: 16;
+    height: 100%;
+    content-align: right middle;
+    padding-right: 2;
+}
+
+#provider-list {
+    width: 32;
+    height: auto;
+}
+
+.provider-item {
+    text-align: center;
+    width: 100%;
+}
+
+.provider-item.selected {
+    color: $text;
+    text-style: bold;
+    border: round #555555;
+    padding: 0 2;
+}
+
+#provider-enter-hint {
+    color: $text-muted;
+    width: 16;
+    height: 100%;
+    content-align: left middle;
+    padding-left: 2;
+}
+
+#custom-url-section {
+    width: 100%;
+    height: auto;
+    margin-top: 2;
+}
+
+#custom-url-section.hidden {
+    display: none;
+}
+
+#custom-url-label {
+    text-align: center;
+    margin-bottom: 1;
+}
+
+#custom-url-box {
+    border: round #555555;
+    padding: 0 1;
+    width: auto;
+    height: 3;
+}
+
+#custom-url-box.valid {
+    border: round $success;
+}
+
+#custom-url-box.invalid {
+    border: round $error;
+}
+
+#custom-url {
+    border: none;
+    width: 48;
+    height: 1;
+    padding: 0;
+}
+
+#custom-url-feedback {
+    text-align: center;
+    height: 1;
+    margin-top: 1;
+}
+
+#custom-url-feedback.error {
+    color: $error;
+}
+
+#custom-url-feedback.success {
+    color: $text-muted;
+}
+
+/* =============================================================================
+   Model Setup Screen
+   ============================================================================= */
+
+#model-outer {
+    width: 100%;
+    height: auto;
+    align: center middle;
+    padding: 2 4;
+}
+
+#model-title {
+    text-align: center;
+    width: 100%;
+    margin-bottom: 2;
+}
+
+#loading-section {
+    width: 100%;
+    height: auto;
+}
+
+#loading-text {
+    color: $text-muted;
+}
+
+#loading-section.hidden {
+    display: none;
+}
+
+#error-section {
+    width: 100%;
+    height: auto;
+}
+
+#error-section.hidden {
+    display: none;
+}
+
+#error-text {
+    text-align: center;
+    color: $error;
+    margin-bottom: 1;
+}
+
+#error-options {
+    width: auto;
+}
+
+.error-option {
+    color: $text-muted;
+}
+
+#model-list-section {
+    width: 100%;
+    height: auto;
+}
+
+#model-list-section.hidden {
+    display: none;
+}
+
+#search-box {
+    border: round #555555;
+    padding: 0 1;
+    margin-bottom: 2;
+    width: auto;
+    height: 3;
+}
+
+#model-search {
+    border: none;
+    width: 40;
+    height: 1;
+    padding: 0;
+}
+
+#model-row {
+    width: auto;
+    height: auto;
+}
+
+#model-nav-hint {
+    color: $text-muted;
+    width: 6;
+    height: 100%;
+    content-align: right middle;
+    padding-right: 1;
+}
+
+#model-list {
+    width: 50;
+    height: auto;
+}
+
+.model-item {
+    width: 100%;
+}
+
+.model-item.selected {
+    color: $text;
+    text-style: bold;
+}
+
+#model-enter-hint {
+    color: $text-muted;
+    width: 10;
+    height: 100%;
+    content-align: left middle;
+    padding-left: 1;
+}
+
+#manual-hint {
+    color: $text-muted;
+    margin-top: 1;
+}
+
+#manual-section {
+    width: 100%;
+    height: auto;
+}
+
+#manual-section.hidden {
+    display: none;
+}
+
+#manual-label {
+    text-align: center;
+    margin-bottom: 1;
+}
+
+#manual-input-box {
+    border: round #555555;
+    padding: 0 1;
+    width: auto;
+    height: 3;
+}
+
+#manual-input-box.valid {
+    border: round $success;
+}
+
+#manual-input-box.invalid {
+    border: round $error;
+}
+
+#manual-model {
+    border: none;
+    width: 40;
+    height: 1;
+    padding: 0;
+}
+
+#manual-feedback {
+    text-align: center;
+    height: 1;
+    margin-top: 1;
+}
+
+#manual-feedback.error {
+    color: $error;
+}
+
+#manual-feedback.success {
+    color: $text-muted;
+}
+
+/* =============================================================================
+   Brave Search Screen
+   ============================================================================= */
+
+#brave-outer {
+    overflow-y: auto;
+}
+
+#brave-title {
+    text-align: center;
+    margin-bottom: 2;
+}
+
+#brave-content {
+    width: auto;
+    height: auto;
+}
+
+#brave-content Static {
+    text-align: center;
+}
+
+#brave-hint {
+    margin-top: 3;
+}
+
+#brave-input-box {
+    border: round #555555;
+    padding: 0 1;
+    margin-top: 2;
+    width: auto;
+    height: 3;
+}
+
+#brave-input-box.valid {
+    border: round $success;
+}
+
+#brave-input-box.invalid {
+    border: round $error;
+}
+
+#brave-key {
+    border: none;
+    width: 48;
+    height: 1;
+    padding: 0;
+}
+
+#brave-feedback {
+    text-align: center;
+    height: 1;
+    margin-top: 1;
+}
+
+#brave-feedback.error {
+    color: $error;
+}
+
+#brave-feedback.success {
+    color: $text-muted;
+}
+
+#skip-hint {
+    color: $text-muted;
+    padding-bottom: 2;
+}

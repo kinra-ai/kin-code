@@ -121,8 +121,8 @@ class AgentLoop:
         self.skill_manager = SkillManager(lambda: self.config)
         self.format_handler = APIToolFormatHandler()
 
-        self.backend_factory = lambda: backend or self._select_backend()
-        self.backend = self.backend_factory()
+        self._backend_override = backend
+        self._backend: BackendLike | None = None
 
         self.message_observer = message_observer
         self._last_observed_message_index: int = 0
@@ -173,6 +173,21 @@ class AgentLoop:
     @property
     def auto_approve(self) -> bool:
         return self.config.auto_approve
+
+    @property
+    def backend(self) -> BackendLike:
+        """Lazily create backend on first access."""
+        if self._backend is None:
+            self._backend = self._backend_override or self._select_backend()
+        return self._backend
+
+    @backend.setter
+    def backend(self, value: BackendLike) -> None:
+        self._backend = value
+
+    def _reset_backend(self) -> None:
+        """Reset backend to force re-selection (e.g., after model change)."""
+        self._backend = None
 
     def set_tool_permission(
         self, tool_name: str, permission: ToolPermission, save_permanently: bool = False
@@ -895,7 +910,7 @@ class AgentLoop:
             self._base_config = base_config
             self.agent_manager.invalidate_config()
 
-        self.backend = self.backend_factory()
+        self._reset_backend()
 
         if max_turns is not None:
             self._max_turns = max_turns

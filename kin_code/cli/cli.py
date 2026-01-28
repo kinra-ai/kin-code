@@ -43,9 +43,23 @@ def get_prompt_from_stdin() -> str | None:
     return None
 
 
+def needs_onboarding(config: VibeConfig) -> bool:
+    """Check if onboarding is needed (no active model configured)."""
+    if not config.active_model:
+        return True
+    if not config.models:
+        return True
+    # Check if active_model exists in models list
+    return not any(m.alias == config.active_model for m in config.models)
+
+
 def load_config_or_exit() -> VibeConfig:
     try:
-        return VibeConfig.load()
+        config = VibeConfig.load()
+        if needs_onboarding(config):
+            run_onboarding()
+            return VibeConfig.load()
+        return config
     except MissingAPIKeyError:
         run_onboarding()
         return VibeConfig.load()
@@ -67,7 +81,7 @@ def bootstrap_config_files() -> None:
     if not HISTORY_FILE.path.exists():
         try:
             HISTORY_FILE.path.parent.mkdir(parents=True, exist_ok=True)
-            HISTORY_FILE.path.write_text("Hello Vibe!\n", "utf-8")
+            HISTORY_FILE.path.write_text("Hello Kin!\n", "utf-8")
         except Exception as e:
             rprint(f"[yellow]Could not create history file: {e}[/]")
 

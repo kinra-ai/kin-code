@@ -11,8 +11,12 @@ from kin_code.cli.textual_ui.terminal_theme import (
     capture_terminal_theme,
 )
 from kin_code.core.paths.global_paths import GLOBAL_ENV_FILE
+from kin_code.setup.onboarding.presets import PROVIDER_PRESETS, ProviderPreset
 from kin_code.setup.onboarding.screens import (
     ApiKeyScreen,
+    BraveSearchScreen,
+    ModelSetupScreen,
+    ProviderSelectionScreen,
     ThemeSelectionScreen,
     WelcomeScreen,
 )
@@ -24,6 +28,7 @@ class OnboardingApp(App[str | None]):
     def __init__(self) -> None:
         super().__init__()
         self._terminal_theme: Theme | None = capture_terminal_theme()
+        self.selected_preset: ProviderPreset = PROVIDER_PRESETS[0]
 
     def on_mount(self) -> None:
         if self._terminal_theme:
@@ -32,8 +37,15 @@ class OnboardingApp(App[str | None]):
 
         self.install_screen(WelcomeScreen(), "welcome")
         self.install_screen(ThemeSelectionScreen(), "theme_selection")
+        self.install_screen(ProviderSelectionScreen(), "provider_selection")
         self.install_screen(ApiKeyScreen(), "api_key")
+        # ModelSetupScreen is created fresh each time to avoid installed screen issues
+        self.install_screen(BraveSearchScreen(), "brave_search")
         self.push_screen("welcome")
+
+    def push_model_setup(self) -> None:
+        """Push a fresh ModelSetupScreen instance."""
+        self.push_screen(ModelSetupScreen())
 
 
 def run_onboarding(app: App | None = None) -> None:
@@ -51,5 +63,5 @@ def run_onboarding(app: App | None = None) -> None:
             )
         case "completed":
             rprint(
-                '\nSetup complete 🎉. Run "vibe" to start using the Mistral Vibe CLI.\n'
+                '\nSetup complete! Run "kin" to start using Kin Code.\n'
             )
