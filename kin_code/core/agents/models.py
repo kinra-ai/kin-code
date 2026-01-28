@@ -76,7 +76,7 @@ PLAN_AGENT_TOOLS = [
     "grep",
     "glob",
     "list_directory",
-    "lsp",
+    "l_s_p",
     "read_file",
     "todo",
     "ask_user_question",

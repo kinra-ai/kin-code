@@ -37,7 +37,6 @@ from kin_code.core.prompts import UtilityPrompt
 from kin_code.core.session.session_logger import SessionLogger
 from kin_code.core.session.session_migration import migrate_sessions_entrypoint
 from kin_code.core.skills.manager import SkillManager
-from kin_code.setup.onboarding.services.pricing_service import get_model_pricing_sync
 from kin_code.core.system_prompt import get_universal_system_prompt
 from kin_code.core.tools.base import (
     BaseTool,
@@ -77,6 +76,7 @@ from kin_code.core.utils import (
     get_user_cancellation_message,
     is_user_cancellation_event,
 )
+from kin_code.setup.onboarding.services.pricing_service import get_model_pricing_sync
 
 
 class ToolExecutionResponse(StrEnum):

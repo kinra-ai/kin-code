@@ -46,17 +46,14 @@ def mock_brave_response():
     }
 
 
-def test_raises_error_without_api_key(monkeypatch):
+@pytest.mark.asyncio
+async def test_raises_error_without_api_key(monkeypatch):
     """Should raise ToolError when BRAVE_API_KEY is not set."""
     monkeypatch.delenv(BRAVE_API_KEY_ENV, raising=False)
     tool = WebSearch(config=WebSearchConfig(), state=BaseToolState())
 
     with pytest.raises(ToolError) as err:
-        import asyncio
-
-        asyncio.get_event_loop().run_until_complete(
-            collect_result(tool.run(WebSearchArgs(query="test")))
-        )
+        await collect_result(tool.run(WebSearchArgs(query="test")))
 
     assert BRAVE_API_KEY_ENV in str(err.value)
 

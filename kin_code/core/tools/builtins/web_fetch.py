@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import json
-import re
 from collections.abc import AsyncGenerator
 from html.parser import HTMLParser
+import json
+import re
 from typing import ClassVar
 
 import httpx
@@ -32,7 +32,7 @@ class _HTMLTextExtractor(HTMLParser):
         self._skip_depth = 0
         self._skip_tags = {"script", "style", "noscript", "svg", "path"}
 
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:  # noqa: ARG002
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         if tag.lower() in self._skip_tags:
             self._skip_depth += 1
 
@@ -154,7 +154,7 @@ NOTES:
         return "Fetching URL"
 
     async def run(
-        self, args: WebFetchArgs, ctx: InvokeContext | None = None  # noqa: ARG002
+        self, args: WebFetchArgs, ctx: InvokeContext | None = None
     ) -> AsyncGenerator[ToolStreamEvent | WebFetchResult, None]:
         url = args.url.strip()
         if not url:

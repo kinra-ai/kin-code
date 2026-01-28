@@ -427,4 +427,4 @@ class MiddlewarePipeline:
             if result.action in {MiddlewareAction.STOP, MiddlewareAction.COMPACT}:
                 return result
 
-        return MiddlewareResult()  # noqa: F811
+        return MiddlewareResult()

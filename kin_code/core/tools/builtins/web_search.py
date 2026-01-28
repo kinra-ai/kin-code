@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import os
 from collections.abc import AsyncGenerator
+from http import HTTPStatus
+import os
 from typing import ClassVar
 
 import httpx
@@ -106,7 +107,7 @@ EXAMPLES:
         return "Searching the web"
 
     async def run(
-        self, args: WebSearchArgs, ctx: InvokeContext | None = None  # noqa: ARG002
+        self, args: WebSearchArgs, ctx: InvokeContext | None = None
     ) -> AsyncGenerator[ToolStreamEvent | WebSearchResult, None]:
         api_key = os.environ.get(BRAVE_API_KEY_ENV)
         if not api_key:
@@ -135,11 +136,11 @@ EXAMPLES:
                     },
                 )
 
-                if response.status_code == 401:
+                if response.status_code == HTTPStatus.UNAUTHORIZED:
                     raise ToolError("Invalid Brave Search API key")
-                if response.status_code == 429:
+                if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
                     raise ToolError("Brave Search rate limit exceeded. Try again later.")
-                if response.status_code != 200:
+                if response.status_code != HTTPStatus.OK:
                     raise ToolError(f"Brave Search API error: HTTP {response.status_code}")
 
                 data = response.json()
