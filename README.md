@@ -8,6 +8,8 @@
 
 Kin Code provides a conversational interface to your codebase, allowing you to explore, modify, and interact with projects using natural language and a powerful set of tools.
 
+> Based on [Mistral Vibe](https://github.com/mistralai/mistral-vibe) by Mistral AI.
+
 > [!NOTE]
 > For complete documentation, see the [docs](docs/README.md) directory.
 
@@ -140,6 +142,10 @@ Full documentation is available in [docs/](docs/README.md):
 
 - [Changelog](CHANGELOG.md)
 - [Contributing](CONTRIBUTING.md)
+
+## Acknowledgments
+
+Kin Code is built on the foundation of [Mistral Vibe](https://github.com/mistralai/mistral-vibe), an excellent CLI coding assistant created by [Mistral AI](https://mistral.ai/). We're grateful for their work in open-sourcing the project under the Apache 2.0 license.
 
 ## License
 
