@@ -33,6 +33,7 @@ class AgentStats(BaseModel):
     tool_calls_succeeded: int = 0
 
     context_tokens: int = 0
+    max_context_window: int = 0
     listeners: ClassVar[dict[str, Callable[[AgentStats], None]]] = {}
 
     last_turn_prompt_tokens: int = 0

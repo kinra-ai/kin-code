@@ -255,7 +255,8 @@ class VibeConfig(BaseSettings):
     disable_welcome_banner_animation: bool = False
     displayed_workdir: str = ""
     workdir: Path | None = None  # Override working directory
-    auto_compact_threshold: int = 200_000
+    auto_compact_threshold: int = 200_000  # Hard ceiling fallback
+    auto_compact_percent: float = 0.90  # Compact at 90% of context window
     context_warnings: bool = False
     auto_approve: bool = False
     system_prompt_id: str = "cli"

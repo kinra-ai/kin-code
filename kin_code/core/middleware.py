@@ -88,16 +88,31 @@ class PriceLimitMiddleware:
 
 
 class AutoCompactMiddleware:
-    def __init__(self, threshold: int) -> None:
-        self.threshold = threshold
+    def __init__(
+        self,
+        threshold_percent: float,
+        max_context: int,
+        hard_ceiling: int | None = None,
+    ) -> None:
+        self.threshold_percent = threshold_percent
+        self.max_context = max_context
+        self.hard_ceiling = hard_ceiling
+
+    def _get_threshold(self) -> int:
+        """Calculate effective threshold from percentage of context window."""
+        percent_threshold = int(self.max_context * self.threshold_percent)
+        if self.hard_ceiling is not None:
+            return min(percent_threshold, self.hard_ceiling)
+        return percent_threshold
 
     async def before_turn(self, context: ConversationContext) -> MiddlewareResult:
-        if context.stats.context_tokens >= self.threshold:
+        threshold = self._get_threshold()
+        if context.stats.context_tokens >= threshold:
             return MiddlewareResult(
                 action=MiddlewareAction.COMPACT,
                 metadata={
                     "old_tokens": context.stats.context_tokens,
-                    "threshold": self.threshold,
+                    "threshold": threshold,
                 },
             )
         return MiddlewareResult()

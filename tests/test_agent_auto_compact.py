@@ -28,7 +28,9 @@ async def test_auto_compact_triggers_and_batches_observer() -> None:
         [mock_llm_chunk(content="<final>")],
     ])
     cfg = VibeConfig(
-        session_logging=SessionLoggingConfig(enabled=False), auto_compact_threshold=1
+        session_logging=SessionLoggingConfig(enabled=False),
+        auto_compact_threshold=1,
+        auto_compact_percent=1.0,  # Trigger at exactly auto_compact_threshold
     )
     agent = AgentLoop(cfg, message_observer=observer, backend=backend)
     agent.stats.context_tokens = 2

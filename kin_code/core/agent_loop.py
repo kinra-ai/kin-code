@@ -134,6 +134,22 @@ def _resolve_model_pricing(config: VibeConfig) -> tuple[float, float]:
     return model.input_price or 0.0, model.output_price or 0.0
 
 
+def _resolve_context_window(config: VibeConfig) -> int:
+    """Resolve context window size from model config.
+
+    Fallback chain:
+    1. model.context_window (set during onboarding)
+    2. auto_compact_threshold (user-configurable default)
+    """
+    try:
+        model = config.get_active_model()
+        if model.context_window is not None:
+            return model.context_window
+    except ValueError:
+        pass
+    return config.auto_compact_threshold
+
+
 class AgentLoop:
     def __init__(
         self,
@@ -178,6 +194,7 @@ class AgentLoop:
         input_price, output_price = _resolve_model_pricing(config)
         self.stats.input_price_per_million = input_price
         self.stats.output_price_per_million = output_price
+        self.stats.max_context_window = _resolve_context_window(config)
 
         self.approval_callback: ApprovalCallback | None = None
         self.user_input_callback: UserInputCallback | None = None
@@ -270,13 +287,23 @@ class AgentLoop:
         if self._max_price is not None:
             self.middleware_pipeline.add(PriceLimitMiddleware(self._max_price))
 
-        if self.config.auto_compact_threshold > 0:
+        max_context = _resolve_context_window(self.config)
+        if self.config.auto_compact_percent > 0 and max_context > 0:
+            hard_ceiling = (
+                self.config.auto_compact_threshold
+                if self.config.auto_compact_threshold > 0
+                else None
+            )
             self.middleware_pipeline.add(
-                AutoCompactMiddleware(self.config.auto_compact_threshold)
+                AutoCompactMiddleware(
+                    threshold_percent=self.config.auto_compact_percent,
+                    max_context=max_context,
+                    hard_ceiling=hard_ceiling,
+                )
             )
             if self.config.context_warnings:
                 self.middleware_pipeline.add(
-                    ContextWarningMiddleware(0.5, self.config.auto_compact_threshold)
+                    ContextWarningMiddleware(0.5, max_context)
                 )
 
         self.middleware_pipeline.add(PlanAgentMiddleware(lambda: self.agent_profile))
@@ -846,6 +873,7 @@ class AgentLoop:
 
         input_price, output_price = _resolve_model_pricing(self.config)
         self.stats.update_pricing(input_price, output_price)
+        self.stats.max_context_window = _resolve_context_window(self.config)
 
         self.middleware_pipeline.reset()
         self.tool_manager.reset_all()
@@ -961,6 +989,7 @@ class AgentLoop:
 
         input_price, output_price = _resolve_model_pricing(self.config)
         self.stats.update_pricing(input_price, output_price)
+        self.stats.max_context_window = _resolve_context_window(self.config)
 
         self._last_observed_message_index = 0
 

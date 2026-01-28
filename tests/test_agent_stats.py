@@ -501,6 +501,7 @@ class TestAutoCompactIntegration:
         cfg = VibeConfig(
             session_logging=SessionLoggingConfig(enabled=False),
             auto_compact_threshold=1,
+            auto_compact_percent=1.0,  # Trigger at exactly auto_compact_threshold
         )
         agent = AgentLoop(cfg, message_observer=observer, backend=backend)
         agent.stats.context_tokens = 2
