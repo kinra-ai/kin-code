@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import AsyncGenerator, Callable
 from enum import StrEnum, auto
+import os
 from threading import Thread
 import time
 from typing import cast
@@ -36,6 +37,7 @@ from kin_code.core.prompts import UtilityPrompt
 from kin_code.core.session.session_logger import SessionLogger
 from kin_code.core.session.session_migration import migrate_sessions_entrypoint
 from kin_code.core.skills.manager import SkillManager
+from kin_code.setup.onboarding.services.pricing_service import get_model_pricing_sync
 from kin_code.core.system_prompt import get_universal_system_prompt
 from kin_code.core.tools.base import (
     BaseTool,
@@ -99,6 +101,39 @@ class AgentLoopLLMResponseError(AgentLoopError):
     """Raised when LLM response is malformed or missing expected data."""
 
 
+def _resolve_model_pricing(config: VibeConfig) -> tuple[float, float]:
+    """Resolve model pricing, auto-fetching from provider if not configured.
+
+    Returns:
+        Tuple of (input_price_per_million, output_price_per_million).
+        Returns (0.0, 0.0) if pricing cannot be determined.
+    """
+    try:
+        model = config.get_active_model()
+        provider = config.get_provider_for_model(model)
+    except ValueError:
+        return 0.0, 0.0
+
+    # Use configured prices if available
+    if model.input_price is not None and model.output_price is not None:
+        return model.input_price, model.output_price
+
+    # Try to auto-fetch from provider API
+    api_key = os.getenv(provider.api_key_env_var) if provider.api_key_env_var else None
+    pricing = get_model_pricing_sync(
+        provider_name=provider.name,
+        api_base=provider.api_base,
+        model_name=model.name,
+        api_key=api_key,
+    )
+
+    if pricing:
+        return pricing.input_price, pricing.output_price
+
+    # Fall back to configured prices (may be partial) or 0.0
+    return model.input_price or 0.0, model.output_price or 0.0
+
+
 class AgentLoop:
     def __init__(
         self,
@@ -140,12 +175,9 @@ class AgentLoop:
             self._last_observed_message_index = 1
 
         self.stats = AgentStats()
-        try:
-            active_model = config.get_active_model()
-            self.stats.input_price_per_million = active_model.input_price or 0.0
-            self.stats.output_price_per_million = active_model.output_price or 0.0
-        except ValueError:
-            pass
+        input_price, output_price = _resolve_model_pricing(config)
+        self.stats.input_price_per_million = input_price
+        self.stats.output_price_per_million = output_price
 
         self.approval_callback: ApprovalCallback | None = None
         self.user_input_callback: UserInputCallback | None = None
@@ -812,13 +844,8 @@ class AgentLoop:
         self.stats = AgentStats()
         self.stats.trigger_listeners()
 
-        try:
-            active_model = self.config.get_active_model()
-            self.stats.update_pricing(
-                active_model.input_price or 0.0, active_model.output_price or 0.0
-            )
-        except ValueError:
-            pass
+        input_price, output_price = _resolve_model_pricing(self.config)
+        self.stats.update_pricing(input_price, output_price)
 
         self.middleware_pipeline.reset()
         self.tool_manager.reset_all()
@@ -932,13 +959,8 @@ class AgentLoop:
         if len(self.messages) == 1:
             self.stats.reset_context_state()
 
-        try:
-            active_model = self.config.get_active_model()
-            self.stats.update_pricing(
-                active_model.input_price or 0.0, active_model.output_price or 0.0
-            )
-        except ValueError:
-            pass
+        input_price, output_price = _resolve_model_pricing(self.config)
+        self.stats.update_pricing(input_price, output_price)
 
         self._last_observed_message_index = 0
 

@@ -686,3 +686,193 @@ class TestStatsEdgeCases:
         await agent.reload_with_initial_messages(base_config=new_config)
 
         assert agent.config.active_model == "devstral-small"
+
+
+class TestAutoFetchPricing:
+    """Tests for auto-fetching model pricing when not configured."""
+
+    @pytest.mark.asyncio
+    async def test_auto_fetch_pricing_when_not_configured(
+        self, monkeypatch
+    ) -> None:
+        """When model has no pricing configured, it should auto-fetch from provider."""
+        from unittest.mock import MagicMock
+
+        from kin_code.setup.onboarding.services.pricing_service import ModelPricing
+
+        # Set env var BEFORE creating config (VibeConfig validates on init)
+        monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+
+        # Create a model without pricing
+        models = [
+            ModelConfig(
+                name="test-model",
+                provider="openrouter",
+                alias="test-model",
+                # No input_price or output_price
+            ),
+        ]
+        providers = [
+            ProviderConfig(
+                name="openrouter",
+                api_base="https://openrouter.ai/api/v1",
+                api_key_env_var="OPENROUTER_API_KEY",
+            ),
+        ]
+
+        # Mock the pricing service to return pricing
+        mock_pricing = ModelPricing(input_price=3.0, output_price=15.0, fetched_at=0)
+        mock_get_pricing = MagicMock(return_value=mock_pricing)
+        monkeypatch.setattr(
+            "kin_code.core.agent_loop.get_model_pricing_sync", mock_get_pricing
+        )
+
+        config = VibeConfig(
+            session_logging=SessionLoggingConfig(enabled=False),
+            system_prompt_id="tests",
+            include_project_context=False,
+            include_prompt_detail=False,
+            active_model="test-model",
+            models=models,
+            providers=providers,
+        )
+
+        backend = FakeBackend([])
+        agent = AgentLoop(config, backend=backend)
+
+        # Verify auto-fetched pricing was used
+        assert agent.stats.input_price_per_million == 3.0
+        assert agent.stats.output_price_per_million == 15.0
+
+        # Verify the pricing service was called
+        mock_get_pricing.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_configured_pricing_takes_precedence(self, monkeypatch) -> None:
+        """When model has pricing configured, it should NOT auto-fetch."""
+        from unittest.mock import MagicMock
+
+        # Create a model with pricing configured
+        config = make_config(input_price=1.0, output_price=5.0)
+
+        # Mock the pricing service - should NOT be called
+        mock_get_pricing = MagicMock()
+        monkeypatch.setattr(
+            "kin_code.core.agent_loop.get_model_pricing_sync", mock_get_pricing
+        )
+
+        backend = FakeBackend([])
+        agent = AgentLoop(config, backend=backend)
+
+        # Verify configured pricing was used
+        assert agent.stats.input_price_per_million == 1.0
+        assert agent.stats.output_price_per_million == 5.0
+
+        # Verify the pricing service was NOT called
+        mock_get_pricing.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_auto_fetch_pricing_on_model_change(self, monkeypatch) -> None:
+        """When switching to a model without pricing, it should auto-fetch."""
+        from unittest.mock import MagicMock
+
+        from kin_code.setup.onboarding.services.pricing_service import ModelPricing
+
+        # Set env var BEFORE creating config
+        monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+
+        # Start with a model with pricing
+        config1 = make_config(input_price=1.0, output_price=5.0, active_model="devstral-latest")
+
+        backend = FakeBackend([])
+        agent = AgentLoop(config1, backend=backend)
+
+        assert agent.stats.input_price_per_million == 1.0
+        assert agent.stats.output_price_per_million == 5.0
+
+        # Create a new config with a model without pricing
+        models = [
+            ModelConfig(
+                name="new-model",
+                provider="openrouter",
+                alias="new-model",
+                # No pricing
+            ),
+        ]
+        providers = [
+            ProviderConfig(
+                name="openrouter",
+                api_base="https://openrouter.ai/api/v1",
+                api_key_env_var="OPENROUTER_API_KEY",
+            ),
+        ]
+
+        # Mock the pricing service
+        mock_pricing = ModelPricing(input_price=7.5, output_price=22.5, fetched_at=0)
+        mock_get_pricing = MagicMock(return_value=mock_pricing)
+        monkeypatch.setattr(
+            "kin_code.core.agent_loop.get_model_pricing_sync", mock_get_pricing
+        )
+
+        config2 = VibeConfig(
+            session_logging=SessionLoggingConfig(enabled=False),
+            system_prompt_id="tests",
+            include_project_context=False,
+            include_prompt_detail=False,
+            active_model="new-model",
+            models=models,
+            providers=providers,
+        )
+
+        await agent.reload_with_initial_messages(base_config=config2)
+
+        # Verify auto-fetched pricing was used after model change
+        assert agent.stats.input_price_per_million == 7.5
+        assert agent.stats.output_price_per_million == 22.5
+
+    @pytest.mark.asyncio
+    async def test_fallback_to_zero_when_fetch_fails(self, monkeypatch) -> None:
+        """When auto-fetch fails, pricing should fall back to 0.0."""
+        from unittest.mock import MagicMock
+
+        # Set env var BEFORE creating config
+        monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+
+        # Create a model without pricing
+        models = [
+            ModelConfig(
+                name="test-model",
+                provider="openrouter",
+                alias="test-model",
+            ),
+        ]
+        providers = [
+            ProviderConfig(
+                name="openrouter",
+                api_base="https://openrouter.ai/api/v1",
+                api_key_env_var="OPENROUTER_API_KEY",
+            ),
+        ]
+
+        # Mock the pricing service to return None (fetch failed)
+        mock_get_pricing = MagicMock(return_value=None)
+        monkeypatch.setattr(
+            "kin_code.core.agent_loop.get_model_pricing_sync", mock_get_pricing
+        )
+
+        config = VibeConfig(
+            session_logging=SessionLoggingConfig(enabled=False),
+            system_prompt_id="tests",
+            include_project_context=False,
+            include_prompt_detail=False,
+            active_model="test-model",
+            models=models,
+            providers=providers,
+        )
+
+        backend = FakeBackend([])
+        agent = AgentLoop(config, backend=backend)
+
+        # Verify fallback to 0.0
+        assert agent.stats.input_price_per_million == 0.0
+        assert agent.stats.output_price_per_million == 0.0
