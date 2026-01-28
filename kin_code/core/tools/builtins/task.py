@@ -43,6 +43,12 @@ class TaskResult(BaseModel):
     response: str = Field(description="The accumulated response from the subagent")
     turns_used: int = Field(description="Number of turns the subagent used")
     completed: bool = Field(description="Whether the task completed normally")
+    model_alias: str | None = Field(
+        default=None, description="The model alias used by the subagent"
+    )
+    provider: str | None = Field(
+        default=None, description="The provider used by the subagent"
+    )
 
 
 class TaskToolConfig(BaseToolConfig):
@@ -89,14 +95,16 @@ NOTES:
         result = event.result
         if isinstance(result, TaskResult):
             turn_word = "turn" if result.turns_used == 1 else "turns"
+            model_parts = [p for p in (result.model_alias, result.provider) if p]
+            model_info = f" [{', '.join(model_parts)}]" if model_parts else ""
             if not result.completed:
                 return ToolResultDisplay(
                     success=False,
-                    message=f"Agent interrupted after {result.turns_used} {turn_word}",
+                    message=f"Agent interrupted after {result.turns_used} {turn_word}{model_info}",
                 )
             return ToolResultDisplay(
                 success=True,
-                message=f"Agent completed in {result.turns_used} {turn_word}",
+                message=f"Agent completed in {result.turns_used} {turn_word}{model_info}",
             )
         return ToolResultDisplay(success=True, message="Agent completed")
 
@@ -128,6 +136,14 @@ NOTES:
             session_logging=SessionLoggingConfig(enabled=False)
         )
         subagent_loop = AgentLoop(config=base_config, agent_name=args.agent)
+
+        try:
+            active_model = subagent_loop.config.get_active_model()
+            model_alias = active_model.alias
+            provider = active_model.provider
+        except (ValueError, AttributeError):
+            model_alias = None
+            provider = None
 
         if ctx and ctx.approval_callback:
             subagent_loop.set_approval_callback(ctx.approval_callback)
@@ -168,4 +184,6 @@ NOTES:
             response="".join(accumulated_response),
             turns_used=turns_used,
             completed=completed,
+            model_alias=model_alias,
+            provider=provider,
         )

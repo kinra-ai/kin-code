@@ -100,10 +100,15 @@ class TestTaskToolExecution:
         with patch(
             "kin_code.core.tools.builtins.task.AgentLoop"
         ) as mock_agent_loop_class:
+            mock_model = MagicMock()
+            mock_model.alias = "test-model"
+            mock_model.provider = "test-provider"
+
             mock_agent_loop = MagicMock()
             mock_agent_loop.act = mock_act
             mock_agent_loop.messages = mock_messages
             mock_agent_loop.set_approval_callback = MagicMock()
+            mock_agent_loop.config.get_active_model.return_value = mock_model
             mock_agent_loop_class.return_value = mock_agent_loop
 
             args = TaskArgs(task="explore the codebase", agent="explore")
@@ -113,6 +118,8 @@ class TestTaskToolExecution:
             assert result.response == "Hello from subagent! More content."
             assert result.turns_used == 2  # 2 assistant messages in mock_messages
             assert result.completed is True
+            assert result.model_alias == "test-model"
+            assert result.provider == "test-provider"
 
     @pytest.mark.asyncio
     async def test_handles_stopped_by_middleware(
@@ -130,10 +137,15 @@ class TestTaskToolExecution:
         with patch(
             "kin_code.core.tools.builtins.task.AgentLoop"
         ) as mock_agent_loop_class:
+            mock_model = MagicMock()
+            mock_model.alias = "test-model"
+            mock_model.provider = "test-provider"
+
             mock_agent_loop = MagicMock()
             mock_agent_loop.act = mock_act
             mock_agent_loop.messages = mock_messages
             mock_agent_loop.set_approval_callback = MagicMock()
+            mock_agent_loop.config.get_active_model.return_value = mock_model
             mock_agent_loop_class.return_value = mock_agent_loop
 
             args = TaskArgs(task="do something", agent="explore")
@@ -156,10 +168,15 @@ class TestTaskToolExecution:
         with patch(
             "kin_code.core.tools.builtins.task.AgentLoop"
         ) as mock_agent_loop_class:
+            mock_model = MagicMock()
+            mock_model.alias = "test-model"
+            mock_model.provider = "test-provider"
+
             mock_agent_loop = MagicMock()
             mock_agent_loop.act = mock_act
             mock_agent_loop.messages = mock_messages
             mock_agent_loop.set_approval_callback = MagicMock()
+            mock_agent_loop.config.get_active_model.return_value = mock_model
             mock_agent_loop_class.return_value = mock_agent_loop
 
             args = TaskArgs(task="do something", agent="explore")
