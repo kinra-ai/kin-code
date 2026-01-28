@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, NamedTuple, Protocol, TypeVar
 
 import httpx
 
-from kin_code.core.config import ModelConfig
+from kin_code.core.config import ModelConfig, ReasoningMode
 from kin_code.core.llm.exceptions import BackendErrorBuilder
 from kin_code.core.llm.reasoning import get_extractor
 from kin_code.core.types import (
@@ -49,7 +49,10 @@ class APIAdapter(Protocol):
     ) -> PreparedRequest: ...
 
     def parse_response(
-        self, data: dict[str, Any], provider: ProviderConfig
+        self,
+        data: dict[str, Any],
+        provider: ProviderConfig,
+        model: ModelConfig | None = None,
     ) -> LLMChunk: ...
 
 
@@ -101,7 +104,10 @@ class OpenAIAdapter(APIAdapter):
         if model.top_p is not None:
             payload["top_p"] = model.top_p
         if model.reasoning_enabled:
-            payload["reasoning"] = {"enabled": True, "exclude": False}
+            reasoning_config: dict[str, Any] = {"enabled": True, "exclude": False}
+            if model.reasoning_budget is not None:
+                reasoning_config["budget_tokens"] = model.reasoning_budget
+            payload["reasoning"] = reasoning_config
 
         return payload
 
@@ -119,10 +125,13 @@ class OpenAIAdapter(APIAdapter):
         return msg_dict
 
     def _reasoning_from_api(
-        self, msg_dict: dict[str, Any], field_name: str
+        self,
+        msg_dict: dict[str, Any],
+        field_name: str,
+        preserve_in_content: bool = False,
     ) -> dict[str, Any]:
         extractor = get_extractor("auto")
-        return extractor.extract(msg_dict, field_name)
+        return extractor.extract(msg_dict, field_name, preserve_in_content)
 
     def prepare_request(
         self,
@@ -162,31 +171,51 @@ class OpenAIAdapter(APIAdapter):
         return PreparedRequest(self.endpoint, headers, body)
 
     def _parse_message(
-        self, data: dict[str, Any], field_name: str
+        self,
+        data: dict[str, Any],
+        field_name: str,
+        preserve_in_content: bool = False,
     ) -> LLMMessage | None:
         if data.get("choices"):
             choice = data["choices"][0]
             if "message" in choice:
-                msg_dict = self._reasoning_from_api(choice["message"], field_name)
+                msg_dict = self._reasoning_from_api(
+                    choice["message"], field_name, preserve_in_content
+                )
                 return LLMMessage.model_validate(msg_dict)
             if "delta" in choice:
-                msg_dict = self._reasoning_from_api(choice["delta"], field_name)
+                msg_dict = self._reasoning_from_api(
+                    choice["delta"], field_name, preserve_in_content
+                )
                 return LLMMessage.model_validate(msg_dict)
             raise ValueError("Invalid response data: missing message or delta")
 
         if "message" in data:
-            msg_dict = self._reasoning_from_api(data["message"], field_name)
+            msg_dict = self._reasoning_from_api(
+                data["message"], field_name, preserve_in_content
+            )
             return LLMMessage.model_validate(msg_dict)
         if "delta" in data:
-            msg_dict = self._reasoning_from_api(data["delta"], field_name)
+            msg_dict = self._reasoning_from_api(
+                data["delta"], field_name, preserve_in_content
+            )
             return LLMMessage.model_validate(msg_dict)
 
         return None
 
     def parse_response(
-        self, data: dict[str, Any], provider: ProviderConfig
+        self,
+        data: dict[str, Any],
+        provider: ProviderConfig,
+        model: ModelConfig | None = None,
     ) -> LLMChunk:
-        message = self._parse_message(data, provider.reasoning_field_name)
+        # Determine if reasoning should be preserved in content for context
+        preserve_in_content = (
+            model is not None and model.reasoning_mode == ReasoningMode.PRESERVE
+        )
+        message = self._parse_message(
+            data, provider.reasoning_field_name, preserve_in_content
+        )
         if message is None:
             message = LLMMessage(role=Role.assistant, content="")
 
@@ -283,7 +312,7 @@ class GenericBackend:
 
         try:
             res_data, _ = await self._make_request(url, body, headers)
-            return adapter.parse_response(res_data, self._provider)
+            return adapter.parse_response(res_data, self._provider, model)
 
         except httpx.HTTPStatusError as e:
             raise BackendErrorBuilder.build_http_error(
@@ -348,7 +377,7 @@ class GenericBackend:
 
         try:
             async for res_data in self._make_streaming_request(url, body, headers):
-                yield adapter.parse_response(res_data, self._provider)
+                yield adapter.parse_response(res_data, self._provider, model)
 
         except httpx.HTTPStatusError as e:
             raise BackendErrorBuilder.build_http_error(

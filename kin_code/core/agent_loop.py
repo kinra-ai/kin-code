@@ -170,7 +170,9 @@ class AgentLoop:
         )
         self.tool_manager = ToolManager(lambda: self.config)
         self.skill_manager = SkillManager(lambda: self.config)
-        self.format_handler = APIToolFormatHandler()
+        self.format_handler = APIToolFormatHandler(
+            model_getter=lambda: self.config.get_active_model()
+        )
 
         self._backend_override = backend
         self._backend: BackendLike | None = None

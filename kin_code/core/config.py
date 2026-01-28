@@ -243,6 +243,36 @@ MCPServer = Annotated[
 ]
 
 
+class ReasoningMode(StrEnum):
+    """How to handle reasoning content in conversation history.
+
+    STRIP: Extract reasoning for display but remove from context before next turn.
+           Use for models where reasoning is output-only (DeepSeek R1, Qwen3, Nemotron).
+
+    PRESERVE: Keep reasoning in conversation history for multi-turn coherence.
+              Use for models that benefit from seeing prior reasoning
+              (Kimi K2.5, GLM-4.7, Minimax-m2.1, Claude extended thinking).
+    """
+
+    STRIP = auto()
+    PRESERVE = auto()
+
+
+class ToolCallFormat(StrEnum):
+    """How to parse tool calls from LLM responses.
+
+    API: Parse from structured tool_calls field (OpenAI format). Default.
+    XML: Parse from XML tags in content (Qwen3-coder/Nemotron format).
+    AUTO: Try API first, fall back to XML if no tool calls found.
+    NONE: Disable tool call parsing entirely.
+    """
+
+    API = auto()
+    XML = auto()
+    AUTO = auto()
+    NONE = auto()
+
+
 class ModelConfig(BaseModel):
     """Configuration for a specific LLM model.
 
@@ -256,6 +286,8 @@ class ModelConfig(BaseModel):
         temperature: Sampling temperature (0.0 = deterministic, 1.0 = creative).
         top_p: Nucleus sampling parameter (None = use provider default).
         reasoning_enabled: Enable extended thinking/reasoning if supported.
+        reasoning_mode: How to handle reasoning in context (strip or preserve).
+        reasoning_budget: Max reasoning tokens to request from API (provider-specific).
         input_price: Cost per million input tokens for cost tracking.
         output_price: Cost per million output tokens for cost tracking.
         context_window: Maximum context size in tokens.
@@ -275,7 +307,23 @@ class ModelConfig(BaseModel):
             provider = "openrouter"
             temperature = 0.1
             reasoning_enabled = true
+            reasoning_mode = "preserve"
+            reasoning_budget = 8000
             context_window = 200000
+
+            [[models]]
+            name = "moonshotai/kimi-k2-instruct"
+            alias = "kimi-k2"
+            provider = "openrouter"
+            reasoning_enabled = true
+            reasoning_mode = "preserve"  # Kimi benefits from preserved reasoning
+
+            [[models]]
+            name = "qwen/qwq-32b"
+            alias = "qwq"
+            provider = "openrouter"
+            reasoning_enabled = true
+            reasoning_mode = "strip"  # QwQ uses <think> tags, strip before next turn
     """
 
     name: str
@@ -284,6 +332,9 @@ class ModelConfig(BaseModel):
     temperature: float = 0.2
     top_p: float | None = None  # If set, include in API request
     reasoning_enabled: bool | None = None  # If True, send reasoning param to API
+    reasoning_mode: ReasoningMode = ReasoningMode.STRIP  # How to handle reasoning in context
+    reasoning_budget: int | None = None  # Max reasoning tokens (provider-specific)
+    tool_call_format: ToolCallFormat = ToolCallFormat.API
     input_price: float | None = (
         None  # Price per million input tokens (None = auto-fetch)
     )

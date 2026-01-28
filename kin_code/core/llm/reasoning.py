@@ -35,12 +35,19 @@ from typing import Any, Protocol
 class ReasoningExtractor(Protocol):
     """Protocol for reasoning content extractors."""
 
-    def extract(self, msg_dict: dict[str, Any], field_name: str) -> dict[str, Any]:
+    def extract(
+        self,
+        msg_dict: dict[str, Any],
+        field_name: str,
+        preserve_in_content: bool = False,
+    ) -> dict[str, Any]:
         """Extract reasoning content and normalize to reasoning_content field.
 
         Args:
             msg_dict: Message dictionary from API response.
             field_name: The configured reasoning field name.
+            preserve_in_content: If True, keep reasoning in content for context.
+                                 If False, strip reasoning from content.
 
         Returns:
             Modified message dict with reasoning_content normalized.
@@ -55,7 +62,12 @@ class FieldExtractor:
     `reasoning_content` or `reasoning`.
     """
 
-    def extract(self, msg_dict: dict[str, Any], field_name: str) -> dict[str, Any]:
+    def extract(
+        self,
+        msg_dict: dict[str, Any],
+        field_name: str,
+        preserve_in_content: bool = False,
+    ) -> dict[str, Any]:
         """Extract reasoning from a named field.
 
         If field_name differs from "reasoning_content" and exists in msg_dict,
@@ -64,10 +76,13 @@ class FieldExtractor:
         Args:
             msg_dict: Message dictionary from API response.
             field_name: The field name to extract from.
+            preserve_in_content: Unused for field extraction (reasoning is in
+                                 separate field, not embedded in content).
 
         Returns:
             Modified message dict with reasoning_content normalized.
         """
+        del preserve_in_content  # Field-based reasoning is already separate from content
         if field_name != "reasoning_content" and field_name in msg_dict:
             msg_dict["reasoning_content"] = msg_dict.pop(field_name)
         return msg_dict
@@ -91,7 +106,12 @@ class ReasoningDetailsExtractor:
         }
     """
 
-    def extract(self, msg_dict: dict[str, Any], field_name: str) -> dict[str, Any]:
+    def extract(
+        self,
+        msg_dict: dict[str, Any],
+        field_name: str,
+        preserve_in_content: bool = False,
+    ) -> dict[str, Any]:
         """Extract reasoning from reasoning_details array.
 
         Combines all readable reasoning blocks (summary and text) with newlines.
@@ -100,11 +120,14 @@ class ReasoningDetailsExtractor:
         Args:
             msg_dict: Message dictionary from API response.
             field_name: Unused, kept for protocol compatibility.
+            preserve_in_content: Unused for reasoning_details (reasoning is in
+                                 separate array, not embedded in content).
 
         Returns:
             Modified message dict with reasoning_content from details array.
         """
         del field_name  # Unused for this extractor
+        del preserve_in_content  # reasoning_details is already separate from content
         details = msg_dict.get("reasoning_details")
         if not details or not isinstance(details, list):
             return msg_dict
@@ -146,15 +169,24 @@ class ThinkTagExtractor:
         The answer is 42.
     """
 
-    def extract(self, msg_dict: dict[str, Any], field_name: str) -> dict[str, Any]:
+    def extract(
+        self,
+        msg_dict: dict[str, Any],
+        field_name: str,
+        preserve_in_content: bool = False,
+    ) -> dict[str, Any]:
         """Extract reasoning from think tags in content.
 
-        Finds all <think>...</think> blocks, combines them as reasoning_content,
-        and removes the tags from the main content.
+        Finds all <think>...</think> blocks, combines them as reasoning_content.
+        By default, removes the tags from the main content (for STRIP mode).
+        If preserve_in_content=True, keeps the original content unchanged
+        (for PRESERVE mode where models benefit from seeing prior reasoning).
 
         Args:
             msg_dict: Message dictionary from API response.
             field_name: Unused, kept for protocol compatibility.
+            preserve_in_content: If True, keep think tags in content.
+                                 If False, remove them from content.
 
         Returns:
             Modified message dict with reasoning_content extracted from tags.
@@ -174,12 +206,13 @@ class ThinkTagExtractor:
             match.strip() for match in matches if match.strip()
         )
 
-        # Remove think tags from content
-        cleaned_content = _THINK_TAG_PATTERN.sub("", content).strip()
-
         if reasoning_content:
             msg_dict["reasoning_content"] = reasoning_content
-        msg_dict["content"] = cleaned_content
+
+        # Only strip think tags from content if not preserving
+        if not preserve_in_content:
+            cleaned_content = _THINK_TAG_PATTERN.sub("", content).strip()
+            msg_dict["content"] = cleaned_content
 
         return msg_dict
 
@@ -202,23 +235,33 @@ class AutoExtractor:
         self._field = FieldExtractor()
         self._think_tags = ThinkTagExtractor()
 
-    def extract(self, msg_dict: dict[str, Any], field_name: str) -> dict[str, Any]:
+    def extract(
+        self,
+        msg_dict: dict[str, Any],
+        field_name: str,
+        preserve_in_content: bool = False,
+    ) -> dict[str, Any]:
         """Auto-detect format and extract reasoning content.
 
         Args:
             msg_dict: Message dictionary from API response.
             field_name: The configured reasoning field name.
+            preserve_in_content: If True, keep reasoning in content for context.
+                                 Only affects ThinkTagExtractor (others have
+                                 reasoning in separate fields already).
 
         Returns:
             Modified message dict with reasoning_content normalized.
         """
         # 1. OpenRouter reasoning_details array
         if "reasoning_details" in msg_dict:
-            return self._reasoning_details.extract(msg_dict, field_name)
+            return self._reasoning_details.extract(
+                msg_dict, field_name, preserve_in_content
+            )
 
         # 2. Custom field name (if configured differently)
         if field_name != "reasoning_content" and field_name in msg_dict:
-            return self._field.extract(msg_dict, field_name)
+            return self._field.extract(msg_dict, field_name, preserve_in_content)
 
         # 3. Standard reasoning_content field - already in correct format
         if "reasoning_content" in msg_dict:
@@ -227,7 +270,7 @@ class AutoExtractor:
         # 4. Think tags in content
         content = msg_dict.get("content")
         if content and isinstance(content, str) and "<think>" in content.lower():
-            return self._think_tags.extract(msg_dict, field_name)
+            return self._think_tags.extract(msg_dict, field_name, preserve_in_content)
 
         return msg_dict
 
@@ -235,17 +278,24 @@ class AutoExtractor:
 class NoneExtractor:
     """No-op extractor that performs no extraction."""
 
-    def extract(self, msg_dict: dict[str, Any], field_name: str) -> dict[str, Any]:
+    def extract(
+        self,
+        msg_dict: dict[str, Any],
+        field_name: str,
+        preserve_in_content: bool = False,
+    ) -> dict[str, Any]:
         """Return message dict unchanged.
 
         Args:
             msg_dict: Message dictionary from API response.
             field_name: Unused.
+            preserve_in_content: Unused.
 
         Returns:
             Unchanged message dict.
         """
         del field_name  # Unused
+        del preserve_in_content  # Unused
         return msg_dict
 
 
