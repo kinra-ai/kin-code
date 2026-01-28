@@ -780,6 +780,61 @@ WelcomeBanner {
     color: $text-muted;
 }
 
+/* =============================================================================
+   Model App
+   ============================================================================= */
+
+#model-app {
+    width: 100%;
+    height: auto;
+    max-height: 16;
+    background: $background;
+    border: round $foreground-muted;
+    padding: 0 1;
+    margin: 0 0 1 0;
+}
+
+#model-content {
+    width: 100%;
+    height: auto;
+}
+
+#model-list-scroll {
+    width: 100%;
+    height: auto;
+    max-height: 8;
+    scrollbar-visibility: hidden;
+}
+
+.model-title {
+    height: auto;
+    text-style: bold;
+    color: $primary;
+}
+
+.model-separator {
+    height: 0;
+}
+
+.model-option {
+    height: auto;
+    color: $foreground;
+}
+
+.model-search {
+    width: 100%;
+    height: auto;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 1 0 0 0;
+}
+
+.model-help {
+    height: auto;
+    color: $text-muted;
+}
+
 #approval-app {
     width: 100%;
     height: auto;
