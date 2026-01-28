@@ -55,27 +55,22 @@ class Task(
 ):
     description: ClassVar[str] = """Delegate work to a specialized subagent.
 
-USE WHEN:
-- Exploring the codebase to understand structure
-- Conducting web research on a topic
-- Planning implementation before writing code
-- Running parallel independent tasks
+Subagents run in isolated context windows. When you delegate, the subagent's
+exploration doesn't consume your main context - you receive only the synthesized result.
 
-DO NOT USE WHEN:
-- The task requires user interaction
-- You need to modify files (do it directly)
-- The task is simple enough to do yourself
+NATURAL FITS FOR DELEGATION:
+- Codebase exploration requiring many file reads → explore agent
+- Web research requiring multiple fetches and synthesis → web-research agent
+- Implementation planning requiring deep analysis → planner agent
+- Autonomous work that doesn't need user feedback → general agent
 
-AVAILABLE SUBAGENTS:
-- "explore" - Read-only codebase exploration (grep, read_file)
-- "planner" - Implementation planning (grep, read_file, todo)
-- "general" - Full capabilities except spawning more subagents
-- "web-research" - Web research (web_search, web_fetch, grep, read_file)
+BETTER HANDLED DIRECTLY:
+- Quick lookups where you know the exact file
+- Single tool calls (one grep, one read)
+- Tasks requiring back-and-forth with the user
 
-EXAMPLES:
-- agent="explore", task="Find where UserAuth is defined"
-- agent="web-research", task="Research best practices for OAuth2"
-- agent="planner", task="Plan implementation of caching layer"
+Think of subagents as specialists you can consult - they're particularly
+valuable when the work is deep but the answer you need is concise.
 
 NOTES:
 - Subagents run in-memory without saving logs

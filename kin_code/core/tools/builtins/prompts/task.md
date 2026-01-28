@@ -1,21 +1,37 @@
-Use `task` to delegate work to a subagent for independent execution.
+Use `task` to delegate work to a subagent running in an isolated context window.
 
-## When to Use This Tool
+## Why Delegate?
 
-- **Context management**: Delegate tasks that would consume too much main conversation context
-- **Specialized work**: Use the appropriate subagent for the type of task (exploration, research, etc.)
-- **Parallel execution**: Launch multiple subagents for independent tasks
-- **Autonomous work**: Tasks that don't require back-and-forth with the user
+Subagents work in their own context space. When a task requires:
+- Reading many files to find patterns
+- Fetching and comparing multiple web sources
+- Deep analysis that would expand context significantly
+
+...the subagent can do this work and return a synthesized result, preserving
+your main context for coordination and user interaction.
+
+## Matching Work to Specialists
+
+| Work Type | Natural Fit | Why |
+|-----------|-------------|-----|
+| Finding code patterns across files | explore | Reads many files, returns findings |
+| Web research and synthesis | web-research | Fetches sources, returns recommendations |
+| Planning implementation | planner | Deep analysis, returns structured plan |
+| Autonomous code changes | general | Full execution, returns summary |
+
+## Cost-Benefit
+
+Delegation has overhead (spinning up subagent, communicating context, processing result).
+For simple tasks - a single file read, a quick grep - doing it directly is more efficient.
+
+Delegate when: specialized work OR context-expensive exploration
+Handle directly when: quick lookups OR single tool calls
 
 ## Best Practices
 
 1. **Write clear, detailed task descriptions** - The subagent works autonomously, so provide enough context for it to succeed independently
 
-2. **Choose the right subagent** - Match the subagent to the task type (see available subagents in system prompt)
-
-3. **Prefer direct tools for simple operations** - If you know exactly which file to read or pattern to search, use those tools directly instead of spawning a subagent
-
-4. **Trust the subagent's judgment** - Let it explore and find information without micromanaging the approach
+2. **Trust the subagent's judgment** - Let it explore and find information without micromanaging the approach
 
 ## Limitations
 

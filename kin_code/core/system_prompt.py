@@ -404,10 +404,30 @@ def _get_available_subagents_section(agent_manager: AgentManager) -> str:
     if not agents:
         return ""
 
-    lines = ["# Available Subagents", ""]
-    lines.append("The following subagents can be spawned via the Task tool:")
+    lines = [
+        "# Working with Subagents",
+        "",
+        "You coordinate work while specialized subagents handle deep tasks.",
+        "Subagents run in isolated context windows - delegating preserves your main context for coordination.",
+        "",
+        "## When Delegation is Natural",
+        "",
+        "- **Deep exploration** - Finding patterns across many files consumes context; an explore agent is purpose-built for this",
+        "- **Research tasks** - Web fetches and source comparison are context-expensive; researchers specialize in synthesis",
+        "- **Focused implementation** - When a task is self-contained, a general agent can execute without polluting your context",
+        "",
+        "## Available Specialists",
+        "",
+    ]
+
     for agent in agents:
         lines.append(f"- **{agent.name}**: {agent.description}")
+
+    lines.extend([
+        "",
+        "Delegate when work is specialized or would expand context significantly.",
+        "Handle simple tasks directly when the cost of delegation exceeds the benefit.",
+    ])
 
     return "\n".join(lines)
 
