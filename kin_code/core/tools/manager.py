@@ -70,7 +70,61 @@ class ToolManager:
     """Manages tool discovery and instantiation for an Agent.
 
     Discovers available tools from the provided search paths. Each Agent
-    should have its own ToolManager instance.
+    should have its own ToolManager instance. Tools are discovered from:
+
+    1. Built-in tools directory (shipped with kin_code)
+    2. User-configured tool_paths from VibeConfig
+    3. Local .kin/tools/ directory in the current working directory
+    4. Global tools directory (~/.config/kin/tools/)
+
+    The manager also integrates MCP (Model Context Protocol) servers,
+    discovering and registering their tools as proxies.
+
+    Attributes:
+        available_tools: Dictionary mapping tool names to their classes,
+            filtered by enabled_tools/disabled_tools config.
+
+    Example:
+        Basic usage with configuration::
+
+            from kin_code.core.config import VibeConfig
+
+            config = VibeConfig.load()
+            manager = ToolManager(config_getter=lambda: config)
+
+            # List all available tools
+            for name, tool_cls in manager.available_tools.items():
+                print(f"{name}: {tool_cls.get_description()}")
+
+            # Get and use a specific tool
+            grep_tool = manager.get("Grep")
+            result = await grep_tool.execute(pattern="TODO", path="./src")
+
+        Discovering tool defaults for configuration::
+
+            from pathlib import Path
+            from kin_code.core.tools.manager import ToolManager
+
+            # Get default configs for all built-in tools
+            defaults = ToolManager.discover_tool_defaults()
+
+            # Or from custom paths
+            custom_defaults = ToolManager.discover_tool_defaults(
+                search_paths=[Path("./my_tools")]
+            )
+
+        Working with tool configuration::
+
+            # Get merged config (defaults + user overrides)
+            tool_config = manager.get_tool_config("Bash")
+            print(f"Timeout: {tool_config.timeout}")
+
+            # Tools are lazily instantiated
+            bash = manager.get("Bash")  # Creates instance
+            bash2 = manager.get("Bash")  # Returns same instance
+
+            # Reset all instances (e.g., between sessions)
+            manager.reset_all()
     """
 
     def __init__(self, config_getter: Callable[[], VibeConfig]) -> None:

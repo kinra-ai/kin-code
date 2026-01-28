@@ -49,7 +49,7 @@ class JsonOutputFormatter(OutputFormatter):
         self._messages.append(message)
 
     def on_event(self, event: BaseEvent) -> None:
-        pass
+        _ = event
 
     def finalize(self) -> str | None:
         messages_data = [msg.model_dump(mode="json") for msg in self._messages]
@@ -66,7 +66,7 @@ class StreamingJsonOutputFormatter(OutputFormatter):
         self.stream.flush()
 
     def on_event(self, event: BaseEvent) -> None:
-        pass
+        _ = event
 
     def finalize(self) -> str | None:
         return None
@@ -75,6 +75,15 @@ class StreamingJsonOutputFormatter(OutputFormatter):
 def create_formatter(
     format_type: OutputFormat, stream: TextIO = sys.stdout
 ) -> OutputFormatter:
+    """Create an output formatter for the specified format type.
+
+    Args:
+        format_type: Desired output format (text, JSON, or streaming JSON).
+        stream: Output stream for formatted results.
+
+    Returns:
+        Configured OutputFormatter instance for the requested format.
+    """
     formatters = {
         OutputFormat.TEXT: TextOutputFormatter,
         OutputFormat.JSON: JsonOutputFormatter,

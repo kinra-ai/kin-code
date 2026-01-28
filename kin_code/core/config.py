@@ -75,6 +75,7 @@ class TomlFileSettingsSource(PydanticBaseSettingsSource):
     def get_field_value(
         self, field: FieldInfo, field_name: str
     ) -> tuple[Any, str, bool]:
+        _ = field
         return self.toml_data.get(field_name), field_name, False
 
     def __call__(self) -> dict[str, Any]:
@@ -115,6 +116,33 @@ class Backend(StrEnum):
 
 
 class ProviderConfig(BaseModel):
+    """Configuration for an LLM API provider.
+
+    Defines how to connect to an LLM provider's API endpoint. Multiple
+    providers can be configured, and models reference providers by name.
+
+    Attributes:
+        name: Unique identifier for this provider (e.g., "openrouter").
+        api_base: Base URL for the API (e.g., "https://openrouter.ai/api/v1").
+        api_key_env_var: Environment variable containing the API key.
+        api_style: API format, typically "openai" for OpenAI-compatible APIs.
+        backend: Backend implementation to use (default: GENERIC).
+        reasoning_field_name: Field name for reasoning content in responses.
+
+    Example:
+        TOML configuration::
+
+            [[providers]]
+            name = "openrouter"
+            api_base = "https://openrouter.ai/api/v1"
+            api_key_env_var = "OPENROUTER_API_KEY"
+
+            [[providers]]
+            name = "local-ollama"
+            api_base = "http://localhost:11434/v1"
+            api_key_env_var = ""  # No key needed for local
+    """
+
     name: str
     api_base: str
     api_key_env_var: str = ""
@@ -218,6 +246,40 @@ MCPServer = Annotated[
 
 
 class ModelConfig(BaseModel):
+    """Configuration for a specific LLM model.
+
+    Defines model parameters including the provider to use, sampling settings,
+    and optional pricing/context information for cost tracking.
+
+    Attributes:
+        name: Full model identifier (e.g., "anthropic/claude-sonnet-4").
+        provider: Name of the provider to use (must match a ProviderConfig.name).
+        alias: Short name for model selection (e.g., "claude-sonnet").
+        temperature: Sampling temperature (0.0 = deterministic, 1.0 = creative).
+        top_p: Nucleus sampling parameter (None = use provider default).
+        reasoning_enabled: Enable extended thinking/reasoning if supported.
+        input_price: Cost per million input tokens for cost tracking.
+        output_price: Cost per million output tokens for cost tracking.
+        context_window: Maximum context size in tokens.
+
+    Example:
+        TOML configuration::
+
+            [[models]]
+            name = "anthropic/claude-sonnet-4"
+            alias = "claude-sonnet"
+            provider = "openrouter"
+            temperature = 0.2
+
+            [[models]]
+            name = "anthropic/claude-opus-4"
+            alias = "claude-opus"
+            provider = "openrouter"
+            temperature = 0.1
+            reasoning_enabled = true
+            context_window = 200000
+    """
+
     name: str
     provider: str
     alias: str
@@ -249,6 +311,102 @@ DEFAULT_MODELS: list[ModelConfig] = []
 
 
 class VibeConfig(BaseSettings):
+    """Central configuration for Kin Code sessions.
+
+    VibeConfig manages all configuration settings, merging values from multiple
+    sources in priority order:
+
+    1. Constructor arguments (highest priority)
+    2. Environment variables (KIN_* prefix)
+    3. TOML config file (~/.config/kin/config.toml)
+    4. Built-in defaults (lowest priority)
+
+    The configuration covers model selection, provider settings, tool/agent/skill
+    paths, UI preferences, and session behavior.
+
+    Attributes:
+        active_model: Alias of the currently selected model.
+        models: List of configured ModelConfig entries.
+        providers: List of configured ProviderConfig entries.
+        tools: Per-tool configuration overrides.
+        mcp_servers: MCP server configurations for remote tools.
+        system_prompt: The resolved system prompt content.
+        effective_workdir: Working directory with override applied.
+
+    Example:
+        Loading configuration::
+
+            from kin_code.core.config import VibeConfig, load_api_keys_from_env
+
+            # Load API keys from ~/.config/kin/.env into environment
+            load_api_keys_from_env()
+
+            # Load config with defaults + TOML + env vars
+            config = VibeConfig.load()
+
+            # Or with constructor overrides
+            config = VibeConfig.load(
+                active_model="claude-sonnet",
+                auto_approve=True
+            )
+
+        Accessing model and provider settings::
+
+            # Get active model configuration
+            model = config.get_active_model()
+            print(f"Model: {model.name}, Provider: {model.provider}")
+
+            # Get provider for the model
+            provider = config.get_provider_for_model(model)
+            print(f"API Base: {provider.api_base}")
+
+        Configuring models and providers::
+
+            # In config.toml:
+            # [[providers]]
+            # name = "openrouter"
+            # api_base = "https://openrouter.ai/api/v1"
+            # api_key_env_var = "OPENROUTER_API_KEY"
+            #
+            # [[models]]
+            # name = "anthropic/claude-sonnet-4"
+            # alias = "claude-sonnet"
+            # provider = "openrouter"
+            # temperature = 0.2
+
+            # Access in code
+            for model in config.models:
+                print(f"{model.alias}: {model.name}")
+
+        Working with MCP servers::
+
+            # In config.toml:
+            # [[mcp_servers]]
+            # name = "filesystem"
+            # transport = "stdio"
+            # command = "npx @anthropic/mcp-server-filesystem"
+            # args = ["/home/user/projects"]
+
+            for server in config.mcp_servers:
+                match server.transport:
+                    case "stdio":
+                        print(f"Stdio: {server.command}")
+                    case "http" | "streamable-http":
+                        print(f"HTTP: {server.url}")
+
+        Saving configuration updates::
+
+            # Update specific fields
+            VibeConfig.save_updates({
+                "active_model": "claude-opus",
+                "auto_approve": False
+            })
+
+            # Create default config file
+            defaults = VibeConfig.create_default()
+            VibeConfig.dump_config(defaults)
+    """
+
     active_model: str = ""
     textual_theme: str = "terminal"
     vim_keybindings: bool = False
@@ -404,6 +562,7 @@ class VibeConfig(BaseSettings):
         into os.environ for use by providers. Only KIN_* prefixed environment
         variables (via env_settings) and TOML config are used for Pydantic settings.
         """
+        _ = dotenv_settings
         return (
             init_settings,
             env_settings,

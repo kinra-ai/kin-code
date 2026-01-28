@@ -47,37 +47,156 @@ class ConversationMiddleware(Protocol):
     Middleware can inspect and modify conversation flow by returning actions
     such as STOP, COMPACT, or INJECT_MESSAGE. Implementations are called in
     pipeline order, and the first non-CONTINUE action takes effect.
+
+    The middleware lifecycle is:
+
+    1. ``before_turn()`` called before LLM request
+    2. LLM processes and responds
+    3. ``after_turn()`` called after response received
+    4. ``reset()`` called when conversation ends or compacts
+
+    Example:
+        Implementing a custom middleware::
+
+            from kin_code.core.middleware import (
+                ConversationMiddleware,
+                ConversationContext,
+                MiddlewareResult,
+                MiddlewareAction,
+                ResetReason,
+            )
+
+            class TokenBudgetMiddleware:
+                '''Stop conversation when token budget is exhausted.'''
+
+                def __init__(self, max_tokens: int) -> None:
+                    self.max_tokens = max_tokens
+                    self.tokens_used = 0
+
+                async def before_turn(
+                    self, context: ConversationContext
+                ) -> MiddlewareResult:
+                    # Check budget before each turn
+                    if self.tokens_used >= self.max_tokens:
+                        return MiddlewareResult(
+                            action=MiddlewareAction.STOP,
+                            reason=f"Token budget exhausted: {self.tokens_used}"
+                        )
+                    return MiddlewareResult()
+
+                async def after_turn(
+                    self, context: ConversationContext
+                ) -> MiddlewareResult:
+                    # Track token usage after turn
+                    self.tokens_used = context.stats.total_tokens
+                    return MiddlewareResult()
+
+                def reset(self, reset_reason: ResetReason = ResetReason.STOP) -> None:
+                    # Reset counter on conversation end
+                    if reset_reason == ResetReason.STOP:
+                        self.tokens_used = 0
+
+        Injecting messages::
+
+            class ReminderMiddleware:
+                '''Inject periodic reminders into conversation.'''
+
+                def __init__(self, reminder: str, every_n_turns: int = 5) -> None:
+                    self.reminder = reminder
+                    self.every_n_turns = every_n_turns
+
+                async def before_turn(
+                    self, context: ConversationContext
+                ) -> MiddlewareResult:
+                    if context.stats.steps % self.every_n_turns == 0:
+                        return MiddlewareResult(
+                            action=MiddlewareAction.INJECT_MESSAGE,
+                            message=self.reminder
+                        )
+                    return MiddlewareResult()
+
+                async def after_turn(
+                    self, context: ConversationContext
+                ) -> MiddlewareResult:
+                    return MiddlewareResult()
+
+                def reset(self, reset_reason: ResetReason = ResetReason.STOP) -> None:
+                    pass
+
+        Adding to pipeline::
+
+            from kin_code.core.middleware import MiddlewarePipeline
+
+            pipeline = MiddlewarePipeline()
+            pipeline.add(TokenBudgetMiddleware(max_tokens=100_000))
+            pipeline.add(ReminderMiddleware("Remember to test your changes!"))
+
+            # Run pipeline before turn
+            result = await pipeline.run_before_turn(context)
+            match result.action:
+                case MiddlewareAction.STOP:
+                    print(f"Stopping: {result.reason}")
+                case MiddlewareAction.COMPACT:
+                    print("Triggering compaction")
+                case MiddlewareAction.INJECT_MESSAGE:
+                    messages.append(result.message)
+                case MiddlewareAction.CONTINUE:
+                    pass  # Proceed normally
     """
 
     async def before_turn(self, context: ConversationContext) -> MiddlewareResult:
         """Called before each conversation turn.
 
+        This method is invoked before the LLM request is sent. Middleware can:
+        - Return CONTINUE to proceed normally
+        - Return STOP to end the conversation
+        - Return COMPACT to trigger context compaction
+        - Return INJECT_MESSAGE to add a message to the context
+
         Args:
-            context: Current conversation state including messages and stats.
+            context: Current conversation state containing:
+                - messages: List of conversation messages so far
+                - stats: AgentStats with token counts, costs, step count
+                - config: Current VibeConfig settings
 
         Returns:
-            Result indicating the action to take (CONTINUE, STOP, COMPACT,
-            or INJECT_MESSAGE).
+            MiddlewareResult with:
+                - action: The action to take (CONTINUE, STOP, COMPACT, INJECT_MESSAGE)
+                - message: Text to inject (only for INJECT_MESSAGE)
+                - reason: Human-readable explanation (for STOP)
+                - metadata: Additional data for the action
         """
         ...
 
     async def after_turn(self, context: ConversationContext) -> MiddlewareResult:
         """Called after each conversation turn.
 
+        This method is invoked after the LLM response is received and processed.
+        Middleware can analyze the response and decide to stop or compact.
+        Note: INJECT_MESSAGE is not allowed in after_turn.
+
         Args:
-            context: Current conversation state after the turn completed.
+            context: Updated conversation state including the latest response.
+                - messages: Updated with assistant response and tool results
+                - stats: Updated token counts and costs
+                - config: Current VibeConfig settings
 
         Returns:
-            Result indicating the action to take. INJECT_MESSAGE is not
-            allowed in after_turn.
+            MiddlewareResult with action (CONTINUE, STOP, or COMPACT only).
         """
         ...
 
     def reset(self, reset_reason: ResetReason = ResetReason.STOP) -> None:
         """Reset middleware state when conversation ends or compacts.
 
+        Called to clear any accumulated state. The reason indicates whether
+        the conversation is ending (STOP) or being compacted (COMPACT).
+        Middleware may want to preserve some state across compactions.
+
         Args:
-            reset_reason: Why the reset is occurring (STOP or COMPACT).
+            reset_reason: Why the reset is occurring:
+                - STOP: Conversation is ending, clear all state
+                - COMPACT: Context is being compacted, may preserve some state
         """
         ...
 
@@ -99,11 +218,12 @@ class TurnLimitMiddleware:
             )
         return MiddlewareResult()
 
-    async def after_turn(self, _context: ConversationContext) -> MiddlewareResult:
+    async def after_turn(self, context: ConversationContext) -> MiddlewareResult:
+        _ = context
         return MiddlewareResult()
 
-    def reset(self, _reset_reason: ResetReason = ResetReason.STOP) -> None:
-        pass
+    def reset(self, reset_reason: ResetReason = ResetReason.STOP) -> None:
+        _ = reset_reason
 
 
 class PriceLimitMiddleware:
@@ -123,11 +243,12 @@ class PriceLimitMiddleware:
             )
         return MiddlewareResult()
 
-    async def after_turn(self, _context: ConversationContext) -> MiddlewareResult:
+    async def after_turn(self, context: ConversationContext) -> MiddlewareResult:
+        _ = context
         return MiddlewareResult()
 
-    def reset(self, _reset_reason: ResetReason = ResetReason.STOP) -> None:
-        pass
+    def reset(self, reset_reason: ResetReason = ResetReason.STOP) -> None:
+        _ = reset_reason
 
 
 class AutoCompactMiddleware:
@@ -169,11 +290,12 @@ class AutoCompactMiddleware:
             )
         return MiddlewareResult()
 
-    async def after_turn(self, _context: ConversationContext) -> MiddlewareResult:
+    async def after_turn(self, context: ConversationContext) -> MiddlewareResult:
+        _ = context
         return MiddlewareResult()
 
-    def reset(self, _reset_reason: ResetReason = ResetReason.STOP) -> None:
-        pass
+    def reset(self, reset_reason: ResetReason = ResetReason.STOP) -> None:
+        _ = reset_reason
 
 
 class ContextWarningMiddleware:
@@ -212,10 +334,12 @@ class ContextWarningMiddleware:
 
         return MiddlewareResult()
 
-    async def after_turn(self, _context: ConversationContext) -> MiddlewareResult:
+    async def after_turn(self, context: ConversationContext) -> MiddlewareResult:
+        _ = context
         return MiddlewareResult()
 
-    def reset(self, _reset_reason: ResetReason = ResetReason.STOP) -> None:
+    def reset(self, reset_reason: ResetReason = ResetReason.STOP) -> None:
+        _ = reset_reason
         self.has_warned = False
 
 
@@ -245,18 +369,20 @@ class PlanAgentMiddleware:
     def _is_plan_agent(self) -> bool:
         return self._profile_getter().name == BuiltinAgentName.PLAN
 
-    async def before_turn(self, _context: ConversationContext) -> MiddlewareResult:
+    async def before_turn(self, context: ConversationContext) -> MiddlewareResult:
+        _ = context
         if not self._is_plan_agent():
             return MiddlewareResult()
         return MiddlewareResult(
             action=MiddlewareAction.INJECT_MESSAGE, message=self.reminder
         )
 
-    async def after_turn(self, _context: ConversationContext) -> MiddlewareResult:
+    async def after_turn(self, context: ConversationContext) -> MiddlewareResult:
+        _ = context
         return MiddlewareResult()
 
-    def reset(self, _reset_reason: ResetReason = ResetReason.STOP) -> None:
-        pass
+    def reset(self, reset_reason: ResetReason = ResetReason.STOP) -> None:
+        _ = reset_reason
 
 
 class MiddlewarePipeline:

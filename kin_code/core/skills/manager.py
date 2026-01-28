@@ -18,6 +18,79 @@ logger = getLogger("kin_code")
 
 
 class SkillManager:
+    """Manages skill discovery and retrieval.
+
+    Skills are markdown-based instruction sets that enhance agent capabilities.
+    Each skill is a directory containing a SKILL.md file with YAML frontmatter
+    defining metadata and the skill's instructions in the body.
+
+    Skills are discovered from:
+
+    1. User-configured skill_paths from VibeConfig
+    2. Local .kin/skills/ directory in the current working directory
+    3. Global skills directory (~/.config/kin/skills/)
+
+    The manager uses a first-wins strategy: if multiple skills have the same
+    name, the first one discovered (based on search path order) is used.
+
+    Attributes:
+        available_skills: Dictionary mapping skill names to SkillInfo objects,
+            filtered by enabled_skills/disabled_skills config.
+
+    Example:
+        Basic usage::
+
+            from kin_code.core.config import VibeConfig
+            from kin_code.core.skills.manager import SkillManager
+
+            config = VibeConfig.load()
+            manager = SkillManager(config_getter=lambda: config)
+
+            # List all available skills
+            for name, info in manager.available_skills.items():
+                print(f"{name}: {info.description}")
+                print(f"  Tags: {', '.join(info.tags)}")
+
+        Retrieving skill content::
+
+            # Get a specific skill
+            if (skill := manager.get_skill("docs-writer")) is not None:
+                # Access skill metadata
+                print(f"Name: {skill.name}")
+                print(f"Description: {skill.description}")
+                print(f"Path: {skill.skill_path}")
+
+                # Read the full skill content for injection
+                content = skill.skill_path.read_text()
+                print(f"Instructions: {content}")
+
+        Skill file structure::
+
+            # Skills are organized as:
+            # ~/.config/kin/skills/
+            #   my-skill/
+            #     SKILL.md          # Required: frontmatter + instructions
+            #     supporting.py     # Optional: additional files
+
+            # SKILL.md format:
+            # ---
+            # name: my-skill
+            # description: Does something useful
+            # tags: [coding, refactoring]
+            # ---
+            # Instructions for the agent go here...
+
+        Filtering skills::
+
+            # Skills respect enabled_skills/disabled_skills in config
+            # In config.toml:
+            # enabled_skills = ["docs-*", "re:^test-.*"]
+            # disabled_skills = ["experimental-*"]
+
+            # Only matching skills appear in available_skills
+            filtered = manager.available_skills
+    """
+
     def __init__(self, config_getter: Callable[[], VibeConfig]) -> None:
         self._config_getter = config_getter
         self._search_paths = self._compute_search_paths(self._config)

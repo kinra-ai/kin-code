@@ -19,6 +19,26 @@ def run_programmatic(
     previous_messages: list[LLMMessage] | None = None,
     agent_name: str = BuiltinAgentName.AUTO_APPROVE,
 ) -> str | None:
+    """Execute an agent loop programmatically without interactive CLI.
+
+    Runs a complete agent conversation synchronously, processing the prompt
+    through the agent loop and collecting formatted output.
+
+    Args:
+        config: Application configuration containing LLM and tool settings.
+        prompt: User message to send to the agent.
+        max_turns: Maximum number of conversation turns before stopping.
+        max_price: Maximum cost in dollars before stopping.
+        output_format: Output format for results (text, JSON, or streaming JSON).
+        previous_messages: Optional conversation history to resume from.
+        agent_name: Name of the agent profile to use.
+
+    Returns:
+        Formatted response string, or None if the formatter handles output directly.
+
+    Raises:
+        ConversationLimitException: When agent is stopped by middleware limits.
+    """
     formatter = create_formatter(output_format)
 
     agent_loop = AgentLoop(

@@ -88,6 +88,14 @@ def get_user_cancellation_message(
 
 
 def is_user_cancellation_event(event: BaseEvent) -> bool:
+    """Check if an event represents a user-initiated cancellation.
+
+    Args:
+        event: Event to check.
+
+    Returns:
+        True if the event is a skipped tool result with a cancellation tag.
+    """
     return (
         isinstance(event, ToolResultEvent)
         and event.skipped
@@ -147,6 +155,11 @@ logger = logging.getLogger("kin_code")
 
 
 def get_user_agent() -> str:
+    """Return the User-Agent string for HTTP requests.
+
+    Returns:
+        User-Agent header value including application name and version.
+    """
     return f"Kin-Code/{__version__}"
 
 

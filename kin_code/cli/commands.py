@@ -12,6 +12,16 @@ class Command:
 
 
 class CommandRegistry:
+    """Registry of available slash commands for the CLI.
+
+    Manages command definitions, aliases, and help text generation.
+    Commands are registered with handlers that the CLI invokes when
+    a matching alias is entered.
+
+    Attributes:
+        commands: Mapping of command names to Command definitions.
+    """
+
     def __init__(self, excluded_commands: list[str] | None = None) -> None:
         if excluded_commands is None:
             excluded_commands = []

@@ -5,6 +5,17 @@ from pathlib import Path
 
 
 class HistoryManager:
+    """Persistent input history with navigation support.
+
+    Stores user inputs in a JSON-lines file and provides up/down arrow
+    navigation through previous entries. Supports prefix-based filtering
+    for incremental search.
+
+    Attributes:
+        history_file: Path to the persistent history file.
+        max_entries: Maximum number of entries to retain.
+    """
+
     def __init__(self, history_file: Path, max_entries: int = 100) -> None:
         self.history_file = history_file
         self.max_entries = max_entries

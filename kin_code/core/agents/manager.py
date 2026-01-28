@@ -22,6 +22,77 @@ logger = getLogger("kin_code")
 
 
 class AgentManager:
+    """Manages agent profile discovery, loading, and switching.
+
+    Discovers available agent profiles from:
+
+    1. Built-in agents (Default, Plan, AcceptEdits, AutoApprove)
+    2. User-configured agent_paths from VibeConfig
+    3. Local .kin/agents/ directory in the current working directory
+    4. Global agents directory (~/.config/kin/agents/)
+
+    Custom agents are defined as TOML files and can override built-in agents
+    or add new ones. The manager maintains an active profile that applies
+    agent-specific configuration overrides.
+
+    Attributes:
+        active_profile: Currently selected AgentProfile.
+        available_agents: Dictionary mapping agent names to profiles,
+            filtered by enabled_agents/disabled_agents config.
+        config: VibeConfig with active agent's overrides applied.
+
+    Example:
+        Basic usage::
+
+            from kin_code.core.config import VibeConfig
+            from kin_code.core.agents.manager import AgentManager
+
+            config = VibeConfig.load()
+            manager = AgentManager(
+                config_getter=lambda: config,
+                initial_agent="Chat"
+            )
+
+            # List available agents
+            for name, profile in manager.available_agents.items():
+                print(f"{name}: {profile.description}")
+
+            # Get current agent
+            print(f"Active: {manager.active_profile.name}")
+
+        Switching agents::
+
+            # Switch to Plan mode (research without changes)
+            manager.switch_profile("Plan")
+
+            # Get the effective config (with agent overrides applied)
+            effective_config = manager.config
+
+            # Cycle to next agent
+            next_profile = manager.next_agent(manager.active_profile)
+            manager.switch_profile(next_profile.name)
+
+        Working with subagents::
+
+            # Get all subagent profiles (for Task tool delegation)
+            subagents = manager.get_subagents()
+            for sub in subagents:
+                print(f"Subagent: {sub.name} - {sub.description}")
+
+        Custom agent discovery::
+
+            # Get a specific agent by name
+            try:
+                custom = manager.get_agent("my-custom-agent")
+                print(f"Found: {custom.system_prompt_id}")
+            except ValueError:
+                print("Agent not found")
+
+            # Get ordered list of primary agents for UI
+            agent_order = manager.get_agent_order()
+            # Returns: ['Chat', 'Plan', 'AcceptEdits', 'AutoApprove', ...]
+    """
+
     def __init__(
         self,
         config_getter: Callable[[], VibeConfig],
