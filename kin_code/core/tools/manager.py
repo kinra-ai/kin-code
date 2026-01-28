@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 
 def _try_canonical_module_name(path: Path) -> str | None:
-    """Extract canonical module name for vibe package files.
+    """Extract canonical module name for kin_code package files.
 
     Prevents Pydantic class identity mismatches when the same module
     is imported via dynamic discovery and regular imports.
@@ -40,26 +40,26 @@ def _try_canonical_module_name(path: Path) -> str | None:
         return None
 
     try:
-        vibe_idx = parts.index("vibe")
+        kin_idx = parts.index("kin_code")
     except ValueError:
         return None
 
-    if vibe_idx + 1 >= len(parts):
+    if kin_idx + 1 >= len(parts):
         return None
 
-    module_parts = [p.removesuffix(".py") for p in parts[vibe_idx:]]
+    module_parts = [p.removesuffix(".py") for p in parts[kin_idx:]]
     return ".".join(module_parts)
 
 
 def _compute_module_name(path: Path) -> str:
-    """Return canonical module name for vibe files, hash-based synthetic name otherwise."""
+    """Return canonical module name for kin_code files, hash-based synthetic name otherwise."""
     if canonical := _try_canonical_module_name(path):
         return canonical
 
     resolved = path.resolve()
     path_hash = hashlib.md5(str(resolved).encode()).hexdigest()[:8]
     stem = re.sub(r"[^0-9A-Za-z_]", "_", path.stem) or "mod"
-    return f"vibe_tools_discovered_{stem}_{path_hash}"
+    return f"kin_tools_discovered_{stem}_{path_hash}"
 
 
 class NoSuchToolError(Exception):
