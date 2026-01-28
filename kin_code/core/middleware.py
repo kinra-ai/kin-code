@@ -42,15 +42,53 @@ class MiddlewareResult:
 
 
 class ConversationMiddleware(Protocol):
-    async def before_turn(self, context: ConversationContext) -> MiddlewareResult: ...
+    """Protocol for middleware that intercepts conversation turns.
 
-    async def after_turn(self, context: ConversationContext) -> MiddlewareResult: ...
+    Middleware can inspect and modify conversation flow by returning actions
+    such as STOP, COMPACT, or INJECT_MESSAGE. Implementations are called in
+    pipeline order, and the first non-CONTINUE action takes effect.
+    """
 
-    def reset(self, reset_reason: ResetReason = ResetReason.STOP) -> None: ...
+    async def before_turn(self, context: ConversationContext) -> MiddlewareResult:
+        """Called before each conversation turn.
+
+        Args:
+            context: Current conversation state including messages and stats.
+
+        Returns:
+            Result indicating the action to take (CONTINUE, STOP, COMPACT,
+            or INJECT_MESSAGE).
+        """
+        ...
+
+    async def after_turn(self, context: ConversationContext) -> MiddlewareResult:
+        """Called after each conversation turn.
+
+        Args:
+            context: Current conversation state after the turn completed.
+
+        Returns:
+            Result indicating the action to take. INJECT_MESSAGE is not
+            allowed in after_turn.
+        """
+        ...
+
+    def reset(self, reset_reason: ResetReason = ResetReason.STOP) -> None:
+        """Reset middleware state when conversation ends or compacts.
+
+        Args:
+            reset_reason: Why the reset is occurring (STOP or COMPACT).
+        """
+        ...
 
 
 class TurnLimitMiddleware:
     def __init__(self, max_turns: int) -> None:
+        """Initialize turn limit middleware.
+
+        Args:
+            max_turns: Maximum number of turns allowed before stopping.
+        """
         self.max_turns = max_turns
 
     async def before_turn(self, context: ConversationContext) -> MiddlewareResult:
@@ -61,15 +99,20 @@ class TurnLimitMiddleware:
             )
         return MiddlewareResult()
 
-    async def after_turn(self, context: ConversationContext) -> MiddlewareResult:
+    async def after_turn(self, _context: ConversationContext) -> MiddlewareResult:
         return MiddlewareResult()
 
-    def reset(self, reset_reason: ResetReason = ResetReason.STOP) -> None:
+    def reset(self, _reset_reason: ResetReason = ResetReason.STOP) -> None:
         pass
 
 
 class PriceLimitMiddleware:
     def __init__(self, max_price: float) -> None:
+        """Initialize price limit middleware.
+
+        Args:
+            max_price: Maximum session cost in dollars before stopping.
+        """
         self.max_price = max_price
 
     async def before_turn(self, context: ConversationContext) -> MiddlewareResult:
@@ -80,10 +123,10 @@ class PriceLimitMiddleware:
             )
         return MiddlewareResult()
 
-    async def after_turn(self, context: ConversationContext) -> MiddlewareResult:
+    async def after_turn(self, _context: ConversationContext) -> MiddlewareResult:
         return MiddlewareResult()
 
-    def reset(self, reset_reason: ResetReason = ResetReason.STOP) -> None:
+    def reset(self, _reset_reason: ResetReason = ResetReason.STOP) -> None:
         pass
 
 
@@ -94,6 +137,15 @@ class AutoCompactMiddleware:
         max_context: int,
         hard_ceiling: int | None = None,
     ) -> None:
+        """Initialize auto-compact middleware.
+
+        Args:
+            threshold_percent: Percentage of max_context that triggers compaction
+                (e.g., 0.8 for 80%).
+            max_context: Maximum context window size in tokens.
+            hard_ceiling: Optional absolute token limit that overrides the
+                percentage calculation if lower.
+        """
         self.threshold_percent = threshold_percent
         self.max_context = max_context
         self.hard_ceiling = hard_ceiling
@@ -117,10 +169,10 @@ class AutoCompactMiddleware:
             )
         return MiddlewareResult()
 
-    async def after_turn(self, context: ConversationContext) -> MiddlewareResult:
+    async def after_turn(self, _context: ConversationContext) -> MiddlewareResult:
         return MiddlewareResult()
 
-    def reset(self, reset_reason: ResetReason = ResetReason.STOP) -> None:
+    def reset(self, _reset_reason: ResetReason = ResetReason.STOP) -> None:
         pass
 
 
@@ -128,6 +180,14 @@ class ContextWarningMiddleware:
     def __init__(
         self, threshold_percent: float = 0.5, max_context: int | None = None
     ) -> None:
+        """Initialize context warning middleware.
+
+        Args:
+            threshold_percent: Percentage of max_context that triggers a warning
+                (e.g., 0.5 for 50%). Defaults to 0.5.
+            max_context: Maximum context window size in tokens. If None, no
+                warning is issued.
+        """
         self.threshold_percent = threshold_percent
         self.max_context = max_context
         self.has_warned = False
@@ -152,10 +212,10 @@ class ContextWarningMiddleware:
 
         return MiddlewareResult()
 
-    async def after_turn(self, context: ConversationContext) -> MiddlewareResult:
+    async def after_turn(self, _context: ConversationContext) -> MiddlewareResult:
         return MiddlewareResult()
 
-    def reset(self, reset_reason: ResetReason = ResetReason.STOP) -> None:
+    def reset(self, _reset_reason: ResetReason = ResetReason.STOP) -> None:
         self.has_warned = False
 
 
@@ -170,23 +230,32 @@ class PlanAgentMiddleware:
         profile_getter: Callable[[], AgentProfile],
         reminder: str = PLAN_AGENT_REMINDER,
     ) -> None:
+        """Initialize plan agent middleware.
+
+        Injects a reminder message before each turn when the Plan agent is active,
+        instructing the model to research and plan without making changes.
+
+        Args:
+            profile_getter: Callable that returns the current agent profile.
+            reminder: Message to inject when Plan agent is active.
+        """
         self._profile_getter = profile_getter
         self.reminder = reminder
 
     def _is_plan_agent(self) -> bool:
         return self._profile_getter().name == BuiltinAgentName.PLAN
 
-    async def before_turn(self, context: ConversationContext) -> MiddlewareResult:
+    async def before_turn(self, _context: ConversationContext) -> MiddlewareResult:
         if not self._is_plan_agent():
             return MiddlewareResult()
         return MiddlewareResult(
             action=MiddlewareAction.INJECT_MESSAGE, message=self.reminder
         )
 
-    async def after_turn(self, context: ConversationContext) -> MiddlewareResult:
+    async def after_turn(self, _context: ConversationContext) -> MiddlewareResult:
         return MiddlewareResult()
 
-    def reset(self, reset_reason: ResetReason = ResetReason.STOP) -> None:
+    def reset(self, _reset_reason: ResetReason = ResetReason.STOP) -> None:
         pass
 
 
@@ -232,4 +301,4 @@ class MiddlewarePipeline:
             if result.action in {MiddlewareAction.STOP, MiddlewareAction.COMPACT}:
                 return result
 
-        return MiddlewareResult()
+        return MiddlewareResult()  # noqa: F811

@@ -98,6 +98,15 @@ class AgentManager:
         return unique
 
     def _discover_agents(self) -> dict[str, AgentProfile]:
+        """Discover all agents from builtin definitions and configured search paths.
+
+        Starts with builtin agents, then scans each search path for .toml files
+        defining custom agents. Custom agents can override builtins, and duplicates
+        from later paths are skipped (first-wins strategy for custom agents).
+
+        Returns:
+            Dictionary mapping agent names to their AgentProfile objects.
+        """
         agents: dict[str, AgentProfile] = dict(BUILTIN_AGENTS)
 
         for base in self._search_paths:

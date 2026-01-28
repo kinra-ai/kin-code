@@ -73,6 +73,15 @@ class SkillManager:
         return unique
 
     def _discover_skills(self) -> dict[str, SkillInfo]:
+        """Discover all skills from configured search paths.
+
+        Scans each search path for subdirectories containing a SKILL.md file.
+        Skills are indexed by name, with earlier paths taking precedence when
+        duplicate names are found (first-wins strategy).
+
+        Returns:
+            Dictionary mapping skill names to their SkillInfo objects.
+        """
         skills: dict[str, SkillInfo] = {}
         for base in self._search_paths:
             if not base.is_dir():
