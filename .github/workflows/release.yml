@@ -50,5 +50,5 @@ jobs:
         with:
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           repository: kinra-ai/homebrew-tap
-          event-type: release-published
+          event-type: pypi-release
           client-payload: '{"tag": "${{ github.event.release.tag_name }}"}'
