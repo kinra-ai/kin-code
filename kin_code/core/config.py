@@ -258,21 +258,6 @@ class ReasoningMode(StrEnum):
     PRESERVE = auto()
 
 
-class ToolCallFormat(StrEnum):
-    """How to parse tool calls from LLM responses.
-
-    API: Parse from structured tool_calls field (OpenAI format). Default.
-    XML: Parse from XML tags in content (Qwen3-coder/Nemotron format).
-    AUTO: Try API first, fall back to XML if no tool calls found.
-    NONE: Disable tool call parsing entirely.
-    """
-
-    API = auto()
-    XML = auto()
-    AUTO = auto()
-    NONE = auto()
-
-
 class ModelConfig(BaseModel):
     """Configuration for a specific LLM model.
 
@@ -334,7 +319,6 @@ class ModelConfig(BaseModel):
     reasoning_enabled: bool | None = None  # If True, send reasoning param to API
     reasoning_mode: ReasoningMode = ReasoningMode.STRIP  # How to handle reasoning in context
     reasoning_budget: int | None = None  # Max reasoning tokens (provider-specific)
-    tool_call_format: ToolCallFormat = ToolCallFormat.API
     input_price: float | None = (
         None  # Price per million input tokens (None = auto-fetch)
     )

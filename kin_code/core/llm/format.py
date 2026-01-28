@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+import json
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from kin_code.core.llm.tool_parsing import get_tool_call_extractor
 from kin_code.core.tools.base import BaseTool
 from kin_code.core.types import (
     AvailableFunction,
@@ -16,7 +15,6 @@ from kin_code.core.types import (
 )
 
 if TYPE_CHECKING:
-    from kin_code.core.config import ModelConfig
     from kin_code.core.tools.manager import ToolManager
 
 
@@ -58,11 +56,6 @@ class ResolvedMessage(BaseModel):
 
 
 class APIToolFormatHandler:
-    def __init__(
-        self, model_getter: Callable[[], ModelConfig] | None = None
-    ) -> None:
-        self._model_getter = model_getter
-
     @property
     def name(self) -> str:
         return "api"
@@ -106,20 +99,24 @@ class APIToolFormatHandler:
         return LLMMessage.model_validate(clean_message)
 
     def parse_message(self, message: LLMMessage) -> ParsedMessage:
-        # Determine tool call format from model config
-        format_mode = "api"
-        if self._model_getter:
+        tool_calls = []
+
+        api_tool_calls = message.tool_calls or []
+        for tc in api_tool_calls:
+            if not (function_call := tc.function):
+                continue
             try:
-                format_mode = self._model_getter().tool_call_format.value
-            except (ValueError, AttributeError):
-                pass
+                args = json.loads(function_call.arguments or "{}")
+            except json.JSONDecodeError:
+                args = {}
 
-        extractor = get_tool_call_extractor(format_mode)
-        tool_calls, modified_content = extractor.extract(message)
-
-        # Update message content if XML tags were stripped
-        if modified_content is not None:
-            message.content = modified_content
+            tool_calls.append(
+                ParsedToolCall(
+                    tool_name=function_call.name or "",
+                    raw_args=args,
+                    call_id=tc.id or "",
+                )
+            )
 
         return ParsedMessage(tool_calls=tool_calls)
 
