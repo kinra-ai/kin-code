@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# Mistral Vibe Installation Script
-# This script installs uv if not present and then installs mistral-vibe using uv
+# Kin Code Installation Script
+# This script installs uv if not present and then installs kin-code using uv
 
 set -euo pipefail
 
@@ -78,26 +78,22 @@ function install_uv() {
     fi
 }
 
-function install_vibe() {
-    info "Installing mistral-vibe from GitHub repository using uv..."
-    uv tool install mistral-vibe
+function install_kin() {
+    info "Installing kin-code using uv..."
+    uv tool install kin-code
 
-    success "Mistral Vibe installed successfully! (commands: vibe, vibe-acp)"
+    success "Kin Code installed successfully! (commands: kin, kin-acp)"
 }
 
 function main() {
     echo
-    echo "██████████████████░░"
-    echo "██████████████████░░"
-    echo "████  ██████  ████░░"
-    echo "████    ██    ████░░"
-    echo "████          ████░░"
-    echo "████  ██  ██  ████░░"
-    echo "██      ██      ██░░"
-    echo "██████████████████░░"
-    echo "██████████████████░░"
+    echo "  _  ___       "
+    echo " | |/ (_)_ __  "
+    echo " | ' /| | '_ \ "
+    echo " | . \| | | | |"
+    echo " |_|\_\_|_| |_|"
     echo
-    echo "Starting Mistral Vibe installation..."
+    echo "Starting Kin Code installation..."
     echo
 
     check_platform
@@ -108,18 +104,18 @@ function main() {
         install_uv
     fi
 
-    install_vibe
+    install_kin
 
-    if command -v vibe &> /dev/null; then
+    if command -v kin &> /dev/null; then
         success "Installation completed successfully!"
         echo
-        echo "You can now run vibe with:"
-        echo "  vibe"
+        echo "You can now run kin with:"
+        echo "  kin"
         echo
         echo "Or for ACP mode:"
-        echo "  vibe-acp"
+        echo "  kin-acp"
     else
-        error "Installation completed but 'vibe' command not found"
+        error "Installation completed but 'kin' command not found"
         error "Please check your installation and PATH settings"
         exit 1
     fi
