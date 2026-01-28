@@ -1,3 +1,24 @@
+"""Tool call format handling for LLM responses.
+
+This module provides the handler for parsing and resolving tool calls from LLM
+responses. Modern LLM providers use the OpenAI-compatible API format for tool
+calls, so this module focuses on that standard format.
+
+Key components:
+    - ParsedToolCall: A parsed but unvalidated tool call from the LLM response
+    - ResolvedToolCall: A validated tool call ready for execution
+    - FailedToolCall: A tool call that failed validation
+    - APIToolFormatHandler: Handler for OpenAI-compatible API tool call format
+
+Typical usage:
+    from kin_code.core.llm.format import APIToolFormatHandler
+
+    handler = APIToolFormatHandler()
+    tools = handler.get_available_tools(tool_manager)
+    parsed = handler.parse_message(message)
+    resolved = handler.resolve_tool_calls(parsed, tool_manager)
+"""
+
 from __future__ import annotations
 
 import json

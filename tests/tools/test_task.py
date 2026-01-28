@@ -8,7 +8,13 @@ from kin_code.core.agents.manager import AgentManager
 from kin_code.core.agents.models import BUILTIN_AGENTS, AgentType
 from kin_code.core.config import VibeConfig
 from kin_code.core.tools.base import BaseToolState, InvokeContext, ToolError
-from kin_code.core.tools.builtins.task import Task, TaskArgs, TaskResult, TaskToolConfig
+from kin_code.core.tools.builtins.task import (
+    Task,
+    TaskArgs,
+    TaskResult,
+    TaskToolConfig,
+    _is_tool_call_content,
+)
 from kin_code.core.types import AssistantEvent, LLMMessage, Role
 from tests.mock.utils import collect_result
 
@@ -185,3 +191,45 @@ class TestTaskToolExecution:
             assert isinstance(result, TaskResult)
             assert result.completed is False
             assert "Simulated error" in result.response
+
+
+class TestMalformedContentDetection:
+    """Tests for _is_tool_call_content() malformed tool call detection."""
+
+    def test_detects_function_tag_at_start(self) -> None:
+        assert _is_tool_call_content("<function=read_file>")
+        assert _is_tool_call_content("<function name='read_file'>")
+
+    def test_detects_tool_call_tag_at_start(self) -> None:
+        assert _is_tool_call_content("<tool_call>read_file</tool_call>")
+
+    def test_detects_parameter_tag_at_start(self) -> None:
+        assert _is_tool_call_content("<parameter=file_path>test.py</parameter>")
+        assert _is_tool_call_content("<parameter name='file_path'>test.py</parameter>")
+
+    def test_detects_patterns_mid_text(self) -> None:
+        """Verify detection works when pattern appears after preamble text."""
+        assert _is_tool_call_content("Here's my analysis: <function=read_file>")
+        assert _is_tool_call_content("Let me help: <tool_call>read_file</tool_call>")
+        assert _is_tool_call_content("Some text\n<parameter=path>test.py</parameter>")
+
+    def test_case_insensitive(self) -> None:
+        assert _is_tool_call_content("<FUNCTION=read>")
+        assert _is_tool_call_content("<Tool_Call>read</Tool_Call>")
+        assert _is_tool_call_content("<PARAMETER=path>test</PARAMETER>")
+
+    def test_ignores_normal_text(self) -> None:
+        assert not _is_tool_call_content("This is normal text.")
+        assert not _is_tool_call_content("The function was called successfully.")
+        assert not _is_tool_call_content("Parameters: a=1, b=2")
+
+    def test_handles_empty_and_whitespace(self) -> None:
+        assert not _is_tool_call_content("")
+        assert not _is_tool_call_content("   ")
+        assert not _is_tool_call_content("\n\t\n")
+
+    def test_ignores_similar_but_valid_xml(self) -> None:
+        """Ensure we don't false-positive on valid XML-like content."""
+        assert not _is_tool_call_content("<example>some content</example>")
+        assert not _is_tool_call_content("<code>print('hello')</code>")
+        assert not _is_tool_call_content("<functionDescription>reads files</functionDescription>")

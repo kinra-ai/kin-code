@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections.abc import AsyncGenerator
 from typing import ClassVar
 
@@ -37,21 +38,21 @@ _TASK_SUFFIX = (
     "Do not end with just tool calls - provide a final response."
 )
 
-# Patterns that indicate content is a malformed tool call attempt, not real content
-_TOOL_CALL_PATTERNS = (
-    "<function=",
-    "<function ",
-    "<tool_call>",
-    "</tool_call>",
-    "<parameter=",
-    "<parameter ",
+# Regex patterns that indicate content contains malformed tool call attempts.
+# These patterns match XML-style tool calls that some models emit incorrectly.
+_TOOL_CALL_PATTERN = re.compile(
+    r"<(?:function[=\s]|tool_call>|parameter[=\s])", re.IGNORECASE
 )
 
 
 def _is_tool_call_content(content: str) -> bool:
-    """Check if content appears to be a malformed tool call rather than real text."""
-    stripped = content.strip()
-    return any(stripped.startswith(p) for p in _TOOL_CALL_PATTERNS)
+    """Check if content appears to be a malformed tool call rather than real text.
+
+    Detects XML-style tool call patterns anywhere in the content, not just at the
+    start. This handles cases where models prefix malformed tool calls with text
+    like "Here's my analysis:" before the XML.
+    """
+    return bool(_TOOL_CALL_PATTERN.search(content))
 
 
 class TaskArgs(BaseModel):
