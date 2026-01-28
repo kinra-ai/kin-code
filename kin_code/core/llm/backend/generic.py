@@ -10,6 +10,7 @@ import httpx
 
 from kin_code.core.config import ModelConfig
 from kin_code.core.llm.exceptions import BackendErrorBuilder
+from kin_code.core.llm.reasoning import get_extractor
 from kin_code.core.types import (
     AvailableTool,
     LLMChunk,
@@ -120,9 +121,8 @@ class OpenAIAdapter(APIAdapter):
     def _reasoning_from_api(
         self, msg_dict: dict[str, Any], field_name: str
     ) -> dict[str, Any]:
-        if field_name != "reasoning_content" and field_name in msg_dict:
-            msg_dict["reasoning_content"] = msg_dict.pop(field_name)
-        return msg_dict
+        extractor = get_extractor("auto")
+        return extractor.extract(msg_dict, field_name)
 
     def prepare_request(
         self,

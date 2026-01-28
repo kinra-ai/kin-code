@@ -520,3 +520,108 @@ class TestBackend:
             # Verify top_p is present
             assert "top_p" in payload
             assert payload["top_p"] == 0.95
+
+    @pytest.mark.asyncio
+    async def test_backend_extracts_reasoning_details_from_response(self):
+        """Test that reasoning_details array from OpenRouter is extracted to reasoning_content."""
+        base_url = "https://api.openrouter.ai"
+        json_response = {
+            "id": "fake_id_1234",
+            "created": 1234567890,
+            "model": "moonshotai/kimi-k2.5",
+            "usage": {"prompt_tokens": 10, "total_tokens": 25, "completion_tokens": 15},
+            "object": "chat.completion",
+            "choices": [
+                {
+                    "index": 0,
+                    "finish_reason": "stop",
+                    "message": {
+                        "role": "assistant",
+                        "content": "The answer is 42.",
+                        "reasoning_details": [
+                            {"type": "reasoning.summary", "summary": "Analyze the question"},
+                            {"type": "reasoning.text", "text": "First, I need to understand what is being asked."},
+                        ],
+                    },
+                }
+            ],
+        }
+        with respx.mock(base_url=base_url) as mock_api:
+            mock_api.post("/v1/chat/completions").mock(
+                return_value=httpx.Response(status_code=200, json=json_response)
+            )
+            provider = ProviderConfig(
+                name="openrouter",
+                api_base=f"{base_url}/v1",
+                api_key_env_var="OPENROUTER_API_KEY",
+            )
+            backend = GenericBackend(provider=provider)
+            model = ModelConfig(
+                name="moonshotai/kimi-k2.5",
+                provider="openrouter",
+                alias="kimi-k2.5",
+            )
+            messages = [LLMMessage(role=Role.user, content="What is the answer?")]
+
+            result = await backend.complete(
+                model=model,
+                messages=messages,
+                temperature=0.2,
+                tools=None,
+                max_tokens=None,
+                tool_choice=None,
+                extra_headers=None,
+            )
+
+            assert result.message.content == "The answer is 42."
+            assert result.message.reasoning_content == "Analyze the question\nFirst, I need to understand what is being asked."
+
+    @pytest.mark.asyncio
+    async def test_backend_extracts_reasoning_details_from_streaming_response(self):
+        """Test that reasoning_details array from streaming response is extracted."""
+        base_url = "https://api.openrouter.ai"
+        chunks = [
+            rb'data: {"choices": [{"delta": {"content": "", "role": "assistant", "reasoning_details": [{"type": "reasoning.text", "text": "Let me think..."}]}, "finish_reason": null}], "usage": {"prompt_tokens": 10, "completion_tokens": 5}}',
+            rb'data: {"choices": [{"delta": {"content": "Answer", "role": "assistant", "reasoning_details": [{"type": "reasoning.text", "text": "Now I know."}]}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 10, "completion_tokens": 15}}',
+            rb"data: [DONE]",
+        ]
+        with respx.mock(base_url=base_url) as mock_api:
+            mock_api.post("/v1/chat/completions").mock(
+                return_value=httpx.Response(
+                    status_code=200,
+                    stream=httpx.ByteStream(stream=b"\n\n".join(chunks)),
+                    headers={"Content-Type": "text/event-stream"},
+                )
+            )
+            provider = ProviderConfig(
+                name="openrouter",
+                api_base=f"{base_url}/v1",
+                api_key_env_var="OPENROUTER_API_KEY",
+            )
+            backend = GenericBackend(provider=provider)
+            model = ModelConfig(
+                name="moonshotai/kimi-k2.5",
+                provider="openrouter",
+                alias="kimi-k2.5",
+            )
+            messages = [LLMMessage(role=Role.user, content="What?")]
+
+            results: list[LLMChunk] = []
+            async for result in backend.complete_streaming(
+                model=model,
+                messages=messages,
+                temperature=0.2,
+                tools=None,
+                max_tokens=None,
+                tool_choice=None,
+                extra_headers=None,
+            ):
+                results.append(result)
+
+            # First chunk has reasoning
+            assert results[0].message.reasoning_content == "Let me think..."
+            assert results[0].message.content == ""
+
+            # Second chunk has both content and reasoning
+            assert results[1].message.content == "Answer"
+            assert results[1].message.reasoning_content == "Now I know."
