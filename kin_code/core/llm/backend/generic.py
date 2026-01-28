@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, NamedTuple, Protocol, TypeVar
 
 import httpx
 
+from kin_code.core.config import ModelConfig
 from kin_code.core.llm.exceptions import BackendErrorBuilder
 from kin_code.core.types import (
     AvailableTool,
@@ -20,7 +21,7 @@ from kin_code.core.types import (
 from kin_code.core.utils import async_generator_retry, async_retry
 
 if TYPE_CHECKING:
-    from kin_code.core.config import ModelConfig, ProviderConfig
+    from kin_code.core.config import ProviderConfig
 
 
 class PreparedRequest(NamedTuple):
@@ -35,7 +36,7 @@ class APIAdapter(Protocol):
     def prepare_request(
         self,
         *,
-        model_name: str,
+        model: ModelConfig,
         messages: list[LLMMessage],
         temperature: float,
         tools: list[AvailableTool] | None,
@@ -73,15 +74,15 @@ class OpenAIAdapter(APIAdapter):
 
     def build_payload(
         self,
-        model_name: str,
+        model: ModelConfig,
         converted_messages: list[dict[str, Any]],
         temperature: float,
         tools: list[AvailableTool] | None,
         max_tokens: int | None,
         tool_choice: StrToolChoice | AvailableTool | None,
     ) -> dict[str, Any]:
-        payload = {
-            "model": model_name,
+        payload: dict[str, Any] = {
+            "model": model.name,
             "messages": converted_messages,
             "temperature": temperature,
         }
@@ -96,6 +97,10 @@ class OpenAIAdapter(APIAdapter):
             )
         if max_tokens is not None:
             payload["max_tokens"] = max_tokens
+        if model.top_p is not None:
+            payload["top_p"] = model.top_p
+        if model.reasoning_enabled:
+            payload["reasoning"] = {"enabled": True, "exclude": False}
 
         return payload
 
@@ -122,7 +127,7 @@ class OpenAIAdapter(APIAdapter):
     def prepare_request(
         self,
         *,
-        model_name: str,
+        model: ModelConfig,
         messages: list[LLMMessage],
         temperature: float,
         tools: list[AvailableTool] | None,
@@ -141,7 +146,7 @@ class OpenAIAdapter(APIAdapter):
         ]
 
         payload = self.build_payload(
-            model_name, converted_messages, temperature, tools, max_tokens, tool_choice
+            model, converted_messages, temperature, tools, max_tokens, tool_choice
         )
 
         if enable_streaming:
@@ -260,7 +265,7 @@ class GenericBackend:
         adapter = BACKEND_ADAPTERS[api_style]
 
         endpoint, headers, body = adapter.prepare_request(
-            model_name=model.name,
+            model=model,
             messages=messages,
             temperature=temperature,
             tools=tools,
@@ -325,7 +330,7 @@ class GenericBackend:
         adapter = BACKEND_ADAPTERS[api_style]
 
         endpoint, headers, body = adapter.prepare_request(
-            model_name=model.name,
+            model=model,
             messages=messages,
             temperature=temperature,
             tools=tools,

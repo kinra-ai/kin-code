@@ -222,6 +222,8 @@ class ModelConfig(BaseModel):
     provider: str
     alias: str
     temperature: float = 0.2
+    top_p: float | None = None  # If set, include in API request
+    reasoning_enabled: bool | None = None  # If True, send reasoning param to API
     input_price: float | None = None  # Price per million input tokens (None = auto-fetch)
     output_price: float | None = None  # Price per million output tokens (None = auto-fetch)
     context_window: int | None = None  # Context window size (None = unknown)

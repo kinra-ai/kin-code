@@ -351,3 +351,172 @@ class TestBackend:
                 pass
 
             assert mock_api.calls.last.request.headers["user-agent"] == user_agent
+
+    @pytest.mark.asyncio
+    async def test_backend_reasoning_enabled_payload(self):
+        """Test that reasoning_enabled=True adds reasoning object to payload."""
+        base_url = "https://api.openrouter.ai"
+        json_response = {
+            "id": "fake_id_1234",
+            "created": 1234567890,
+            "model": "moonshotai/kimi-k2.5",
+            "usage": {"prompt_tokens": 10, "total_tokens": 15, "completion_tokens": 5},
+            "object": "chat.completion",
+            "choices": [
+                {
+                    "index": 0,
+                    "finish_reason": "stop",
+                    "message": {"role": "assistant", "content": "Hello"},
+                }
+            ],
+        }
+        with respx.mock(base_url=base_url) as mock_api:
+            route = mock_api.post("/v1/chat/completions").mock(
+                return_value=httpx.Response(status_code=200, json=json_response)
+            )
+            provider = ProviderConfig(
+                name="openrouter",
+                api_base=f"{base_url}/v1",
+                api_key_env_var="OPENROUTER_API_KEY",
+            )
+            backend = GenericBackend(provider=provider)
+            model = ModelConfig(
+                name="moonshotai/kimi-k2.5",
+                provider="openrouter",
+                alias="kimi-k2.5",
+                temperature=1.0,
+                top_p=0.95,
+                reasoning_enabled=True,
+            )
+            messages = [LLMMessage(role=Role.user, content="Think step by step")]
+
+            await backend.complete(
+                model=model,
+                messages=messages,
+                temperature=model.temperature,
+                tools=None,
+                max_tokens=None,
+                tool_choice=None,
+                extra_headers=None,
+            )
+
+            assert route.called
+            request = route.calls.last.request
+            payload = json.loads(request.content)
+
+            # Verify reasoning object is present
+            assert "reasoning" in payload
+            assert payload["reasoning"] == {"enabled": True, "exclude": False}
+
+            # Verify top_p is present
+            assert "top_p" in payload
+            assert payload["top_p"] == 0.95
+
+    @pytest.mark.asyncio
+    async def test_backend_no_reasoning_when_disabled(self):
+        """Test that reasoning object is not added when reasoning_enabled is not set."""
+        base_url = "https://api.openrouter.ai"
+        json_response = {
+            "id": "fake_id_1234",
+            "created": 1234567890,
+            "model": "some-model",
+            "usage": {"prompt_tokens": 10, "total_tokens": 15, "completion_tokens": 5},
+            "object": "chat.completion",
+            "choices": [
+                {
+                    "index": 0,
+                    "finish_reason": "stop",
+                    "message": {"role": "assistant", "content": "Hello"},
+                }
+            ],
+        }
+        with respx.mock(base_url=base_url) as mock_api:
+            route = mock_api.post("/v1/chat/completions").mock(
+                return_value=httpx.Response(status_code=200, json=json_response)
+            )
+            provider = ProviderConfig(
+                name="openrouter",
+                api_base=f"{base_url}/v1",
+                api_key_env_var="OPENROUTER_API_KEY",
+            )
+            backend = GenericBackend(provider=provider)
+            # Model without reasoning_enabled or top_p
+            model = ModelConfig(
+                name="some-model",
+                provider="openrouter",
+                alias="some-alias",
+            )
+            messages = [LLMMessage(role=Role.user, content="Hello")]
+
+            await backend.complete(
+                model=model,
+                messages=messages,
+                temperature=model.temperature,
+                tools=None,
+                max_tokens=None,
+                tool_choice=None,
+                extra_headers=None,
+            )
+
+            assert route.called
+            request = route.calls.last.request
+            payload = json.loads(request.content)
+
+            # Verify reasoning object is NOT present
+            assert "reasoning" not in payload
+
+            # Verify top_p is NOT present
+            assert "top_p" not in payload
+
+    @pytest.mark.asyncio
+    async def test_backend_reasoning_enabled_streaming_payload(self):
+        """Test that reasoning/top_p parameters are included in streaming requests."""
+        base_url = "https://api.openrouter.ai"
+        with respx.mock(base_url=base_url) as mock_api:
+            route = mock_api.post("/v1/chat/completions").mock(
+                return_value=httpx.Response(
+                    status_code=200,
+                    stream=httpx.ByteStream(
+                        b'data: {"choices": [{"delta": {"role": "assistant", "content": "hi"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 10, "completion_tokens": 5}}\n\ndata: [DONE]\n\n'
+                    ),
+                    headers={"Content-Type": "text/event-stream"},
+                )
+            )
+            provider = ProviderConfig(
+                name="openrouter",
+                api_base=f"{base_url}/v1",
+                api_key_env_var="OPENROUTER_API_KEY",
+            )
+            backend = GenericBackend(provider=provider)
+            model = ModelConfig(
+                name="moonshotai/kimi-k2.5",
+                provider="openrouter",
+                alias="kimi-k2.5",
+                temperature=1.0,
+                top_p=0.95,
+                reasoning_enabled=True,
+            )
+            messages = [LLMMessage(role=Role.user, content="Think step by step")]
+
+            async for _ in backend.complete_streaming(
+                model=model,
+                messages=messages,
+                temperature=model.temperature,
+                tools=None,
+                max_tokens=None,
+                tool_choice=None,
+                extra_headers=None,
+            ):
+                pass
+
+            assert route.called
+            request = route.calls.last.request
+            payload = json.loads(request.content)
+
+            # Verify reasoning object is present in streaming request
+            assert "reasoning" in payload
+            assert payload["reasoning"] == {"enabled": True, "exclude": False}
+
+            # Verify top_p is present
+            assert "top_p" in payload
+            assert payload["top_p"] == 0.95
