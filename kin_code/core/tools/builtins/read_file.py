@@ -67,10 +67,27 @@ class ReadFile(
     BaseTool[ReadFileArgs, ReadFileResult, ReadFileToolConfig, ReadFileState],
     ToolUIData[ReadFileArgs, ReadFileResult],
 ):
-    description: ClassVar[str] = (
-        "Read a UTF-8 file, returning content from a specific line range. "
-        "Reading is capped by a byte limit for safety."
-    )
+    description: ClassVar[str] = """Read contents of a file from disk.
+
+USE WHEN:
+- Viewing the contents of a specific file
+- Reading configuration or data files
+- Examining code before making changes
+- Following up on grep results
+
+DO NOT USE WHEN:
+- You don't know which file to read (use grep first)
+- Reading a directory (path must be a file)
+- Fetching content from a URL (use web_fetch)
+
+EXAMPLES:
+- path="src/main.py" - Read entire file
+- path="config.json", offset=10, limit=50 - Read lines 10-60
+
+NOTES:
+- Supports UTF-8 encoding
+- Large files are automatically truncated
+- Use offset/limit for targeted reading of large files"""
 
     @final
     async def run(

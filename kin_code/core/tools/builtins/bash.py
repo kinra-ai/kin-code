@@ -211,7 +211,23 @@ class Bash(
     BaseTool[BashArgs, BashResult, BashToolConfig, BaseToolState],
     ToolUIData[BashArgs, BashResult],
 ):
-    description: ClassVar[str] = "Run a one-off bash command and capture its output."
+    description: ClassVar[str] = """Execute a shell command and capture its output.
+
+USE WHEN:
+- Running build commands (npm, cargo, make, uv)
+- Executing tests or linters
+- Git operations (commit, push, status)
+- Installing dependencies or packages
+
+DO NOT USE WHEN:
+- Reading file contents (use read_file)
+- Searching for patterns in files (use grep)
+- Writing or editing files (use write_file/search_replace)
+
+EXAMPLES:
+- "git status" - Check repository state
+- "uv run pytest tests/" - Run Python tests
+- "npm install" - Install Node dependencies"""
 
     @classmethod
     def get_call_display(cls, event: ToolCallEvent) -> ToolCallDisplay:

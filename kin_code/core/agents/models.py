@@ -38,6 +38,9 @@ class BuiltinAgentName(StrEnum):
     ACCEPT_EDITS = "accept-edits"
     AUTO_APPROVE = "auto-approve"
     EXPLORE = "explore"
+    PLANNER = "planner"
+    GENERAL = "general"
+    WEB_RESEARCH = "web-research"
 
 
 @dataclass(frozen=True)
@@ -113,10 +116,40 @@ EXPLORE = AgentProfile(
     overrides={"enabled_tools": ["grep", "read_file"]},
 )
 
+PLANNER = AgentProfile(
+    name=BuiltinAgentName.PLANNER,
+    display_name="Planner",
+    description="Read-only subagent for code exploration and implementation planning",
+    safety=AgentSafety.SAFE,
+    agent_type=AgentType.SUBAGENT,
+    overrides={"enabled_tools": ["grep", "read_file", "todo"]},
+)
+
+GENERAL = AgentProfile(
+    name=BuiltinAgentName.GENERAL,
+    display_name="General",
+    description="Full-capability subagent for autonomous code execution",
+    safety=AgentSafety.NEUTRAL,
+    agent_type=AgentType.SUBAGENT,
+    overrides={"disabled_tools": ["task"]},
+)
+
+WEB_RESEARCH = AgentProfile(
+    name=BuiltinAgentName.WEB_RESEARCH,
+    display_name="Web Research",
+    description="Subagent for web research and analysis",
+    safety=AgentSafety.SAFE,
+    agent_type=AgentType.SUBAGENT,
+    overrides={"enabled_tools": ["web_search", "web_fetch", "grep", "read_file"]},
+)
+
 BUILTIN_AGENTS: dict[str, AgentProfile] = {
     BuiltinAgentName.DEFAULT: DEFAULT,
     BuiltinAgentName.PLAN: PLAN,
     BuiltinAgentName.ACCEPT_EDITS: ACCEPT_EDITS,
     BuiltinAgentName.AUTO_APPROVE: AUTO_APPROVE,
     BuiltinAgentName.EXPLORE: EXPLORE,
+    BuiltinAgentName.PLANNER: PLANNER,
+    BuiltinAgentName.GENERAL: GENERAL,
+    BuiltinAgentName.WEB_RESEARCH: WEB_RESEARCH,
 }

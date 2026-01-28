@@ -48,11 +48,26 @@ class Calculator(
 ):
     """Safely evaluate mathematical expressions."""
 
-    description: ClassVar[str] = (
-        "Safely evaluate mathematical expressions. Supports arithmetic (+,-,*,/,**,%), "
-        "math functions (sin, cos, tan, sqrt, log, exp, abs, pow, floor, ceil), "
-        "and constants (pi, e)."
-    )
+    description: ClassVar[str] = """Evaluate mathematical expressions safely.
+
+USE WHEN:
+- Calculating numeric values during problem-solving
+- Converting units or computing ratios
+- Performing arithmetic that needs precision
+
+DO NOT USE WHEN:
+- You can easily calculate in your head
+- The math is trivial (2+2, simple percentages)
+
+SUPPORTED:
+- Arithmetic: +, -, *, /, **, %
+- Functions: sin, cos, tan, sqrt, log, exp, abs, pow, floor, ceil
+- Constants: pi, e, tau
+
+EXAMPLES:
+- "sqrt(2) * 100" - Calculate square root
+- "sin(pi/4)" - Trigonometry
+- "2**10" - Exponentiation"""
 
     @classmethod
     def get_call_display(cls, event: ToolCallEvent) -> ToolCallDisplay:

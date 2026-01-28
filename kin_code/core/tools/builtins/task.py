@@ -53,12 +53,34 @@ class Task(
     BaseTool[TaskArgs, TaskResult, TaskToolConfig, BaseToolState],
     ToolUIData[TaskArgs, TaskResult],
 ):
-    description: ClassVar[str] = (
-        "Delegate a task to a subagent for independent execution. "
-        "Useful for exploration, research, or parallel work that doesn't "
-        "require user interaction. The subagent runs in-memory without "
-        "saving interaction logs."
-    )
+    description: ClassVar[str] = """Delegate work to a specialized subagent.
+
+USE WHEN:
+- Exploring the codebase to understand structure
+- Conducting web research on a topic
+- Planning implementation before writing code
+- Running parallel independent tasks
+
+DO NOT USE WHEN:
+- The task requires user interaction
+- You need to modify files (do it directly)
+- The task is simple enough to do yourself
+
+AVAILABLE SUBAGENTS:
+- "explore" - Read-only codebase exploration (grep, read_file)
+- "planner" - Implementation planning (grep, read_file, todo)
+- "general" - Full capabilities except spawning more subagents
+- "web-research" - Web research (web_search, web_fetch, grep, read_file)
+
+EXAMPLES:
+- agent="explore", task="Find where UserAuth is defined"
+- agent="web-research", task="Research best practices for OAuth2"
+- agent="planner", task="Plan implementation of caching layer"
+
+NOTES:
+- Subagents run in-memory without saving logs
+- Only subagents can be used (not regular agents)
+- Prevents recursive spawning for safety"""
 
     @classmethod
     def get_call_display(cls, event: ToolCallEvent) -> ToolCallDisplay:

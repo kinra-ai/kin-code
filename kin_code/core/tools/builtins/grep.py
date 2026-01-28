@@ -102,10 +102,28 @@ class Grep(
     BaseTool[GrepArgs, GrepResult, GrepToolConfig, GrepState],
     ToolUIData[GrepArgs, GrepResult],
 ):
-    description: ClassVar[str] = (
-        "Recursively search files for a regex pattern using ripgrep (rg) or grep. "
-        "Respects .gitignore and .codeignore files by default when using ripgrep."
-    )
+    description: ClassVar[str] = """Search files recursively for a regex pattern.
+
+USE WHEN:
+- Finding where a function, class, or variable is defined/used
+- Searching for text across the codebase
+- Looking for TODOs, FIXMEs, or specific comments
+- Finding import statements or dependencies
+
+DO NOT USE WHEN:
+- You need to read a specific known file (use read_file)
+- You need web search results (use web_search)
+- You know the exact file path already
+
+EXAMPLES:
+- "def calculate_" - Find function definitions
+- "import requests" - Find usage of requests library
+- "TODO:" - Find all TODO comments
+
+NOTES:
+- Uses ripgrep (rg) if available, falls back to grep
+- Respects .gitignore by default
+- Supports full regex syntax"""
 
     def _detect_backend(self) -> GrepBackend:
         if shutil.which("rg"):

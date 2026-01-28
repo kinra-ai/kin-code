@@ -74,11 +74,27 @@ class AskUserQuestion(
     ],
     ToolUIData[AskUserQuestionArgs, AskUserQuestionResult],
 ):
-    description: ClassVar[str] = (
-        "Ask the user one or more questions and wait for their responses. "
-        "Each question has 2-4 choices plus an automatic 'Other' option for free text. "
-        "Use this to gather preferences, clarify requirements, or get decisions."
-    )
+    description: ClassVar[str] = """Ask the user questions and wait for responses.
+
+USE WHEN:
+- Clarifying ambiguous requirements
+- Getting user preferences between options
+- Confirming before destructive operations
+- Gathering information needed to proceed
+
+DO NOT USE WHEN:
+- You have enough information to proceed
+- The question is rhetorical or doesn't need an answer
+- You're just confirming completion (just say it completed)
+
+FORMAT:
+- 1-4 questions per call
+- Each question has 2-4 choices
+- An "Other" option for free text is added automatically
+
+EXAMPLES:
+- "Which database should we use?" with options ["PostgreSQL", "SQLite", "MySQL"]
+- "Delete these files?" with options ["Yes, delete", "No, keep"]"""
 
     @classmethod
     def get_call_display(cls, event: ToolCallEvent) -> ToolCallDisplay:

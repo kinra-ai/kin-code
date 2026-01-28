@@ -48,9 +48,26 @@ class WriteFile(
     BaseTool[WriteFileArgs, WriteFileResult, WriteFileConfig, WriteFileState],
     ToolUIData[WriteFileArgs, WriteFileResult],
 ):
-    description: ClassVar[str] = (
-        "Create or overwrite a UTF-8 file. Fails if file exists unless 'overwrite=True'."
-    )
+    description: ClassVar[str] = """Create a new file or completely replace an existing file.
+
+USE WHEN:
+- Creating a new file from scratch
+- Completely rewriting a file's contents
+- Generating new config or data files
+
+DO NOT USE WHEN:
+- Making targeted edits to existing code (use search_replace)
+- The file exists and you only need to change part of it
+- You haven't read the file first (read it before overwriting)
+
+EXAMPLES:
+- path="new_module.py", content="..." - Create new file
+- path="config.json", content="...", overwrite=True - Replace file
+
+NOTES:
+- Requires overwrite=True to replace existing files
+- Parent directories are created automatically
+- Cannot write outside project directory"""
 
     @classmethod
     def get_call_display(cls, event: ToolCallEvent) -> ToolCallDisplay:

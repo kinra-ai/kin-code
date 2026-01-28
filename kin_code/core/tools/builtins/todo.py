@@ -64,9 +64,26 @@ class Todo(
     BaseTool[TodoArgs, TodoResult, TodoConfig, TodoState],
     ToolUIData[TodoArgs, TodoResult],
 ):
-    description: ClassVar[str] = (
-        "Manage todos. Use action='read' to view, action='write' with complete list to update."
-    )
+    description: ClassVar[str] = """Track tasks and progress during a session.
+
+USE WHEN:
+- Planning multi-step work
+- Tracking progress on complex tasks
+- Organizing implementation steps
+- Showing the user what remains to be done
+
+DO NOT USE WHEN:
+- Simple single-step tasks
+- The task is already complete
+
+ACTIONS:
+- action="read" - View current todos
+- action="write" with todos=[...] - Update entire todo list
+
+NOTES:
+- Todos persist only for the current session
+- Write action replaces the entire list (not incremental)
+- Each todo needs a unique id"""
 
     @classmethod
     def get_call_display(cls, event: ToolCallEvent) -> ToolCallDisplay:

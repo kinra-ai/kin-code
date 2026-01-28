@@ -78,11 +78,35 @@ class SearchReplace(
     ],
     ToolUIData[SearchReplaceArgs, SearchReplaceResult],
 ):
-    description: ClassVar[str] = (
-        "Replace sections of files using SEARCH/REPLACE blocks. "
-        "Supports fuzzy matching and detailed error reporting. "
-        "Format: <<<<<<< SEARCH\\n[text]\\n=======\\n[replacement]\\n>>>>>>> REPLACE"
-    )
+    description: ClassVar[str] = """Edit existing files using SEARCH/REPLACE blocks.
+
+USE WHEN:
+- Modifying specific sections of code
+- Refactoring functions, classes, or methods
+- Fixing bugs in existing files
+- Making targeted changes to configuration
+
+DO NOT USE WHEN:
+- Creating a new file from scratch (use write_file)
+- Replacing the entire file content (use write_file with overwrite=True)
+- The file doesn't exist yet
+
+FORMAT:
+<<<<<<< SEARCH
+[exact text to find]
+=======
+[replacement text]
+>>>>>>> REPLACE
+
+EXAMPLES:
+- Replace a function implementation
+- Fix a typo in code
+- Update import statements
+
+NOTES:
+- Search text must match exactly (whitespace matters)
+- Supports fuzzy matching to help diagnose failures
+- Multiple blocks can be applied in one call"""
 
     @classmethod
     def get_call_display(cls, event: ToolCallEvent) -> ToolCallDisplay:
