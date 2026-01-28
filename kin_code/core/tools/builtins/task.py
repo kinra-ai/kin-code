@@ -32,6 +32,28 @@ from kin_code.core.types import (
 )
 
 
+_TASK_SUFFIX = (
+    "\n\nAfter completing your work, always provide a summary of your findings. "
+    "Do not end with just tool calls - provide a final response."
+)
+
+# Patterns that indicate content is a malformed tool call attempt, not real content
+_TOOL_CALL_PATTERNS = (
+    "<function=",
+    "<function ",
+    "<tool_call>",
+    "</tool_call>",
+    "<parameter=",
+    "<parameter ",
+)
+
+
+def _is_tool_call_content(content: str) -> bool:
+    """Check if content appears to be a malformed tool call rather than real text."""
+    stripped = content.strip()
+    return any(stripped.startswith(p) for p in _TOOL_CALL_PATTERNS)
+
+
 class TaskArgs(BaseModel):
     task: str = Field(description="The task to delegate to the subagent")
     agent: str = Field(
@@ -167,9 +189,14 @@ NOTES:
         accumulated_response: list[str] = []
         accumulated_reasoning: list[str] = []
         completed = True
+        task_with_suffix = args.task + _TASK_SUFFIX
         try:
-            async for event in subagent_loop.act(args.task):
-                if isinstance(event, AssistantEvent) and event.content:
+            async for event in subagent_loop.act(task_with_suffix):
+                if isinstance(event, ToolCallEvent):
+                    # Clear accumulated response when tool calls start.
+                    # We only want the final summary after all tool execution.
+                    accumulated_response.clear()
+                elif isinstance(event, AssistantEvent) and event.content:
                     accumulated_response.append(event.content)
                     if event.stopped_by_middleware:
                         completed = False
@@ -201,6 +228,30 @@ NOTES:
 
         reasoning_content = "".join(accumulated_reasoning) or None
         response_content = "".join(accumulated_response)
+
+        # Filter out malformed tool call content from accumulated response
+        if response_content.strip() and _is_tool_call_content(response_content):
+            response_content = ""
+
+        # Fallback: if no content accumulated from events, check message history.
+        # This handles models that return empty content on their final turn after tool calls.
+        if not response_content.strip():
+            for msg in reversed(subagent_loop.messages):
+                if msg.role == Role.assistant and msg.content:
+                    content = (
+                        msg.content if isinstance(msg.content, str) else str(msg.content)
+                    )
+                    # Skip empty content and malformed tool call attempts
+                    if content.strip() and not _is_tool_call_content(content):
+                        response_content = content
+                        break
+
+        # If still no valid content, provide a fallback message
+        if not response_content.strip():
+            response_content = (
+                "[Subagent completed tool execution but did not provide a summary. "
+                "Check the tool results above for details.]"
+            )
 
         # Reasoning is excluded from serialization by default to prevent context bloat.
         # Only populate when explicitly requested for debugging/programmatic access.
