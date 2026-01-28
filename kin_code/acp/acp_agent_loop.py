@@ -155,9 +155,7 @@ class KinAcpAgentLoop(AcpAgent):
             ),
             protocol_version=PROTOCOL_VERSION,
             agent_info=Implementation(
-                name="@kinra-ai/kin-code",
-                title="Kin Code",
-                version=__version__,
+                name="@kinra-ai/kin-code", title="Kin Code", version=__version__
             ),
             auth_methods=auth_methods,
         )

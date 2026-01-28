@@ -37,10 +37,7 @@ class TestBackend:
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "base_url,json_response,result_data",
-        [
-            *FIREWORKS_SIMPLE_CONVERSATION_PARAMS,
-            *FIREWORKS_TOOL_CONVERSATION_PARAMS,
-        ],
+        [*FIREWORKS_SIMPLE_CONVERSATION_PARAMS, *FIREWORKS_TOOL_CONVERSATION_PARAMS],
     )
     async def test_backend_complete(
         self, base_url: Url, json_response: JsonResponse, result_data: ResultData
@@ -120,9 +117,7 @@ class TestBackend:
                 name="model_name", provider="provider_name", alias="model_alias"
             )
 
-            messages = [
-                LLMMessage(role=Role.user, content="List files in current dir")
-            ]
+            messages = [LLMMessage(role=Role.user, content="List files in current dir")]
 
             results: list[LLMChunk] = []
             async for result in backend.complete_streaming(
@@ -214,9 +209,7 @@ class TestBackend:
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "base_url,provider_name,expected_stream_options",
-        [
-            ("https://api.fireworks.ai", "fireworks", {"include_usage": True}),
-        ],
+        [("https://api.fireworks.ai", "fireworks", {"include_usage": True})],
     )
     async def test_backend_streaming_payload_includes_stream_options(
         self, base_url: Url, provider_name: str, expected_stream_options: dict
@@ -442,9 +435,7 @@ class TestBackend:
             backend = GenericBackend(provider=provider)
             # Model without reasoning_enabled or top_p
             model = ModelConfig(
-                name="some-model",
-                provider="openrouter",
-                alias="some-alias",
+                name="some-model", provider="openrouter", alias="some-alias"
             )
             messages = [LLMMessage(role=Role.user, content="Hello")]
 
@@ -539,8 +530,14 @@ class TestBackend:
                         "role": "assistant",
                         "content": "The answer is 42.",
                         "reasoning_details": [
-                            {"type": "reasoning.summary", "summary": "Analyze the question"},
-                            {"type": "reasoning.text", "text": "First, I need to understand what is being asked."},
+                            {
+                                "type": "reasoning.summary",
+                                "summary": "Analyze the question",
+                            },
+                            {
+                                "type": "reasoning.text",
+                                "text": "First, I need to understand what is being asked.",
+                            },
                         ],
                     },
                 }
@@ -557,9 +554,7 @@ class TestBackend:
             )
             backend = GenericBackend(provider=provider)
             model = ModelConfig(
-                name="moonshotai/kimi-k2.5",
-                provider="openrouter",
-                alias="kimi-k2.5",
+                name="moonshotai/kimi-k2.5", provider="openrouter", alias="kimi-k2.5"
             )
             messages = [LLMMessage(role=Role.user, content="What is the answer?")]
 
@@ -574,7 +569,10 @@ class TestBackend:
             )
 
             assert result.message.content == "The answer is 42."
-            assert result.message.reasoning_content == "Analyze the question\nFirst, I need to understand what is being asked."
+            assert (
+                result.message.reasoning_content
+                == "Analyze the question\nFirst, I need to understand what is being asked."
+            )
 
     @pytest.mark.asyncio
     async def test_backend_extracts_reasoning_details_from_streaming_response(self):
@@ -600,9 +598,7 @@ class TestBackend:
             )
             backend = GenericBackend(provider=provider)
             model = ModelConfig(
-                name="moonshotai/kimi-k2.5",
-                provider="openrouter",
-                alias="kimi-k2.5",
+                name="moonshotai/kimi-k2.5", provider="openrouter", alias="kimi-k2.5"
             )
             messages = [LLMMessage(role=Role.user, content="What?")]
 

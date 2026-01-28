@@ -98,11 +98,17 @@ class TestLSPParsing:
         response = [
             {
                 "uri": "file:///path/to/a.py",
-                "range": {"start": {"line": 0, "character": 0}, "end": {"line": 0, "character": 5}},
+                "range": {
+                    "start": {"line": 0, "character": 0},
+                    "end": {"line": 0, "character": 5},
+                },
             },
             {
                 "uri": "file:///path/to/b.py",
-                "range": {"start": {"line": 10, "character": 3}, "end": {"line": 10, "character": 8}},
+                "range": {
+                    "start": {"line": 10, "character": 3},
+                    "end": {"line": 10, "character": 8},
+                },
             },
         ]
 
@@ -134,12 +140,7 @@ class TestLSPParsing:
         assert "def hello()" in result
 
     def test_parse_hover_list(self, lsp):
-        response = {
-            "contents": [
-                {"value": "First part"},
-                {"value": "Second part"},
-            ]
-        }
+        response = {"contents": [{"value": "First part"}, {"value": "Second part"}]}
         result = lsp._parse_hover(response)
         assert "First part" in result
         assert "Second part" in result
@@ -153,18 +154,27 @@ class TestLSPParsing:
             {
                 "name": "hello",
                 "kind": 12,
-                "range": {"start": {"line": 0, "character": 0}, "end": {"line": 2, "character": 0}},
+                "range": {
+                    "start": {"line": 0, "character": 0},
+                    "end": {"line": 2, "character": 0},
+                },
                 "children": [],
             },
             {
                 "name": "MyClass",
                 "kind": 5,
-                "range": {"start": {"line": 5, "character": 0}, "end": {"line": 10, "character": 0}},
+                "range": {
+                    "start": {"line": 5, "character": 0},
+                    "end": {"line": 10, "character": 0},
+                },
                 "children": [
                     {
                         "name": "method",
                         "kind": 6,
-                        "range": {"start": {"line": 6, "character": 4}, "end": {"line": 7, "character": 0}},
+                        "range": {
+                            "start": {"line": 6, "character": 4},
+                            "end": {"line": 7, "character": 0},
+                        },
                         "children": [],
                     }
                 ],
@@ -186,9 +196,12 @@ class TestLSPParsing:
                 "kind": 12,
                 "location": {
                     "uri": "file:///path/to/utils.py",
-                    "range": {"start": {"line": 10, "character": 0}, "end": {"line": 15, "character": 0}},
+                    "range": {
+                        "start": {"line": 10, "character": 0},
+                        "end": {"line": 15, "character": 0},
+                    },
                 },
-            },
+            }
         ]
 
         symbols = lsp._parse_workspace_symbols(response)
@@ -205,10 +218,13 @@ class TestLSPParsing:
                     "name": "caller_func",
                     "kind": 12,
                     "uri": "file:///path/to/caller.py",
-                    "range": {"start": {"line": 5, "character": 0}, "end": {"line": 10, "character": 0}},
+                    "range": {
+                        "start": {"line": 5, "character": 0},
+                        "end": {"line": 10, "character": 0},
+                    },
                 },
                 "fromRanges": [],
-            },
+            }
         ]
 
         calls = lsp._parse_incoming_calls(response)
@@ -225,10 +241,13 @@ class TestLSPParsing:
                     "name": "callee_func",
                     "kind": 12,
                     "uri": "file:///path/to/callee.py",
-                    "range": {"start": {"line": 20, "character": 0}, "end": {"line": 25, "character": 0}},
+                    "range": {
+                        "start": {"line": 20, "character": 0},
+                        "end": {"line": 25, "character": 0},
+                    },
                 },
                 "fromRanges": [],
-            },
+            }
         ]
 
         calls = lsp._parse_outgoing_calls(response)
@@ -271,7 +290,9 @@ async def test_raises_for_unsupported_file_type(lsp, tmp_path):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(not shutil.which("pyright-langserver"), reason="pyright not installed")
+@pytest.mark.skipif(
+    not shutil.which("pyright-langserver"), reason="pyright not installed"
+)
 async def test_go_to_definition_with_pyright(lsp, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
@@ -299,7 +320,9 @@ my_function()
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(not shutil.which("pyright-langserver"), reason="pyright not installed")
+@pytest.mark.skipif(
+    not shutil.which("pyright-langserver"), reason="pyright not installed"
+)
 async def test_hover_with_pyright(lsp, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
@@ -326,7 +349,9 @@ documented()
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(not shutil.which("pyright-langserver"), reason="pyright not installed")
+@pytest.mark.skipif(
+    not shutil.which("pyright-langserver"), reason="pyright not installed"
+)
 async def test_document_symbols_with_pyright(lsp, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
@@ -362,7 +387,9 @@ class MyClass:
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(not shutil.which("pyright-langserver"), reason="pyright not installed")
+@pytest.mark.skipif(
+    not shutil.which("pyright-langserver"), reason="pyright not installed"
+)
 async def test_find_references_with_pyright(lsp, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 

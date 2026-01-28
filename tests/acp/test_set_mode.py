@@ -131,9 +131,7 @@ class TestACPSetMode:
         assert acp_session.agent_loop.auto_approve == initial_auto_approve
 
     @pytest.mark.asyncio
-    async def test_set_mode_to_same_mode(
-        self, acp_agent_loop: KinAcpAgentLoop
-    ) -> None:
+    async def test_set_mode_to_same_mode(self, acp_agent_loop: KinAcpAgentLoop) -> None:
         session_response = await acp_agent_loop.new_session(
             cwd=str(Path.cwd()), mcp_servers=[]
         )

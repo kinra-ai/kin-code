@@ -122,13 +122,16 @@ async def get_update_if_available(
     return UpdateAvailability(latest_version=update.latest_version, should_notify=True)
 
 
-UPDATE_COMMANDS = ["uv tool upgrade kin-code", "brew upgrade kin-code"]
+UPDATE_COMMANDS = [
+    ["uv", "tool", "upgrade", "kin-code"],
+    ["brew", "upgrade", "kin-code"],
+]
 
 
 async def do_update() -> bool:
     for command in UPDATE_COMMANDS:
-        process = await asyncio.create_subprocess_shell(
-            command,
+        process = await asyncio.create_subprocess_exec(
+            *command,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             stdin=asyncio.subprocess.DEVNULL,

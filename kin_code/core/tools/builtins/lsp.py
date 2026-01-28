@@ -62,8 +62,7 @@ class _OperationContext:
 
 LANGUAGE_SERVERS: dict[str, LSPServerConfig] = {
     "python": LSPServerConfig(
-        command=["pyright-langserver", "--stdio"],
-        languages=["py"],
+        command=["pyright-langserver", "--stdio"], languages=["py"]
     ),
     "typescript": LSPServerConfig(
         command=["typescript-language-server", "--stdio"],
@@ -85,9 +84,7 @@ class LSPToolConfig(BaseToolConfig):
     permission: ToolPermission = ToolPermission.ALWAYS
 
     timeout: int = Field(default=30, description="Timeout for LSP requests in seconds.")
-    max_references: int = Field(
-        default=50, description="Maximum references to return."
-    )
+    max_references: int = Field(default=50, description="Maximum references to return.")
     max_symbols: int = Field(default=100, description="Maximum symbols to return.")
 
 
@@ -100,7 +97,9 @@ class Location(BaseModel):
     line: int = Field(description="1-based line number")
     character: int = Field(description="1-based character offset")
     end_line: int | None = Field(default=None, description="End line if range")
-    end_character: int | None = Field(default=None, description="End character if range")
+    end_character: int | None = Field(
+        default=None, description="End character if range"
+    )
 
 
 class Symbol(BaseModel):
@@ -146,7 +145,9 @@ class LSP(
     BaseTool[LSPArgs, LSPResult, LSPToolConfig, LSPState],
     ToolUIData[LSPArgs, LSPResult],
 ):
-    description: ClassVar[str] = """Language Server Protocol operations for code intelligence.
+    description: ClassVar[
+        str
+    ] = """Language Server Protocol operations for code intelligence.
 
 USE WHEN:
 - Finding where a symbol is defined (goToDefinition)
@@ -295,11 +296,7 @@ NOTES:
     async def _send_notification(
         self, server: LSPServerProcess, method: str, params: dict[str, Any]
     ) -> None:
-        message = {
-            "jsonrpc": "2.0",
-            "method": method,
-            "params": params,
-        }
+        message = {"jsonrpc": "2.0", "method": method, "params": params}
 
         content = json.dumps(message)
         header = f"Content-Length: {len(content)}\r\n\r\n"
@@ -356,11 +353,7 @@ NOTES:
             return response.get("result", {})
 
     async def _execute_operation(
-        self,
-        server: LSPServerProcess,
-        args: LSPArgs,
-        file_path: Path,
-        language: str,
+        self, server: LSPServerProcess, args: LSPArgs, file_path: Path, language: str
     ) -> LSPResult:
         await self._open_document(server, file_path, language)
 
@@ -404,7 +397,9 @@ NOTES:
 
     async def _op_find_references(self, ctx: _OperationContext) -> LSPResult:
         params = {**ctx.text_document_position, "context": {"includeDeclaration": True}}
-        response = await self._send_request(ctx.server, "textDocument/references", params)
+        response = await self._send_request(
+            ctx.server, "textDocument/references", params
+        )
         locations = self._parse_locations(response)[: self.config.max_references]
         return LSPResult(
             operation=ctx.args.operation,
@@ -420,14 +415,20 @@ NOTES:
         return LSPResult(
             operation=ctx.args.operation,
             hover_content=hover_content,
-            message="Hover information retrieved" if hover_content else "No hover information",
+            message="Hover information retrieved"
+            if hover_content
+            else "No hover information",
         )
 
     async def _op_document_symbol(self, ctx: _OperationContext) -> LSPResult:
         response = await self._send_request(
-            ctx.server, "textDocument/documentSymbol", {"textDocument": ctx.text_document}
+            ctx.server,
+            "textDocument/documentSymbol",
+            {"textDocument": ctx.text_document},
         )
-        symbols = self._parse_symbols(response, ctx.file_path)[: self.config.max_symbols]
+        symbols = self._parse_symbols(response, ctx.file_path)[
+            : self.config.max_symbols
+        ]
         return LSPResult(
             operation=ctx.args.operation,
             symbols=symbols,
@@ -436,7 +437,9 @@ NOTES:
 
     async def _op_workspace_symbol(self, ctx: _OperationContext) -> LSPResult:
         query = ctx.args.query or ""
-        response = await self._send_request(ctx.server, "workspace/symbol", {"query": query})
+        response = await self._send_request(
+            ctx.server, "workspace/symbol", {"query": query}
+        )
         symbols = self._parse_workspace_symbols(response)[: self.config.max_symbols]
         return LSPResult(
             operation=ctx.args.operation,
@@ -554,9 +557,7 @@ NOTES:
                     )
                 )
             else:
-                locations.append(
-                    Location(file_path=file_path, line=1, character=1)
-                )
+                locations.append(Location(file_path=file_path, line=1, character=1))
 
         return locations
 
@@ -756,8 +757,7 @@ NOTES:
             )
 
         return ToolResultDisplay(
-            success=True,
-            message=event.result.message or "LSP operation completed",
+            success=True, message=event.result.message or "LSP operation completed"
         )
 
     @classmethod

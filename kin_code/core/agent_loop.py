@@ -302,9 +302,7 @@ class AgentLoop:
                 )
             )
             if self.config.context_warnings:
-                self.middleware_pipeline.add(
-                    ContextWarningMiddleware(0.5, max_context)
-                )
+                self.middleware_pipeline.add(ContextWarningMiddleware(0.5, max_context))
 
         self.middleware_pipeline.add(PlanAgentMiddleware(lambda: self.agent_profile))
 
@@ -477,7 +475,9 @@ class AgentLoop:
 
                 if chunks_with_content >= BATCH_SIZE:
                     if content_buffer.strip():
-                        yield AssistantEvent(content=content_buffer, message_id=message_id)
+                        yield AssistantEvent(
+                            content=content_buffer, message_id=message_id
+                        )
                     content_buffer = ""
                     chunks_with_content = 0
 
@@ -799,7 +799,7 @@ class AgentLoop:
 
     def _fill_missing_tool_responses(self) -> None:
         i = 1
-        while i < len(self.messages):  # noqa: PLR1702
+        while i < len(self.messages):  # noqa: PLR1702 - nested loop required for tool response filling
             msg = self.messages[i]
 
             if msg.role == "assistant" and msg.tool_calls:

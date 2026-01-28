@@ -120,9 +120,7 @@ async def test_includes_hidden_when_requested(list_dir, tmp_path):
     (tmp_path / ".hidden").write_text("content")
     (tmp_path / "visible.py").write_text("content")
 
-    result = await collect_result(
-        list_dir.run(ListDirectoryArgs(include_hidden=True))
-    )
+    result = await collect_result(list_dir.run(ListDirectoryArgs(include_hidden=True)))
 
     names = [e.name for e in result.entries]
     assert "visible.py" in names
@@ -168,9 +166,7 @@ async def test_entries_have_correct_types(list_dir, tmp_path):
     (tmp_path / "directory").mkdir()
     (tmp_path / "symlink").symlink_to(tmp_path / "file.py")
 
-    result = await collect_result(
-        list_dir.run(ListDirectoryArgs(include_hidden=True))
-    )
+    result = await collect_result(list_dir.run(ListDirectoryArgs(include_hidden=True)))
 
     entries_by_name = {e.name: e for e in result.entries}
 
@@ -217,9 +213,7 @@ async def test_respects_exclude_patterns_recursive(list_dir, tmp_path):
     node_modules.mkdir()
     (node_modules / "excluded.js").write_text("content")
 
-    result = await collect_result(
-        list_dir.run(ListDirectoryArgs(recursive=True))
-    )
+    result = await collect_result(list_dir.run(ListDirectoryArgs(recursive=True)))
 
     names = [e.name for e in result.entries]
     assert "included.py" in names

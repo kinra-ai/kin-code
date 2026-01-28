@@ -48,7 +48,9 @@ class WriteFile(
     BaseTool[WriteFileArgs, WriteFileResult, WriteFileConfig, WriteFileState],
     ToolUIData[WriteFileArgs, WriteFileResult],
 ):
-    description: ClassVar[str] = """Create a new file or completely replace an existing file.
+    description: ClassVar[
+        str
+    ] = """Create a new file or completely replace an existing file.
 
 USE WHEN:
 - Creating a new file from scratch

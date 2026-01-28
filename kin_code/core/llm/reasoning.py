@@ -134,10 +134,7 @@ class ReasoningDetailsExtractor:
 
 
 # Regex pattern for think tags - matches <think>...</think> with content
-_THINK_TAG_PATTERN = re.compile(
-    r"<think>(.*?)</think>",
-    re.DOTALL | re.IGNORECASE,
-)
+_THINK_TAG_PATTERN = re.compile(r"<think>(.*?)</think>", re.DOTALL | re.IGNORECASE)
 
 
 class ThinkTagExtractor:
@@ -173,7 +170,9 @@ class ThinkTagExtractor:
             return msg_dict
 
         # Combine all think blocks
-        reasoning_content = "\n".join(match.strip() for match in matches if match.strip())
+        reasoning_content = "\n".join(
+            match.strip() for match in matches if match.strip()
+        )
 
         # Remove think tags from content
         cleaned_content = _THINK_TAG_PATTERN.sub("", content).strip()

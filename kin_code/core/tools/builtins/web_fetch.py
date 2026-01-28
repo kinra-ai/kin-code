@@ -68,7 +68,9 @@ class WebFetchConfig(BaseToolConfig):
     """Configuration for the web fetch tool."""
 
     permission: ToolPermission = ToolPermission.ALWAYS
-    max_bytes: int = Field(default=100_000, description="Maximum content bytes to retrieve")
+    max_bytes: int = Field(
+        default=100_000, description="Maximum content bytes to retrieve"
+    )
     timeout: int = Field(default=30, description="Request timeout in seconds")
 
 
@@ -77,8 +79,7 @@ class WebFetchArgs(BaseModel):
 
     url: str = Field(description="URL to fetch content from")
     max_bytes: int | None = Field(
-        default=None,
-        description="Maximum content bytes (default: 100KB)",
+        default=None, description="Maximum content bytes (default: 100KB)"
     )
 
 

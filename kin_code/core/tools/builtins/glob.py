@@ -123,7 +123,9 @@ NOTES:
         base_path = self._resolve_path(args.path)
         exclude_spec = self._build_exclude_spec(base_path)
 
-        matching_files = self._find_matching_files(base_path, args.pattern, exclude_spec)
+        matching_files = self._find_matching_files(
+            base_path, args.pattern, exclude_spec
+        )
         sorted_files = self._sort_by_mtime(matching_files)
 
         self._update_state(args.pattern)
@@ -134,9 +136,7 @@ NOTES:
         relative_paths = [self._make_relative(f, base_path) for f in result_files]
 
         yield GlobResult(
-            files=relative_paths,
-            truncated=truncated,
-            total_matches=len(sorted_files),
+            files=relative_paths, truncated=truncated, total_matches=len(sorted_files)
         )
 
     def _validate_args(self, args: GlobArgs) -> None:

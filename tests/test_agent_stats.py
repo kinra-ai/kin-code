@@ -69,7 +69,7 @@ def make_config(
             name="openrouter",
             api_base="https://openrouter.ai/api/v1",
             api_key_env_var="",  # No API key required for tests
-        ),
+        )
     ]
     return VibeConfig(
         session_logging=SessionLoggingConfig(enabled=not disable_logging),
@@ -693,9 +693,7 @@ class TestAutoFetchPricing:
     """Tests for auto-fetching model pricing when not configured."""
 
     @pytest.mark.asyncio
-    async def test_auto_fetch_pricing_when_not_configured(
-        self, monkeypatch
-    ) -> None:
+    async def test_auto_fetch_pricing_when_not_configured(self, monkeypatch) -> None:
         """When model has no pricing configured, it should auto-fetch from provider."""
         from unittest.mock import MagicMock
 
@@ -711,14 +709,14 @@ class TestAutoFetchPricing:
                 provider="openrouter",
                 alias="test-model",
                 # No input_price or output_price
-            ),
+            )
         ]
         providers = [
             ProviderConfig(
                 name="openrouter",
                 api_base="https://openrouter.ai/api/v1",
                 api_key_env_var="OPENROUTER_API_KEY",
-            ),
+            )
         ]
 
         # Mock the pricing service to return pricing
@@ -783,7 +781,9 @@ class TestAutoFetchPricing:
         monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
 
         # Start with a model with pricing
-        config1 = make_config(input_price=1.0, output_price=5.0, active_model="devstral-latest")
+        config1 = make_config(
+            input_price=1.0, output_price=5.0, active_model="devstral-latest"
+        )
 
         backend = FakeBackend([])
         agent = AgentLoop(config1, backend=backend)
@@ -798,14 +798,14 @@ class TestAutoFetchPricing:
                 provider="openrouter",
                 alias="new-model",
                 # No pricing
-            ),
+            )
         ]
         providers = [
             ProviderConfig(
                 name="openrouter",
                 api_base="https://openrouter.ai/api/v1",
                 api_key_env_var="OPENROUTER_API_KEY",
-            ),
+            )
         ]
 
         # Mock the pricing service
@@ -841,18 +841,14 @@ class TestAutoFetchPricing:
 
         # Create a model without pricing
         models = [
-            ModelConfig(
-                name="test-model",
-                provider="openrouter",
-                alias="test-model",
-            ),
+            ModelConfig(name="test-model", provider="openrouter", alias="test-model")
         ]
         providers = [
             ProviderConfig(
                 name="openrouter",
                 api_base="https://openrouter.ai/api/v1",
                 api_key_env_var="OPENROUTER_API_KEY",
-            ),
+            )
         ]
 
         # Mock the pricing service to return None (fetch failed)

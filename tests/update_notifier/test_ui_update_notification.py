@@ -361,7 +361,7 @@ async def test_ui_displays_success_notification_when_auto_update_succeeds(
     )
     notifier = FakeUpdateGateway(update=Update(latest_version="0.2.0"))
 
-    with patch("kin_code.cli.update_notifier.update.UPDATE_COMMANDS", ["true"]):
+    with patch("kin_code.cli.update_notifier.update.UPDATE_COMMANDS", [["true"]]):
         app = make_vibe_app(notifier=notifier, config=config)
 
         async with app.run_test() as pilot:
@@ -389,7 +389,7 @@ async def test_ui_displays_update_notification_when_auto_update_fails(
     )
     notifier = FakeUpdateGateway(update=Update(latest_version="0.2.0"))
 
-    with patch("kin_code.cli.update_notifier.update.UPDATE_COMMANDS", ["false"]):
+    with patch("kin_code.cli.update_notifier.update.UPDATE_COMMANDS", [["false"]]):
         app = make_vibe_app(notifier=notifier, config=config)
 
         async with app.run_test() as pilot:

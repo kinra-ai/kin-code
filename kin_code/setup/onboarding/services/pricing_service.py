@@ -151,9 +151,7 @@ class PricingCache:
 _pricing_cache = PricingCache()
 
 
-def _parse_openrouter_pricing(
-    data: dict, model_name: str
-) -> ModelPricing | None:
+def _parse_openrouter_pricing(data: dict, model_name: str) -> ModelPricing | None:
     """Parse pricing data from OpenRouter API response.
 
     Args:
@@ -224,10 +222,7 @@ def _is_openrouter_provider(api_base: str) -> bool:
 
 
 async def fetch_model_pricing(
-    provider_name: str,
-    api_base: str,
-    model_name: str,
-    api_key: str | None,
+    provider_name: str, api_base: str, model_name: str, api_key: str | None
 ) -> ModelPricing | None:
     """Fetch model pricing, checking cache first then provider APIs.
 
@@ -263,10 +258,7 @@ async def fetch_model_pricing(
 
 
 def get_model_pricing_sync(
-    provider_name: str,
-    api_base: str,
-    model_name: str,
-    api_key: str | None,
+    provider_name: str, api_base: str, model_name: str, api_key: str | None
 ) -> ModelPricing | None:
     """Synchronous wrapper for fetch_model_pricing.
 
@@ -297,7 +289,9 @@ def get_model_pricing_sync(
                 with ThreadPoolExecutor(max_workers=1) as executor:
                     future = executor.submit(
                         asyncio.run,
-                        fetch_model_pricing(provider_name, api_base, model_name, api_key),
+                        fetch_model_pricing(
+                            provider_name, api_base, model_name, api_key
+                        ),
                     )
                     return future.result(timeout=15.0)
             except RuntimeError:

@@ -85,15 +85,15 @@ class ListDirectoryArgs(BaseModel):
 class ListDirectoryResult(BaseModel):
     path: str = Field(description="The listed directory path")
     entries: list[DirectoryEntry] = Field(description="Directory entries")
-    truncated: bool = Field(
-        default=False, description="True if results were truncated"
-    )
+    truncated: bool = Field(default=False, description="True if results were truncated")
     total_files: int = Field(description="Total number of files found")
     total_directories: int = Field(description="Total number of directories found")
 
 
 class ListDirectory(
-    BaseTool[ListDirectoryArgs, ListDirectoryResult, ListDirectoryConfig, ListDirectoryState],
+    BaseTool[
+        ListDirectoryArgs, ListDirectoryResult, ListDirectoryConfig, ListDirectoryState
+    ],
     ToolUIData[ListDirectoryArgs, ListDirectoryResult],
 ):
     description: ClassVar[str] = """List contents of a directory.
@@ -222,7 +222,9 @@ NOTES:
             except ValueError:
                 continue
 
-            if exclude_spec and exclude_spec.match_file(rel_str + "/" if item.is_dir() else rel_str):
+            if exclude_spec and exclude_spec.match_file(
+                rel_str + "/" if item.is_dir() else rel_str
+            ):
                 continue
 
             entry = self._create_entry(item, base_path)
@@ -264,14 +266,11 @@ NOTES:
         except (OSError, ValueError):
             mtime = None
 
-        return DirectoryEntry(
-            name=name,
-            type=entry_type,
-            size=size,
-            modified=mtime,
-        )
+        return DirectoryEntry(name=name, type=entry_type, size=size, modified=mtime)
 
-    def check_allowlist_denylist(self, args: ListDirectoryArgs) -> ToolPermission | None:
+    def check_allowlist_denylist(
+        self, args: ListDirectoryArgs
+    ) -> ToolPermission | None:
         path_obj = Path(args.path).expanduser()
         if not path_obj.is_absolute():
             path_obj = Path.cwd() / path_obj

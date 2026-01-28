@@ -53,8 +53,6 @@ class MissingPromptFileError(RuntimeError):
         self.prompt_dir = prompt_dir
 
 
-
-
 class TomlFileSettingsSource(PydanticBaseSettingsSource):
     def __init__(self, settings_cls: type[BaseSettings]) -> None:
         super().__init__(settings_cls)
@@ -286,8 +284,12 @@ class ModelConfig(BaseModel):
     temperature: float = 0.2
     top_p: float | None = None  # If set, include in API request
     reasoning_enabled: bool | None = None  # If True, send reasoning param to API
-    input_price: float | None = None  # Price per million input tokens (None = auto-fetch)
-    output_price: float | None = None  # Price per million output tokens (None = auto-fetch)
+    input_price: float | None = (
+        None  # Price per million input tokens (None = auto-fetch)
+    )
+    output_price: float | None = (
+        None  # Price per million output tokens (None = auto-fetch)
+    )
     context_window: int | None = None  # Context window size (None = unknown)
 
     @model_validator(mode="before")
@@ -304,7 +306,7 @@ DEFAULT_PROVIDERS = [
         name="openrouter",
         api_base="https://openrouter.ai/api/v1",
         api_key_env_var="OPENROUTER_API_KEY",
-    ),
+    )
 ]
 
 DEFAULT_MODELS: list[ModelConfig] = []
@@ -581,7 +583,6 @@ class VibeConfig(BaseSettings):
         except ValueError:
             pass
         return self
-
 
     @field_validator("tool_paths", mode="before")
     @classmethod

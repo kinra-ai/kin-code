@@ -105,9 +105,7 @@ class TestWebFetchHTTP:
         with respx.mock:
             respx.get("https://example.com/").mock(
                 return_value=httpx.Response(
-                    200,
-                    text=html,
-                    headers={"content-type": "text/html"},
+                    200, text=html, headers={"content-type": "text/html"}
                 )
             )
 
@@ -125,9 +123,7 @@ class TestWebFetchHTTP:
         with respx.mock:
             respx.get("https://api.example.com/data").mock(
                 return_value=httpx.Response(
-                    200,
-                    json=data,
-                    headers={"content-type": "application/json"},
+                    200, json=data, headers={"content-type": "application/json"}
                 )
             )
 
@@ -145,9 +141,7 @@ class TestWebFetchHTTP:
         with respx.mock:
             respx.get("https://api.example.com/").mock(
                 return_value=httpx.Response(
-                    200,
-                    json=data,
-                    headers={"content-type": "application/json"},
+                    200, json=data, headers={"content-type": "application/json"}
                 )
             )
 
@@ -203,9 +197,7 @@ class TestWebFetchHTTP:
         with respx.mock:
             respx.get("https://example.com/").mock(
                 return_value=httpx.Response(
-                    200,
-                    text=large_content,
-                    headers={"content-type": "text/plain"},
+                    200, text=large_content, headers={"content-type": "text/plain"}
                 )
             )
 

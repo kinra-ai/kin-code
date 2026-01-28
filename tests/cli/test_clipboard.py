@@ -247,6 +247,7 @@ def test_copy_x11_clipboard(mock_subprocess: MagicMock) -> None:
         ["xclip", "-selection", "clipboard"],
         input=test_text.encode("utf-8"),
         check=True,
+        timeout=5,
     )
 
 
@@ -257,7 +258,7 @@ def test_copy_wayland_clipboard(mock_subprocess: MagicMock) -> None:
     _copy_wayland_clipboard(test_text)
 
     mock_subprocess.assert_called_once_with(
-        ["wl-copy"], input=test_text.encode("utf-8"), check=True
+        ["wl-copy"], input=test_text.encode("utf-8"), check=True, timeout=5
     )
 
 

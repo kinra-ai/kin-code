@@ -136,9 +136,7 @@ class TestAgentProfile:
         )
 
     def test_description_property(self) -> None:
-        assert (
-            "web" in BUILTIN_AGENTS[BuiltinAgentName.DEFAULT].description.lower()
-        )
+        assert "web" in BUILTIN_AGENTS[BuiltinAgentName.DEFAULT].description.lower()
         assert (
             "auto" in BUILTIN_AGENTS[BuiltinAgentName.AUTO_APPROVE].description.lower()
         )
@@ -167,8 +165,14 @@ class TestAgentProfile:
 class TestAgentProfileOverrides:
     def test_default_agent_has_web_tool_overrides(self) -> None:
         overrides = BUILTIN_AGENTS[BuiltinAgentName.DEFAULT].overrides
-        assert overrides.get("tools", {}).get("web_search", {}).get("permission") == "always"
-        assert overrides.get("tools", {}).get("web_fetch", {}).get("permission") == "always"
+        assert (
+            overrides.get("tools", {}).get("web_search", {}).get("permission")
+            == "always"
+        )
+        assert (
+            overrides.get("tools", {}).get("web_fetch", {}).get("permission")
+            == "always"
+        )
 
     def test_auto_approve_agent_sets_auto_approve(self) -> None:
         overrides = BUILTIN_AGENTS[BuiltinAgentName.AUTO_APPROVE].overrides

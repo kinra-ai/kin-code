@@ -29,7 +29,9 @@ class WebSearchConfig(BaseToolConfig):
     """Configuration for the web search tool."""
 
     permission: ToolPermission = ToolPermission.ALWAYS
-    default_count: int = Field(default=10, ge=1, le=20, description="Default number of results")
+    default_count: int = Field(
+        default=10, ge=1, le=20, description="Default number of results"
+    )
     timeout: int = Field(default=30, description="Request timeout in seconds")
 
 
@@ -130,32 +132,33 @@ EXAMPLES:
                         "Accept": "application/json",
                         "X-Subscription-Token": api_key,
                     },
-                    params={
-                        "q": args.query,
-                        "count": count,
-                    },
+                    params={"q": args.query, "count": count},
                 )
 
                 if response.status_code == HTTPStatus.UNAUTHORIZED:
                     raise ToolError("Invalid Brave Search API key")
                 if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-                    raise ToolError("Brave Search rate limit exceeded. Try again later.")
+                    raise ToolError(
+                        "Brave Search rate limit exceeded. Try again later."
+                    )
                 if response.status_code != HTTPStatus.OK:
-                    raise ToolError(f"Brave Search API error: HTTP {response.status_code}")
+                    raise ToolError(
+                        f"Brave Search API error: HTTP {response.status_code}"
+                    )
 
                 data = response.json()
 
             except httpx.TimeoutException:
-                raise ToolError(f"Search request timed out after {self.config.timeout}s")
+                raise ToolError(
+                    f"Search request timed out after {self.config.timeout}s"
+                )
             except httpx.RequestError as e:
                 raise ToolError(f"Search request failed: {e}") from e
 
         results = self._parse_results(data)
 
         yield WebSearchResult(
-            query=args.query,
-            results=results,
-            total_count=len(results),
+            query=args.query, results=results, total_count=len(results)
         )
 
     def _parse_results(self, data: dict) -> list[SearchResultItem]:
@@ -170,11 +173,7 @@ EXAMPLES:
 
             if title and url:
                 results.append(
-                    SearchResultItem(
-                        title=title,
-                        url=url,
-                        description=description,
-                    )
+                    SearchResultItem(title=title, url=url, description=description)
                 )
 
         return results

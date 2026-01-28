@@ -205,7 +205,8 @@ class VibeApp(App):  # noqa: PLR0904
 
         def update_context_progress(stats: AgentStats) -> None:
             context_progress.tokens = TokenState(
-                max_tokens=stats.max_context_window or self.config.auto_compact_threshold,
+                max_tokens=stats.max_context_window
+                or self.config.auto_compact_threshold,
                 current_tokens=stats.context_tokens,
             )
 
@@ -376,14 +377,14 @@ class VibeApp(App):  # noqa: PLR0904
             UserCommandMessage(f"Model added: {message.alias}")
         )
 
-    async def on_model_app_model_updated(
-        self, message: ModelApp.ModelUpdated
-    ) -> None:
+    async def on_model_app_model_updated(self, message: ModelApp.ModelUpdated) -> None:
         # Update the context_window for an existing model
         current_models = []
         for m in self.config.models:
             if m.alias == message.alias:
-                updated = m.model_copy(update={"context_window": message.context_window})
+                updated = m.model_copy(
+                    update={"context_window": message.context_window}
+                )
                 current_models.append(updated)
             else:
                 current_models.append(m)
@@ -395,9 +396,7 @@ class VibeApp(App):  # noqa: PLR0904
 
     async def on_model_app_model_closed(self, message: ModelApp.ModelClosed) -> None:
         if not message.changed:
-            await self._mount_and_scroll(
-                UserCommandMessage("Model manager closed.")
-            )
+            await self._mount_and_scroll(UserCommandMessage("Model manager closed."))
         await self._switch_to_input_app()
 
     async def on_compact_message_completed(
@@ -1230,7 +1229,9 @@ class VibeApp(App):  # noqa: PLR0904
             )
             return
 
-        message = f"{update_message_prefix}\nPlease update kin-code with your package manager"
+        message = (
+            f"{update_message_prefix}\nPlease update kin-code with your package manager"
+        )
 
         self.notify(
             message, title="Update available", severity="information", timeout=10

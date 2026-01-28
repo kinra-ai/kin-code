@@ -42,15 +42,9 @@ async def test_retrieves_the_latest_non_yanked_version() -> None:
             json={
                 "versions": ["1.0.0", "1.0.1", "1.0.2"],
                 "files": [
-                    {
-                        "filename": "kin_code-1.0.0-py3-none-any.whl",
-                        "yanked": False,
-                    },
+                    {"filename": "kin_code-1.0.0-py3-none-any.whl", "yanked": False},
                     {"filename": "kin_code-1.0.1-py3-none-any.whl", "yanked": True},
-                    {
-                        "filename": "kin_code-1.0.2-py3-none-any.whl",
-                        "yanked": False,
-                    },
+                    {"filename": "kin_code-1.0.2-py3-none-any.whl", "yanked": False},
                 ],
             },
         )
@@ -92,10 +86,7 @@ async def test_does_not_match_versions_by_substring() -> None:
             json={
                 "versions": ["1.0.1"],
                 "files": [
-                    {
-                        "filename": "kin_code-1.0.10-py3-none-any.whl",
-                        "yanked": False,
-                    }
+                    {"filename": "kin_code-1.0.10-py3-none-any.whl", "yanked": False}
                 ],
             },
         )

@@ -40,9 +40,13 @@ def _copy_x11_clipboard(text: str) -> None:
 
     Raises:
         subprocess.CalledProcessError: If xclip command fails.
+        subprocess.TimeoutExpired: If xclip command times out.
     """
     subprocess.run(
-        ["xclip", "-selection", "clipboard"], input=text.encode("utf-8"), check=True
+        ["xclip", "-selection", "clipboard"],
+        input=text.encode("utf-8"),
+        check=True,
+        timeout=5,
     )
 
 
@@ -54,8 +58,9 @@ def _copy_wayland_clipboard(text: str) -> None:
 
     Raises:
         subprocess.CalledProcessError: If wl-copy command fails.
+        subprocess.TimeoutExpired: If wl-copy command times out.
     """
-    subprocess.run(["wl-copy"], input=text.encode("utf-8"), check=True)
+    subprocess.run(["wl-copy"], input=text.encode("utf-8"), check=True, timeout=5)
 
 
 def _has_cmd(cmd: str) -> bool:

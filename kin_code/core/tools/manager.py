@@ -198,7 +198,8 @@ class ToolManager:
             sys.modules[module_name] = module
             try:
                 spec.loader.exec_module(module)
-            except Exception:
+            except Exception as e:
+                logger.debug("Failed to load tool from %s: %s", file_path, e)
                 return
 
         tools = []

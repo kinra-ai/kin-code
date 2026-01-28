@@ -75,8 +75,7 @@ class ModelSetupScreen(OnboardingScreen):
     def compose(self) -> ComposeResult:
         self._model_widgets = []  # Clear to prevent stale references
         self._search_input = Input(
-            id="model-search",
-            placeholder="Type to filter models...",
+            id="model-search", placeholder="Type to filter models..."
         )
         self._manual_input = Input(
             id="manual-model",
@@ -103,7 +102,9 @@ class ModelSetupScreen(OnboardingScreen):
             with Vertical(id="model-list-section"):
                 yield self._search_input
                 yield Vertical(*model_widgets, id="model-list")
-                yield NoMarkupStatic("↑↓ Navigate  Enter Select  [M] Manual", id="manual-hint")
+                yield NoMarkupStatic(
+                    "↑↓ Navigate  Enter Select  [M] Manual", id="manual-hint"
+                )
 
             with Vertical(id="manual-section"):
                 yield NoMarkupStatic("Enter the model ID:", id="manual-label")
@@ -122,13 +123,21 @@ class ModelSetupScreen(OnboardingScreen):
             self._state = ScreenState.LOADING
             self._update_visibility()
 
-            api_key = os.getenv(self.preset.api_key_env_var) if self.preset.api_key_env_var else None
+            api_key = (
+                os.getenv(self.preset.api_key_env_var)
+                if self.preset.api_key_env_var
+                else None
+            )
             models = await fetch_models(self.preset.base_url, api_key)
 
             if not models:
                 self._state = ScreenState.ERROR
-                self._error_message = f"Could not discover models from {self.preset.name}"
-                self.query_one("#error-text", NoMarkupStatic).update(self._error_message)
+                self._error_message = (
+                    f"Could not discover models from {self.preset.name}"
+                )
+                self.query_one("#error-text", NoMarkupStatic).update(
+                    self._error_message
+                )
                 self._update_visibility()
                 return
 
@@ -295,12 +304,10 @@ class ModelSetupScreen(OnboardingScreen):
             context_window=context_window,
         )
 
-        VibeConfig.save_updates(
-            {
-                "providers": [provider_config.model_dump()],
-                "models": [model_config.model_dump()],
-                "active_model": model_id,
-            }
-        )
+        VibeConfig.save_updates({
+            "providers": [provider_config.model_dump()],
+            "models": [model_config.model_dump()],
+            "active_model": model_id,
+        })
 
         self.app.switch_screen("brave_search")

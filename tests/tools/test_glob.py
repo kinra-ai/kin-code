@@ -3,12 +3,7 @@ from __future__ import annotations
 import pytest
 
 from kin_code.core.tools.base import ToolError
-from kin_code.core.tools.builtins.glob import (
-    Glob,
-    GlobArgs,
-    GlobState,
-    GlobToolConfig,
-)
+from kin_code.core.tools.builtins.glob import Glob, GlobArgs, GlobState, GlobToolConfig
 from tests.mock.utils import collect_result
 
 

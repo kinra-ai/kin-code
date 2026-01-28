@@ -97,7 +97,9 @@ class TestTaskToolExecution:
             yield AssistantEvent(content="Hello from subagent!")
             yield AssistantEvent(content=" More content.")
 
-        with patch("kin_code.core.tools.builtins.task.AgentLoop") as mock_agent_loop_class:
+        with patch(
+            "kin_code.core.tools.builtins.task.AgentLoop"
+        ) as mock_agent_loop_class:
             mock_agent_loop = MagicMock()
             mock_agent_loop.act = mock_act
             mock_agent_loop.messages = mock_messages
@@ -125,7 +127,9 @@ class TestTaskToolExecution:
         async def mock_act(task: str):
             yield AssistantEvent(content="Partial response", stopped_by_middleware=True)
 
-        with patch("kin_code.core.tools.builtins.task.AgentLoop") as mock_agent_loop_class:
+        with patch(
+            "kin_code.core.tools.builtins.task.AgentLoop"
+        ) as mock_agent_loop_class:
             mock_agent_loop = MagicMock()
             mock_agent_loop.act = mock_act
             mock_agent_loop.messages = mock_messages
@@ -149,7 +153,9 @@ class TestTaskToolExecution:
             yield AssistantEvent(content="Starting...")
             raise RuntimeError("Simulated error")
 
-        with patch("kin_code.core.tools.builtins.task.AgentLoop") as mock_agent_loop_class:
+        with patch(
+            "kin_code.core.tools.builtins.task.AgentLoop"
+        ) as mock_agent_loop_class:
             mock_agent_loop = MagicMock()
             mock_agent_loop.act = mock_act
             mock_agent_loop.messages = mock_messages

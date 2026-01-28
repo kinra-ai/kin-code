@@ -102,7 +102,9 @@ async def test_handles_empty_results(web_search):
             return_value=httpx.Response(200, json={"web": {"results": []}})
         )
 
-        result = await collect_result(web_search.run(WebSearchArgs(query="nonexistent")))
+        result = await collect_result(
+            web_search.run(WebSearchArgs(query="nonexistent"))
+        )
 
     assert result.total_count == 0
     assert result.results == []
@@ -275,11 +277,7 @@ class TestToolUIData:
     def test_get_result_display(self):
         from kin_code.core.types import ToolResultEvent
 
-        result = WebSearchResult(
-            query="python",
-            results=[],
-            total_count=5,
-        )
+        result = WebSearchResult(query="python", results=[], total_count=5)
         event = ToolResultEvent(
             tool_name="web_search",
             tool_class=WebSearch,

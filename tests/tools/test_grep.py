@@ -183,7 +183,9 @@ async def test_respects_kincodeignore_file(grep, tmp_path):
 
 @pytest.mark.asyncio
 async def test_ignores_comments_in_kincodeignore(grep, tmp_path):
-    (tmp_path / ".kin-codeignore").write_text("# comment\npattern/\n# another comment\n")
+    (tmp_path / ".kin-codeignore").write_text(
+        "# comment\npattern/\n# another comment\n"
+    )
     (tmp_path / "file.py").write_text("match\n")
 
     result = await collect_result(grep.run(GrepArgs(pattern="match")))

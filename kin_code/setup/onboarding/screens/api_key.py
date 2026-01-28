@@ -83,9 +83,7 @@ class ApiKeyScreen(OnboardingScreen):
             with Center():
                 with Vertical(id="api-key-content"):
                     yield from self._compose_provider_link()
-                    yield NoMarkupStatic(
-                        "Paste your API key below:", id="paste-hint"
-                    )
+                    yield NoMarkupStatic("Paste your API key below:", id="paste-hint")
                     yield Center(Horizontal(self.input_widget, id="input-box"))
                     yield NoMarkupStatic("", id="feedback")
             yield NoMarkupStatic("", classes="spacer")

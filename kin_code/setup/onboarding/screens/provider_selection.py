@@ -65,15 +65,13 @@ class ProviderSelectionScreen(OnboardingScreen):
 
         with Center(id="provider-outer"):
             with Vertical(id="provider-content"):
-                yield NoMarkupStatic(
-                    "Select your AI provider", id="provider-title"
-                )
+                yield NoMarkupStatic("Select your AI provider", id="provider-title")
                 yield Center(
                     Horizontal(
-                        NoMarkupStatic("Navigate \u2191 \u2193", id="provider-nav-hint"),
-                        Vertical(
-                            *self._compose_provider_list(), id="provider-list"
+                        NoMarkupStatic(
+                            "Navigate \u2191 \u2193", id="provider-nav-hint"
                         ),
+                        Vertical(*self._compose_provider_list(), id="provider-list"),
                         NoMarkupStatic("Press Enter \u21b5", id="provider-enter-hint"),
                         id="provider-row",
                     )
@@ -82,7 +80,9 @@ class ProviderSelectionScreen(OnboardingScreen):
                     yield NoMarkupStatic(
                         "Enter your API base URL:", id="custom-url-label"
                     )
-                    yield Center(Horizontal(self._custom_url_input, id="custom-url-box"))
+                    yield Center(
+                        Horizontal(self._custom_url_input, id="custom-url-box")
+                    )
                     yield NoMarkupStatic("", id="custom-url-feedback")
 
     def on_mount(self) -> None:

@@ -52,9 +52,7 @@ class BraveSearchScreen(OnboardingScreen):
 
         with Vertical(id="brave-outer"):
             yield NoMarkupStatic("", classes="spacer")
-            yield Center(
-                NoMarkupStatic("Web Search (Optional)", id="brave-title")
-            )
+            yield Center(NoMarkupStatic("Web Search (Optional)", id="brave-title"))
             with Center():
                 with Vertical(id="brave-content"):
                     yield NoMarkupStatic(

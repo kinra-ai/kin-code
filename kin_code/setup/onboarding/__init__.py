@@ -62,6 +62,4 @@ def run_onboarding(app: App | None = None) -> None:
                 f"You may need to set it manually in {GLOBAL_ENV_FILE.path}[/]\n"
             )
         case "completed":
-            rprint(
-                '\nSetup complete! Run "kin" to start using Kin Code.\n'
-            )
+            rprint('\nSetup complete! Run "kin" to start using Kin Code.\n')
