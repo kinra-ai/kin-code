@@ -533,3 +533,53 @@ async def test_empty_content_chunks_do_not_trigger_false_yields() -> None:
         ("ReasoningEvent", "Reasoning here more reasoning"),
         ("AssistantEvent", "Actual content"),
     ]
+
+
+@pytest.mark.asyncio
+async def test_whitespace_only_content_chunks_are_filtered() -> None:
+    """Whitespace-only content should not yield AssistantEvents when accumulated."""
+    backend = FakeBackend([
+        # First batch: meaningful content with whitespace mixed in
+        mock_llm_chunk(content="Hello "),
+        mock_llm_chunk(content="  "),  # Extra whitespace is preserved
+        mock_llm_chunk(content="World"),
+        mock_llm_chunk(content="! "),
+        mock_llm_chunk(content="More"),
+        # Second batch: only whitespace - should NOT yield an event
+        mock_llm_chunk(content="   "),
+        mock_llm_chunk(content="\n\t "),
+        mock_llm_chunk(content="  "),
+        mock_llm_chunk(content="\t"),
+        mock_llm_chunk(content=" "),
+        # Third batch: meaningful content
+        mock_llm_chunk(content="Final"),
+        mock_llm_chunk(content=" content"),
+    ])
+    agent = AgentLoop(make_config(), backend=backend, enable_streaming=True)
+
+    events = [event async for event in agent.act("Whitespace test")]
+
+    assistant_events = [e for e in events if isinstance(e, AssistantEvent)]
+    # Should have 2 events: first batch and final content
+    # (whitespace-only batch should be filtered out)
+    assert len(assistant_events) == 2
+    assert assistant_events[0].content == "Hello   World! More"
+    assert assistant_events[1].content == "Final content"
+
+
+@pytest.mark.asyncio
+async def test_whitespace_only_final_buffer_is_filtered() -> None:
+    """When the final buffer contains only whitespace, no event should be yielded."""
+    backend = FakeBackend([
+        mock_llm_chunk(content="Hello"),
+        mock_llm_chunk(content="   "),  # Whitespace
+        mock_llm_chunk(content="\n"),
+    ])
+    agent = AgentLoop(make_config(), backend=backend, enable_streaming=True)
+
+    events = [event async for event in agent.act("Whitespace only final buffer")]
+
+    assistant_events = [e for e in events if isinstance(e, AssistantEvent)]
+    # Only one event with "Hello" - trailing whitespace-only buffer is filtered
+    assert len(assistant_events) == 1
+    assert assistant_events[0].content == "Hello   \n"

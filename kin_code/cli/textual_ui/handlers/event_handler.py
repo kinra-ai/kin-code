@@ -130,6 +130,8 @@ class EventHandler:
             self.current_tool_call.set_stream_message(event.message)
 
     async def _handle_assistant_message(self, event: AssistantEvent) -> None:
+        if not event.content or not event.content.strip():
+            return
         await self.mount_callback(AssistantMessage(event.content))
 
     async def _handle_reasoning_message(self, event: ReasoningEvent) -> None:

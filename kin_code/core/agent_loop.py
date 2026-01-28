@@ -476,14 +476,15 @@ class AgentLoop:
                 chunks_with_content += 1
 
                 if chunks_with_content >= BATCH_SIZE:
-                    yield AssistantEvent(content=content_buffer, message_id=message_id)
+                    if content_buffer.strip():
+                        yield AssistantEvent(content=content_buffer, message_id=message_id)
                     content_buffer = ""
                     chunks_with_content = 0
 
         if reasoning_buffer:
             yield ReasoningEvent(content=reasoning_buffer, message_id=message_id)
 
-        if content_buffer:
+        if content_buffer.strip():
             yield AssistantEvent(content=content_buffer, message_id=message_id)
 
     async def _get_assistant_event(self) -> AssistantEvent:
