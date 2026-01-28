@@ -72,7 +72,16 @@ class AgentProfile:
         )
 
 
-PLAN_AGENT_TOOLS = ["grep", "read_file", "todo", "ask_user_question", "task"]
+PLAN_AGENT_TOOLS = [
+    "grep",
+    "glob",
+    "list_directory",
+    "lsp",
+    "read_file",
+    "todo",
+    "ask_user_question",
+    "task",
+]
 
 DEFAULT = AgentProfile(
     BuiltinAgentName.DEFAULT,
@@ -119,7 +128,7 @@ EXPLORE = AgentProfile(
     description="Read-only subagent for codebase exploration",
     safety=AgentSafety.SAFE,
     agent_type=AgentType.SUBAGENT,
-    overrides={"enabled_tools": ["grep", "read_file"]},
+    overrides={"enabled_tools": ["grep", "glob", "list_directory", "lsp", "read_file"]},
 )
 
 PLANNER = AgentProfile(
@@ -128,7 +137,7 @@ PLANNER = AgentProfile(
     description="Read-only subagent for code exploration and implementation planning",
     safety=AgentSafety.SAFE,
     agent_type=AgentType.SUBAGENT,
-    overrides={"enabled_tools": ["grep", "read_file", "todo"]},
+    overrides={"enabled_tools": ["grep", "glob", "list_directory", "lsp", "read_file", "todo"]},
 )
 
 GENERAL = AgentProfile(
