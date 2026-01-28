@@ -32,7 +32,7 @@ On release publish:
 
 ## Homebrew Tap
 
-The `kinra-ai/homebrew-tap` repo receives a `repository_dispatch` event and creates a PR to update the formula. Merge the PR to complete the release.
+The `kinra-ai/homebrew-tap` repo (_reference/homebrew-tap) receives a `repository_dispatch` event and creates a PR to update the formula. Merge the PR to complete the release.
 
 ## Important Notes
 

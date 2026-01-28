@@ -4,3 +4,7 @@ extend-ignore-re = ["(?m)^.*(#|//)\\s*typos:disable-line$", "datas"]
 [default.extend-words]
 iterm = "iterm"
 ITERM = "ITERM"
+welp = "welp"
+Welp = "Welp"
+# Keybinding hints like "[M]anual" get parsed as "anual"
+anual = "anual"
