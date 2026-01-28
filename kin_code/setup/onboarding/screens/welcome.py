@@ -21,17 +21,18 @@ HIGHLIGHT_END = HIGHLIGHT_START + len(WELCOME_HIGHLIGHT)
 
 BUTTON_TEXT = "Press Enter ↵"
 
+# Minnesota flag colors: lakes + night sky gradient (light → dark → light)
 GRADIENT_COLORS = [
-    "#ff6b00",
-    "#ff7b00",
-    "#ff8c00",
-    "#ff9d00",
-    "#ffae00",
-    "#ffbf00",
-    "#ffae00",
-    "#ff9d00",
-    "#ff8c00",
-    "#ff7b00",
+    "#73c6e5",  # Sky blue (lightest)
+    "#52b5dc",
+    "#3a9fc8",
+    "#2b82ae",
+    "#1a6490",
+    "#002c5a",  # Night sky (darkest)
+    "#1a6490",
+    "#2b82ae",
+    "#3a9fc8",
+    "#52b5dc",
 ]
 
 
