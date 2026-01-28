@@ -24,6 +24,7 @@ from kin_code.core.tools.ui import (
 )
 from kin_code.core.types import (
     AssistantEvent,
+    ReasoningEvent,
     Role,
     ToolCallEvent,
     ToolResultEvent,
@@ -37,10 +38,25 @@ class TaskArgs(BaseModel):
         default="explore",
         description="Name of the agent profile to use (must be a subagent)",
     )
+    include_reasoning: bool = Field(
+        default=False,
+        description=(
+            "If True, include subagent's reasoning trace in response. "
+            "Useful for debugging or when parent needs visibility into subagent thinking."
+        ),
+    )
 
 
 class TaskResult(BaseModel):
     response: str = Field(description="The accumulated response from the subagent")
+    reasoning: str | None = Field(
+        default=None,
+        exclude=True,
+        description=(
+            "Subagent reasoning trace (excluded from serialization to prevent "
+            "context bloat in parent agent). Only populated when include_reasoning=True."
+        ),
+    )
     turns_used: int = Field(description="Number of turns the subagent used")
     completed: bool = Field(description="Whether the task completed normally")
     model_alias: str | None = Field(
@@ -149,6 +165,7 @@ NOTES:
             subagent_loop.set_approval_callback(ctx.approval_callback)
 
         accumulated_response: list[str] = []
+        accumulated_reasoning: list[str] = []
         completed = True
         try:
             async for event in subagent_loop.act(args.task):
@@ -156,6 +173,8 @@ NOTES:
                     accumulated_response.append(event.content)
                     if event.stopped_by_middleware:
                         completed = False
+                elif isinstance(event, ReasoningEvent) and event.content:
+                    accumulated_reasoning.append(event.content)
                 elif isinstance(event, ToolResultEvent):
                     if event.skipped:
                         completed = False
@@ -180,8 +199,14 @@ NOTES:
                 msg.role == Role.assistant for msg in subagent_loop.messages
             )
 
+        reasoning_content = "".join(accumulated_reasoning) or None
+        response_content = "".join(accumulated_response)
+
+        # Reasoning is excluded from serialization by default to prevent context bloat.
+        # Only populate when explicitly requested for debugging/programmatic access.
         yield TaskResult(
-            response="".join(accumulated_response),
+            response=response_content,
+            reasoning=reasoning_content if args.include_reasoning else None,
             turns_used=turns_used,
             completed=completed,
             model_alias=model_alias,
