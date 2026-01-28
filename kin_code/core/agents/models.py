@@ -76,9 +76,15 @@ PLAN_AGENT_TOOLS = ["grep", "read_file", "todo", "ask_user_question", "task"]
 
 DEFAULT = AgentProfile(
     BuiltinAgentName.DEFAULT,
-    "Default",
-    "Requires approval for tool executions",
+    "Chat",
+    "Conversational agent with auto-approved web search capabilities",
     AgentSafety.NEUTRAL,
+    overrides={
+        "tools": {
+            "web_search": {"permission": "always"},
+            "web_fetch": {"permission": "always"},
+        }
+    },
 )
 PLAN = AgentProfile(
     BuiltinAgentName.PLAN,
