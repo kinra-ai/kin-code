@@ -203,7 +203,12 @@ class VibeApp(App):  # noqa: PLR0904
         self._agent_indicator = self.query_one(AgentIndicator)
         context_progress = self.query_one(ContextProgress)
 
+        # Capture reference to main agent's stats to filter out subagent updates
+        main_stats = self.agent_loop.stats
+
         def update_context_progress(stats: AgentStats) -> None:
+            if stats is not main_stats:
+                return  # Ignore subagent stats updates
             context_progress.tokens = TokenState(
                 max_tokens=stats.max_context_window
                 or self.config.auto_compact_threshold,
