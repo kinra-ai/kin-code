@@ -193,7 +193,9 @@ cython_debug/
 result
 result-*
 
-# Vibe runtime/session files; keep tools as part of repo when needed
+# Kin runtime/session files; keep tools as part of repo when needed
+.kin-code
+.kin-code/*
 .vibe/*
 
 # Tests run the agent in the playground, we don't need to keep the session files
