@@ -475,6 +475,15 @@ class VibeApp(App):  # noqa: PLR0904
         return True
 
     async def _handle_bash_command(self, command: str) -> None:
+        """Execute a shell command from user input (via ! prefix).
+
+        Security note: This intentionally uses shell=True to support shell features
+        like pipes and redirects. This is safe because:
+        - This is a local CLI tool, not a web service
+        - The user explicitly initiates commands with the ! prefix
+        - The user already has direct shell access on their machine
+        - A 30-second timeout prevents runaway commands
+        """
         if not command:
             await self._mount_and_scroll(
                 ErrorMessage(

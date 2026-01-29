@@ -20,6 +20,15 @@ from kin_code.core.tools.base import (
 from kin_code.core.tools.ui import ToolCallDisplay, ToolResultDisplay, ToolUIData
 from kin_code.core.types import ToolCallEvent, ToolResultEvent, ToolStreamEvent
 
+_MAX_EXPONENT = 1000
+
+
+def _safe_pow(base: float, exp: float) -> float:
+    """Safe power function with exponent limit to prevent memory exhaustion."""
+    if abs(exp) > _MAX_EXPONENT:
+        raise ValueError(f"Exponent magnitude exceeds limit of {_MAX_EXPONENT}")
+    return pow(base, exp)
+
 
 class CalculatorConfig(BaseToolConfig):
     """Configuration for the calculator tool."""
@@ -101,7 +110,7 @@ EXAMPLES:
             "log2": math.log2,
             "exp": math.exp,
             "abs": abs,
-            "pow": pow,
+            "pow": _safe_pow,
             "floor": math.floor,
             "ceil": math.ceil,
             "round": round,

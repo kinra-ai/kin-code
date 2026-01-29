@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import re
 from collections.abc import AsyncGenerator
+import re
 from typing import ClassVar
 
 from pydantic import BaseModel, Field
@@ -31,7 +31,6 @@ from kin_code.core.types import (
     ToolResultEvent,
     ToolStreamEvent,
 )
-
 
 _TASK_SUFFIX = (
     "\n\nAfter completing your work, always provide a summary of your findings. "
@@ -94,6 +93,19 @@ class TaskToolConfig(BaseToolConfig):
     permission: ToolPermission = ToolPermission.ASK
 
 
+class _EventProcessingState:
+    """Mutable state for processing subagent events."""
+
+    accumulated_response: list[str]
+    accumulated_reasoning: list[str]
+    completed: bool
+
+    def __init__(self) -> None:
+        self.accumulated_response = []
+        self.accumulated_reasoning = []
+        self.completed = True
+
+
 class Task(
     BaseTool[TaskArgs, TaskResult, TaskToolConfig, BaseToolState],
     ToolUIData[TaskArgs, TaskResult],
@@ -151,16 +163,70 @@ NOTES:
     def get_status_text(cls) -> str:
         return "Running subagent"
 
+    def _get_model_info(self, subagent_loop: AgentLoop) -> tuple[str | None, str | None]:
+        """Extract model alias and provider from subagent loop."""
+        try:
+            active_model = subagent_loop.config.get_active_model()
+            return active_model.alias, active_model.provider
+        except (ValueError, AttributeError):
+            return None, None
+
+    def _process_event(
+        self,
+        event: AssistantEvent | ToolCallEvent | ReasoningEvent | ToolResultEvent,
+        state: _EventProcessingState,
+        ctx: InvokeContext,
+    ) -> ToolStreamEvent | None:
+        """Handle a single event from the subagent loop.
+
+        Updates state in-place and returns a ToolStreamEvent if one should be yielded.
+        Only processes AssistantEvent, ToolCallEvent, ReasoningEvent, and ToolResultEvent.
+        """
+        match event:
+            case ToolCallEvent():
+                # Clear accumulated response when tool calls start.
+                # We only want the final summary after all tool execution.
+                state.accumulated_response.clear()
+            case AssistantEvent(content=content) if content:
+                state.accumulated_response.append(content)
+                if event.stopped_by_middleware:
+                    state.completed = False
+            case ReasoningEvent(content=content) if content:
+                state.accumulated_reasoning.append(content)
+            case ToolResultEvent(skipped=True):
+                state.completed = False
+            case ToolResultEvent(result=result, tool_class=tool_class) if result and tool_class:
+                adapter = ToolUIDataAdapter(tool_class)
+                display = adapter.get_result_display(event)
+                return ToolStreamEvent(
+                    tool_name=self.get_name(),
+                    message=f"{event.tool_name}: {display.message}",
+                    tool_call_id=ctx.tool_call_id,
+                )
+        return None
+
+    def _extract_response_from_history(self, subagent_loop: AgentLoop) -> str:
+        """Extract final response from message history when accumulated response is empty.
+
+        Handles models that return empty content on their final turn after tool calls.
+        """
+        for msg in reversed(subagent_loop.messages):
+            if msg.role != Role.assistant or not msg.content:
+                continue
+            content = msg.content if isinstance(msg.content, str) else str(msg.content)
+            # Skip empty content and malformed tool call attempts
+            if content.strip() and not _is_tool_call_content(content):
+                return content
+        return ""
+
     async def run(
         self, args: TaskArgs, ctx: InvokeContext | None = None
     ) -> AsyncGenerator[ToolStreamEvent | TaskResult, None]:
         if not ctx or not ctx.agent_manager:
             raise ToolError("Task tool requires agent_manager in context")
 
-        agent_manager = ctx.agent_manager
-
         try:
-            agent_profile = agent_manager.get_agent(args.agent)
+            agent_profile = ctx.agent_manager.get_agent(args.agent)
         except ValueError as e:
             raise ToolError(f"Unknown agent: {args.agent}") from e
 
@@ -175,77 +241,38 @@ NOTES:
             session_logging=SessionLoggingConfig(enabled=False)
         )
         subagent_loop = AgentLoop(config=base_config, agent_name=args.agent)
+        model_alias, provider = self._get_model_info(subagent_loop)
 
-        try:
-            active_model = subagent_loop.config.get_active_model()
-            model_alias = active_model.alias
-            provider = active_model.provider
-        except (ValueError, AttributeError):
-            model_alias = None
-            provider = None
-
-        if ctx and ctx.approval_callback:
+        if ctx.approval_callback:
             subagent_loop.set_approval_callback(ctx.approval_callback)
 
-        accumulated_response: list[str] = []
-        accumulated_reasoning: list[str] = []
-        completed = True
-        task_with_suffix = args.task + _TASK_SUFFIX
+        state = _EventProcessingState()
+        _handled_types = (AssistantEvent, ToolCallEvent, ReasoningEvent, ToolResultEvent)
         try:
-            async for event in subagent_loop.act(task_with_suffix):
-                if isinstance(event, ToolCallEvent):
-                    # Clear accumulated response when tool calls start.
-                    # We only want the final summary after all tool execution.
-                    accumulated_response.clear()
-                elif isinstance(event, AssistantEvent) and event.content:
-                    accumulated_response.append(event.content)
-                    if event.stopped_by_middleware:
-                        completed = False
-                elif isinstance(event, ReasoningEvent) and event.content:
-                    accumulated_reasoning.append(event.content)
-                elif isinstance(event, ToolResultEvent):
-                    if event.skipped:
-                        completed = False
-                    elif event.result and event.tool_class:
-                        adapter = ToolUIDataAdapter(event.tool_class)
-                        display = adapter.get_result_display(event)
-                        message = f"{event.tool_name}: {display.message}"
-                        yield ToolStreamEvent(
-                            tool_name=self.get_name(),
-                            message=message,
-                            tool_call_id=ctx.tool_call_id,
-                        )
+            async for event in subagent_loop.act(args.task + _TASK_SUFFIX):
+                if isinstance(event, _handled_types):
+                    if stream_event := self._process_event(event, state, ctx):
+                        yield stream_event
 
             turns_used = sum(
                 msg.role == Role.assistant for msg in subagent_loop.messages
             )
-
         except Exception as e:
-            completed = False
-            accumulated_response.append(f"\n[Subagent error: {e}]")
+            state.completed = False
+            state.accumulated_response.append(f"\n[Subagent error: {e}]")
             turns_used = sum(
                 msg.role == Role.assistant for msg in subagent_loop.messages
             )
 
-        reasoning_content = "".join(accumulated_reasoning) or None
-        response_content = "".join(accumulated_response)
+        response_content = "".join(state.accumulated_response)
 
         # Filter out malformed tool call content from accumulated response
         if response_content.strip() and _is_tool_call_content(response_content):
             response_content = ""
 
-        # Fallback: if no content accumulated from events, check message history.
-        # This handles models that return empty content on their final turn after tool calls.
+        # Fallback: check message history if no valid content accumulated
         if not response_content.strip():
-            for msg in reversed(subagent_loop.messages):
-                if msg.role == Role.assistant and msg.content:
-                    content = (
-                        msg.content if isinstance(msg.content, str) else str(msg.content)
-                    )
-                    # Skip empty content and malformed tool call attempts
-                    if content.strip() and not _is_tool_call_content(content):
-                        response_content = content
-                        break
+            response_content = self._extract_response_from_history(subagent_loop)
 
         # If still no valid content, provide a fallback message
         if not response_content.strip():
@@ -254,13 +281,15 @@ NOTES:
                 "Check the tool results above for details.]"
             )
 
+        reasoning_content = "".join(state.accumulated_reasoning) or None
+
         # Reasoning is excluded from serialization by default to prevent context bloat.
         # Only populate when explicitly requested for debugging/programmatic access.
         yield TaskResult(
             response=response_content,
             reasoning=reasoning_content if args.include_reasoning else None,
             turns_used=turns_used,
-            completed=completed,
+            completed=state.completed,
             model_alias=model_alias,
             provider=provider,
         )

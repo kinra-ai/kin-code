@@ -179,12 +179,18 @@ NOTES:
             raise ToolError("Limit, if provided, must be a positive number")
 
     def _validate_path(self, file_path: Path) -> None:
+        """Validate that a path is readable.
+
+        Design note: Unlike write_file which restricts writes to the project directory,
+        read_file intentionally allows reading any file the user has access to. This is
+        by design for an AI coding assistant that needs to read configuration files,
+        system files, and files outside the project directory to understand the full
+        context of a user's environment.
+        """
         try:
             resolved_path = file_path.resolve()
         except ValueError:
-            raise ToolError(
-                f"Security error: Cannot read path '{file_path}' outside of the project directory '{Path.cwd()}'."
-            )
+            raise ToolError(f"Invalid path: '{file_path}' contains invalid characters.")
         except FileNotFoundError:
             raise ToolError(f"File not found at: {file_path}")
 

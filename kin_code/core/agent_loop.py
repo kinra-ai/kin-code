@@ -62,6 +62,7 @@ from kin_code.core.types import (
     ReasoningEvent,
     Role,
     SyncApprovalCallback,
+    ToolCall,
     ToolCallEvent,
     ToolResultEvent,
     ToolStreamEvent,
@@ -797,47 +798,68 @@ class AgentLoop:
         self._fill_missing_tool_responses()
         self._ensure_assistant_after_tools()
 
+    def _count_tool_responses(self, start_index: int) -> int:
+        """Count consecutive tool response messages starting at the given index.
+
+        Args:
+            start_index: The index to start counting from.
+
+        Returns:
+            The number of consecutive tool response messages.
+        """
+        count = 0
+        j = start_index
+        while j < len(self.messages) and self.messages[j].role == "tool":
+            count += 1
+            j += 1
+        return count
+
+    def _create_missing_tool_response(self, tool_call_data: ToolCall) -> LLMMessage:
+        """Create an empty tool response message for a missing tool call response.
+
+        Args:
+            tool_call_data: The tool call data to create a response for.
+
+        Returns:
+            An LLMMessage with role=tool indicating no response was received.
+        """
+        tool_name = ""
+        if tool_call_data.function:
+            tool_name = tool_call_data.function.name or ""
+
+        return LLMMessage(
+            role=Role.tool,
+            tool_call_id=tool_call_data.id or "",
+            name=tool_name,
+            content=str(get_user_cancellation_message(CancellationReason.TOOL_NO_RESPONSE)),
+        )
+
     def _fill_missing_tool_responses(self) -> None:
         i = 1
-        while i < len(self.messages):  # noqa: PLR1702 - nested loop required for tool response filling
+        while i < len(self.messages):
             msg = self.messages[i]
 
-            if msg.role == "assistant" and msg.tool_calls:
-                expected_responses = len(msg.tool_calls)
+            if msg.role != "assistant" or not msg.tool_calls:
+                i += 1
+                continue
 
-                if expected_responses > 0:
-                    actual_responses = 0
-                    j = i + 1
-                    while j < len(self.messages) and self.messages[j].role == "tool":
-                        actual_responses += 1
-                        j += 1
+            expected_responses = len(msg.tool_calls)
+            if expected_responses == 0:
+                i += 1
+                continue
 
-                    if actual_responses < expected_responses:
-                        insertion_point = i + 1 + actual_responses
+            actual_responses = self._count_tool_responses(i + 1)
 
-                        for call_idx in range(actual_responses, expected_responses):
-                            tool_call_data = msg.tool_calls[call_idx]
+            if actual_responses < expected_responses:
+                insertion_point = i + 1 + actual_responses
+                for call_idx in range(actual_responses, expected_responses):
+                    empty_response = self._create_missing_tool_response(
+                        msg.tool_calls[call_idx]
+                    )
+                    self.messages.insert(insertion_point, empty_response)
+                    insertion_point += 1
 
-                            empty_response = LLMMessage(
-                                role=Role.tool,
-                                tool_call_id=tool_call_data.id or "",
-                                name=(tool_call_data.function.name or "")
-                                if tool_call_data.function
-                                else "",
-                                content=str(
-                                    get_user_cancellation_message(
-                                        CancellationReason.TOOL_NO_RESPONSE
-                                    )
-                                ),
-                            )
-
-                            self.messages.insert(insertion_point, empty_response)
-                            insertion_point += 1
-
-                    i = i + 1 + expected_responses
-                    continue
-
-            i += 1
+            i = i + 1 + expected_responses
 
     def _ensure_assistant_after_tools(self) -> None:
         MIN_MESSAGE_SIZE = 2
