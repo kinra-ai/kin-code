@@ -41,7 +41,6 @@ from kin_code.core.types import (
     CompactStartEvent,
     LLMChunk,
     LLMMessage,
-    LLMUsage,
     ReasoningEvent,
     Role,
     ToolCallEvent,
@@ -50,10 +49,7 @@ from kin_code.core.types import (
     UserInputCallback,
     UserMessageEvent,
 )
-from kin_code.core.utils import (
-    VIBE_STOP_EVENT_TAG,
-    is_user_cancellation_event,
-)
+from kin_code.core.utils import VIBE_STOP_EVENT_TAG, is_user_cancellation_event
 
 # Re-export for backwards compatibility (tests patch this)
 from kin_code.setup.onboarding.services.pricing_service import (
@@ -62,6 +58,9 @@ from kin_code.setup.onboarding.services.pricing_service import (
 
 # This alias is kept for test compatibility
 get_model_pricing_sync = _get_model_pricing_sync
+
+
+STREAM_BATCH_SIZE = 5
 
 
 class AgentLoopError(Exception):
@@ -132,8 +131,7 @@ class AgentLoop:
 
         # Initialize tool runner
         self.tool_runner = ToolRunner(
-            tool_manager=self.tool_manager,
-            auto_approve=self.config.auto_approve,
+            tool_manager=self.tool_manager, auto_approve=self.config.auto_approve
         )
 
         # Start session migration in background
@@ -353,14 +351,12 @@ class AgentLoop:
         chunks_with_content = 0
         chunks_with_reasoning = 0
         message_id: str | None = None
-        BATCH_SIZE = 5
 
         # Aggregate the full message like the original code did
         chunk_agg = LLMChunk(message=LLMMessage(role=Role.assistant))
 
         async for chunk in self.llm_client.chat_streaming(
-            messages=self.messages,
-            tool_manager=self.tool_manager,
+            messages=self.messages, tool_manager=self.tool_manager
         ):
             chunk_agg += chunk
 
@@ -376,7 +372,7 @@ class AgentLoop:
                 reasoning_buffer += chunk.message.reasoning_content
                 chunks_with_reasoning += 1
 
-                if chunks_with_reasoning >= BATCH_SIZE:
+                if chunks_with_reasoning >= STREAM_BATCH_SIZE:
                     yield ReasoningEvent(
                         content=reasoning_buffer, message_id=message_id
                     )
@@ -394,7 +390,7 @@ class AgentLoop:
                 content_buffer += chunk.message.content
                 chunks_with_content += 1
 
-                if chunks_with_content >= BATCH_SIZE:
+                if chunks_with_content >= STREAM_BATCH_SIZE:
                     if content_buffer.strip():
                         yield AssistantEvent(
                             content=content_buffer, message_id=message_id
@@ -413,13 +409,11 @@ class AgentLoop:
 
     async def _get_assistant_event(self) -> AssistantEvent:
         result = await self.llm_client.chat(
-            messages=self.messages,
-            tool_manager=self.tool_manager,
+            messages=self.messages, tool_manager=self.tool_manager
         )
         self.messages.append(result.message)
         return AssistantEvent(
-            content=result.message.content or "",
-            message_id=result.message.message_id,
+            content=result.message.content or "", message_id=result.message.message_id
         )
 
     async def _handle_tool_calls(
@@ -482,8 +476,7 @@ class AgentLoop:
             self.stats.steps += 1
 
             summary_result = await self.llm_client.chat(
-                messages=self.messages,
-                tool_manager=self.tool_manager,
+                messages=self.messages, tool_manager=self.tool_manager
             )
             summary_content = summary_result.message.content or ""
 
@@ -492,8 +485,7 @@ class AgentLoop:
             self.messages = [system_message, summary_message]
 
             actual_context_tokens = await self.llm_client.count_tokens(
-                messages=self.messages,
-                tool_manager=self.tool_manager,
+                messages=self.messages, tool_manager=self.tool_manager
             )
             self.stats.context_tokens = actual_context_tokens
 
@@ -538,8 +530,7 @@ class AgentLoop:
 
         # Update tool runner with new tool manager
         self.tool_runner = ToolRunner(
-            tool_manager=self.tool_manager,
-            auto_approve=self.config.auto_approve,
+            tool_manager=self.tool_manager, auto_approve=self.config.auto_approve
         )
 
         new_system_prompt = get_universal_system_prompt(

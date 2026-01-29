@@ -168,7 +168,9 @@ NOTES:
     def get_status_text(cls) -> str:
         return "Running subagent"
 
-    def _get_model_info(self, subagent_loop: AgentLoop) -> tuple[str | None, str | None]:
+    def _get_model_info(
+        self, subagent_loop: AgentLoop
+    ) -> tuple[str | None, str | None]:
         """Extract model alias and provider from subagent loop."""
         try:
             active_model = subagent_loop.config.get_active_model()
@@ -200,7 +202,9 @@ NOTES:
                 state.accumulated_reasoning.append(content)
             case ToolResultEvent(skipped=True):
                 state.completed = False
-            case ToolResultEvent(result=result, tool_class=tool_class) if result and tool_class:
+            case ToolResultEvent(result=result, tool_class=tool_class) if (
+                result and tool_class
+            ):
                 adapter = ToolUIDataAdapter(tool_class)
                 display = adapter.get_result_display(event)
                 return ToolStreamEvent(
@@ -208,12 +212,22 @@ NOTES:
                     message=f"{event.tool_name}: {display.message}",
                     tool_call_id=ctx.tool_call_id,
                 )
+            case _:
+                return None
         return None
 
     def _extract_response_from_history(self, subagent_loop: AgentLoop) -> str:
         """Extract final response from message history when accumulated response is empty.
 
-        Handles models that return empty content on their final turn after tool calls.
+        Some models return empty content on their final turn after tool calls, or emit
+        malformed tool call XML instead of actual text. This method walks the history
+        in reverse to find the last valid assistant response.
+
+        Edge cases handled:
+        - Empty content strings (skipped)
+        - Malformed tool call XML patterns (skipped via _is_tool_call_content)
+        - Non-string content (converted to string)
+        - No valid content found (returns empty string)
         """
         for msg in reversed(subagent_loop.messages):
             if msg.role != Role.assistant or not msg.content:
@@ -252,7 +266,12 @@ NOTES:
             subagent_loop.set_approval_callback(ctx.approval_callback)
 
         state = _EventProcessingState()
-        _handled_types = (AssistantEvent, ToolCallEvent, ReasoningEvent, ToolResultEvent)
+        _handled_types = (
+            AssistantEvent,
+            ToolCallEvent,
+            ReasoningEvent,
+            ToolResultEvent,
+        )
         try:
             async for event in subagent_loop.act(args.task + _TASK_SUFFIX):
                 if isinstance(event, _handled_types):

@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 import asyncio
-import time
 from collections.abc import AsyncGenerator, Callable
 from enum import StrEnum, auto
+import time
 from typing import cast
 
 from pydantic import BaseModel
 
 from kin_code.core.agents.manager import AgentManager
-from kin_code.core.llm.format import ResolvedMessage, ResolvedToolCall
+from kin_code.core.llm.format import ResolvedMessage
 from kin_code.core.tools.base import (
     BaseTool,
     InvokeContext,
@@ -24,14 +24,17 @@ from kin_code.core.types import (
     ApprovalResponse,
     AsyncApprovalCallback,
     LLMMessage,
-    Role,
     SyncApprovalCallback,
     ToolCallEvent,
     ToolResultEvent,
     ToolStreamEvent,
     UserInputCallback,
 )
-from kin_code.core.utils import TOOL_ERROR_TAG, CancellationReason, get_user_cancellation_message
+from kin_code.core.utils import (
+    TOOL_ERROR_TAG,
+    CancellationReason,
+    get_user_cancellation_message,
+)
 
 
 class ToolExecutionResponse(StrEnum):
@@ -96,7 +99,9 @@ class ToolRunner:
 
             history_append_func(
                 LLMMessage.model_validate(
-                    format_handler.create_failed_tool_response_message(failed, error_msg)
+                    format_handler.create_failed_tool_response_message(
+                        failed, error_msg
+                    )
                 )
             )
 
@@ -110,7 +115,7 @@ class ToolRunner:
 
             try:
                 tool_instance = self.tool_manager.get(tool_call.tool_name)
-            except Exception as exc:
+            except (KeyError, ValueError, AttributeError) as exc:
                 error_msg = f"Error getting tool '{tool_call.tool_name}': {exc}"
                 yield ToolResultEvent(
                     tool_name=tool_call.tool_name,
@@ -267,26 +272,28 @@ class ToolRunner:
             return ToolDecision(verdict=ToolExecutionResponse.EXECUTE)
 
         allowlist_denylist_result = tool.check_allowlist_denylist(args)
-        if allowlist_denylist_result == ToolPermission.ALWAYS:
-            return ToolDecision(verdict=ToolExecutionResponse.EXECUTE)
-        elif allowlist_denylist_result == ToolPermission.NEVER:
-            denylist_patterns = tool.config.denylist
-            denylist_str = ", ".join(repr(pattern) for pattern in denylist_patterns)
-            return ToolDecision(
-                verdict=ToolExecutionResponse.SKIP,
-                feedback=f"Tool '{tool.get_name()}' blocked by denylist: [{denylist_str}]",
-            )
+        match allowlist_denylist_result:
+            case ToolPermission.ALWAYS:
+                return ToolDecision(verdict=ToolExecutionResponse.EXECUTE)
+            case ToolPermission.NEVER:
+                denylist_patterns = tool.config.denylist
+                denylist_str = ", ".join(repr(pattern) for pattern in denylist_patterns)
+                return ToolDecision(
+                    verdict=ToolExecutionResponse.SKIP,
+                    feedback=f"Tool '{tool.get_name()}' blocked by denylist: [{denylist_str}]",
+                )
 
         tool_name = tool.get_name()
         perm = self.tool_manager.get_tool_config(tool_name).permission
 
-        if perm is ToolPermission.ALWAYS:
-            return ToolDecision(verdict=ToolExecutionResponse.EXECUTE)
-        if perm is ToolPermission.NEVER:
-            return ToolDecision(
-                verdict=ToolExecutionResponse.SKIP,
-                feedback=f"Tool '{tool_name}' is permanently disabled",
-            )
+        match perm:
+            case ToolPermission.ALWAYS:
+                return ToolDecision(verdict=ToolExecutionResponse.EXECUTE)
+            case ToolPermission.NEVER:
+                return ToolDecision(
+                    verdict=ToolExecutionResponse.SKIP,
+                    feedback=f"Tool '{tool_name}' is permanently disabled",
+                )
 
         return await self._ask_approval(tool_name, args, tool_call_id)
 
