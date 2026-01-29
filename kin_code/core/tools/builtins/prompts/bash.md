@@ -60,7 +60,6 @@ read_file(path="large_file.txt", offset=1000, limit=1000)
 
 WRONG:
 ```bash
-bash("grep -r 'TODO' src/")  # Don't use bash for grep
 bash("find . -type f -name '*.py' | xargs grep 'import'")  # Too complex
 ```
 

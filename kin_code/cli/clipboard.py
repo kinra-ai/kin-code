@@ -151,7 +151,7 @@ def copy_selection_to_clipboard(app: App) -> None:
     for copy_fn in copy_fns:
         try:
             copy_fn(combined_text)
-        except:
+        except Exception:
             pass
         else:
             success = True
