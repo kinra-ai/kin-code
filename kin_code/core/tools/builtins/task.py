@@ -33,8 +33,13 @@ from kin_code.core.types import (
 )
 
 _TASK_SUFFIX = (
-    "\n\nAfter completing your work, always provide a summary of your findings. "
-    "Do not end with just tool calls - provide a final response."
+    "\n\n---\n"
+    "OUTPUT FORMAT (your response goes to a parent AI agent):\n"
+    "- Lead with your core finding or conclusion\n"
+    "- Include specific artifacts: file paths with line numbers, function/class names, URLs\n"
+    "- Omit greetings, summaries of what you did, and conversational filler\n"
+    "- State uncertainty explicitly rather than hedging\n"
+    "- Provide a final text response; do not end with only tool calls"
 )
 
 # Regex patterns that indicate content contains malformed tool call attempts.

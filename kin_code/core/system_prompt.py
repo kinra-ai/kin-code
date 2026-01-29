@@ -14,6 +14,8 @@ from kin_code.core.prompts import UtilityPrompt
 from kin_code.core.trusted_folders import TRUSTABLE_FILENAMES, trusted_folders_manager
 from kin_code.core.utils import is_dangerous_directory, is_windows
 
+from kin_code.core.agents.models import AgentType
+
 if TYPE_CHECKING:
     from kin_code.core.agents import AgentManager
     from kin_code.core.config import ProjectContextConfig, VibeConfig
@@ -432,6 +434,13 @@ def _get_available_subagents_section(agent_manager: AgentManager) -> str:
     return "\n".join(lines)
 
 
+def _get_subagent_context_section(agent_manager: AgentManager) -> str:
+    """Return subagent optimization instructions if current agent is a subagent."""
+    if agent_manager.active_profile.agent_type != AgentType.SUBAGENT:
+        return ""
+    return UtilityPrompt.SUBAGENT_CONTEXT.read()
+
+
 def get_universal_system_prompt(
     tool_manager: ToolManager,
     config: VibeConfig,
@@ -439,6 +448,9 @@ def get_universal_system_prompt(
     agent_manager: AgentManager,
 ) -> str:
     sections = [config.system_prompt]
+
+    if subagent_context := _get_subagent_context_section(agent_manager):
+        sections.append(subagent_context)
 
     if config.include_commit_signature:
         sections.append(_add_commit_signature())
