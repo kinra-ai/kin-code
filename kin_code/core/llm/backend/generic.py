@@ -171,10 +171,7 @@ class OpenAIAdapter(APIAdapter):
         return PreparedRequest(self.endpoint, headers, body)
 
     def _parse_message(
-        self,
-        data: dict[str, Any],
-        field_name: str,
-        preserve_in_content: bool = False,
+        self, data: dict[str, Any], field_name: str, preserve_in_content: bool = False
     ) -> LLMMessage | None:
         if data.get("choices"):
             choice = data["choices"][0]

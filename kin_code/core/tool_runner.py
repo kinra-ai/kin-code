@@ -9,7 +9,7 @@ from typing import cast
 from pydantic import BaseModel
 
 from kin_code.core.agents.manager import AgentManager
-from kin_code.core.llm.format import ResolvedMessage
+from kin_code.core.llm.format import APIToolFormatHandler, ResolvedMessage
 from kin_code.core.tools.base import (
     BaseTool,
     InvokeContext,
@@ -24,6 +24,7 @@ from kin_code.core.types import (
     ApprovalResponse,
     AsyncApprovalCallback,
     LLMMessage,
+    Role,
     SyncApprovalCallback,
     ToolCallEvent,
     ToolResultEvent,
@@ -64,6 +65,18 @@ class ToolRunner:
         """Set or update the approval callback."""
         self.approval_callback = callback
 
+    def _make_tool_message(
+        self, tool_name: str, content: str, tool_call_id: str
+    ) -> LLMMessage:
+        """Create a tool response message."""
+        return LLMMessage(
+            role=Role.tool, name=tool_name, content=content, tool_call_id=tool_call_id
+        )
+
+    def _make_error_message(self, tool_name: str, error: str) -> str:
+        """Format an error message with the standard error tag."""
+        return f"<{TOOL_ERROR_TAG}>{tool_name}: {error}</{TOOL_ERROR_TAG}>"
+
     async def handle_tool_calls(
         self,
         resolved: ResolvedMessage,
@@ -82,24 +95,17 @@ class ToolRunner:
             history_append_func: Function to append tool responses to history
         """
         for failed in resolved.failed_calls:
-            error_msg = f"<{TOOL_ERROR_TAG}>{failed.tool_name}: {failed.error}</{TOOL_ERROR_TAG}>"
-
+            error_msg = self._make_error_message(failed.tool_name, failed.error)
             yield ToolResultEvent(
                 tool_name=failed.tool_name,
                 tool_class=None,
                 error=error_msg,
                 tool_call_id=failed.call_id,
             )
-
             stats.tool_calls_failed += 1
-            from kin_code.core.llm.format import APIToolFormatHandler
-
-            format_handler = APIToolFormatHandler()
-            from kin_code.core.types import LLMMessage
-
             history_append_func(
                 LLMMessage.model_validate(
-                    format_handler.create_failed_tool_response_message(
+                    APIToolFormatHandler().create_failed_tool_response_message(
                         failed, error_msg
                     )
                 )
@@ -123,14 +129,9 @@ class ToolRunner:
                     error=error_msg,
                     tool_call_id=tool_call.call_id,
                 )
-                from kin_code.core.types import LLMMessage, Role
-
                 history_append_func(
-                    LLMMessage(
-                        role=Role.tool,
-                        name=tool_call.tool_name,
-                        content=error_msg,
-                        tool_call_id=tool_call.call_id,
+                    self._make_tool_message(
+                        tool_call.tool_name, error_msg, tool_call.call_id
                     )
                 )
                 continue
@@ -146,7 +147,6 @@ class ToolRunner:
                         CancellationReason.TOOL_SKIPPED, tool_call.tool_name
                     )
                 )
-
                 yield ToolResultEvent(
                     tool_name=tool_call.tool_name,
                     tool_class=tool_call.tool_class,
@@ -154,14 +154,9 @@ class ToolRunner:
                     skip_reason=skip_reason,
                     tool_call_id=tool_call.call_id,
                 )
-                from kin_code.core.types import LLMMessage, Role
-
                 history_append_func(
-                    LLMMessage(
-                        role=Role.tool,
-                        name=tool_call.tool_name,
-                        content=skip_reason,
-                        tool_call_id=tool_call.call_id,
+                    self._make_tool_message(
+                        tool_call.tool_name, skip_reason, tool_call.call_id
                     )
                 )
                 continue
@@ -194,17 +189,11 @@ class ToolRunner:
                 text = "\n".join(
                     f"{k}: {v}" for k, v in result_model.model_dump().items()
                 )
-                from kin_code.core.types import LLMMessage, Role
-
                 history_append_func(
-                    LLMMessage(
-                        role=Role.tool,
-                        name=tool_call.tool_name,
-                        content=text,
-                        tool_call_id=tool_call.call_id,
+                    self._make_tool_message(
+                        tool_call.tool_name, text, tool_call.call_id
                     )
                 )
-
                 yield ToolResultEvent(
                     tool_name=tool_call.tool_name,
                     tool_class=tool_call.tool_class,
@@ -225,41 +214,31 @@ class ToolRunner:
                     error=cancel,
                     tool_call_id=tool_call.call_id,
                 )
-                from kin_code.core.types import LLMMessage, Role
-
                 history_append_func(
-                    LLMMessage(
-                        role=Role.tool,
-                        name=tool_call.tool_name,
-                        content=cancel,
-                        tool_call_id=tool_call.call_id,
+                    self._make_tool_message(
+                        tool_call.tool_name, cancel, tool_call.call_id
                     )
                 )
                 raise
 
             except (ToolError, ToolPermissionError) as exc:
                 error_msg = f"<{TOOL_ERROR_TAG}>{tool_instance.get_name()} failed: {exc}</{TOOL_ERROR_TAG}>"
-
                 yield ToolResultEvent(
                     tool_name=tool_call.tool_name,
                     tool_class=tool_call.tool_class,
                     error=error_msg,
                     tool_call_id=tool_call.call_id,
                 )
-
                 if isinstance(exc, ToolPermissionError):
-                    stats.tool_calls_agreed -= 1
-                    stats.tool_calls_rejected += 1
+                    stats.tool_calls_agreed, stats.tool_calls_rejected = (
+                        stats.tool_calls_agreed - 1,
+                        stats.tool_calls_rejected + 1,
+                    )
                 else:
                     stats.tool_calls_failed += 1
-                from kin_code.core.types import LLMMessage, Role
-
                 history_append_func(
-                    LLMMessage(
-                        role=Role.tool,
-                        name=tool_call.tool_name,
-                        content=error_msg,
-                        tool_call_id=tool_call.call_id,
+                    self._make_tool_message(
+                        tool_call.tool_name, error_msg, tool_call.call_id
                     )
                 )
                 continue

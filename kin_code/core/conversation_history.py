@@ -63,7 +63,9 @@ class ConversationHistory:
             role=Role.tool,
             tool_call_id=tool_call_data.id or "",
             name=tool_name,
-            content=str(get_user_cancellation_message(CancellationReason.TOOL_NO_RESPONSE)),
+            content=str(
+                get_user_cancellation_message(CancellationReason.TOOL_NO_RESPONSE)
+            ),
         )
 
     def fill_missing_tool_responses(self) -> None:

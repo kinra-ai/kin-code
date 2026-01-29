@@ -25,7 +25,7 @@ class TestACPInitialize:
             ),
         )
         assert response.agent_info == Implementation(
-            name="@kinra-ai/kin-code", title="Kin Code", version="1.1.0"
+            name="@kinra-ai/kin-code", title="Kin Code", version="1.1.1"
         )
 
         assert response.auth_methods == []
@@ -48,7 +48,7 @@ class TestACPInitialize:
             ),
         )
         assert response.agent_info == Implementation(
-            name="@kinra-ai/kin-code", title="Kin Code", version="1.1.0"
+            name="@kinra-ai/kin-code", title="Kin Code", version="1.1.1"
         )
 
         assert response.auth_methods is not None

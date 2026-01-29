@@ -232,4 +232,6 @@ class TestMalformedContentDetection:
         """Ensure we don't false-positive on valid XML-like content."""
         assert not _is_tool_call_content("<example>some content</example>")
         assert not _is_tool_call_content("<code>print('hello')</code>")
-        assert not _is_tool_call_content("<functionDescription>reads files</functionDescription>")
+        assert not _is_tool_call_content(
+            "<functionDescription>reads files</functionDescription>"
+        )

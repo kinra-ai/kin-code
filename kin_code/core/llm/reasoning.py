@@ -82,7 +82,9 @@ class FieldExtractor:
         Returns:
             Modified message dict with reasoning_content normalized.
         """
-        del preserve_in_content  # Field-based reasoning is already separate from content
+        del (
+            preserve_in_content
+        )  # Field-based reasoning is already separate from content
         if field_name != "reasoning_content" and field_name in msg_dict:
             msg_dict["reasoning_content"] = msg_dict.pop(field_name)
         return msg_dict

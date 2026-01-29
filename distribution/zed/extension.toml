@@ -1,7 +1,7 @@
 id = "kin-code"
 name = "Kin Code"
 description = "Open-source coding assistant"
-version = "1.1.0"
+version = "1.1.1"
 schema_version = 1
 authors = ["Blake Gjerdingen"]
 repository = "https://github.com/kinra-ai/kin-code"
@@ -11,25 +11,25 @@ name = "Kin Code"
 icon = "./icons/kin_code.svg"
 
 [agent_servers.kin-code.targets.darwin-aarch64]
-archive = "https://github.com/kinra-ai/kin-code/releases/download/v1.1.0/kin-acp-darwin-aarch64-1.1.0.zip"
+archive = "https://github.com/kinra-ai/kin-code/releases/download/v1.1.1/kin-acp-darwin-aarch64-1.1.1.zip"
 cmd = "./kin-acp"
 
 [agent_servers.kin-code.targets.darwin-x86_64]
-archive = "https://github.com/kinra-ai/kin-code/releases/download/v1.1.0/kin-acp-darwin-x86_64-1.1.0.zip"
+archive = "https://github.com/kinra-ai/kin-code/releases/download/v1.1.1/kin-acp-darwin-x86_64-1.1.1.zip"
 cmd = "./kin-acp"
 
 [agent_servers.kin-code.targets.linux-aarch64]
-archive = "https://github.com/kinra-ai/kin-code/releases/download/v1.1.0/kin-acp-linux-aarch64-1.1.0.zip"
+archive = "https://github.com/kinra-ai/kin-code/releases/download/v1.1.1/kin-acp-linux-aarch64-1.1.1.zip"
 cmd = "./kin-acp"
 
 [agent_servers.kin-code.targets.linux-x86_64]
-archive = "https://github.com/kinra-ai/kin-code/releases/download/v1.1.0/kin-acp-linux-x86_64-1.1.0.zip"
+archive = "https://github.com/kinra-ai/kin-code/releases/download/v1.1.1/kin-acp-linux-x86_64-1.1.1.zip"
 cmd = "./kin-acp"
 
 [agent_servers.kin-code.targets.windows-aarch64]
-archive = "https://github.com/kinra-ai/kin-code/releases/download/v1.1.0/kin-acp-windows-aarch64-1.1.0.zip"
+archive = "https://github.com/kinra-ai/kin-code/releases/download/v1.1.1/kin-acp-windows-aarch64-1.1.1.zip"
 cmd = "./kin-acp.exe"
 
 [agent_servers.kin-code.targets.windows-x86_64]
-archive = "https://github.com/kinra-ai/kin-code/releases/download/v1.1.0/kin-acp-windows-x86_64-1.1.0.zip"
+archive = "https://github.com/kinra-ai/kin-code/releases/download/v1.1.1/kin-acp-windows-x86_64-1.1.1.zip"
 cmd = "./kin-acp.exe"

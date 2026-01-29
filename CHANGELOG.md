@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-01-28
+
+### Added
+
+- LM Studio as a first-class provider preset
+- `tool_call_format` config option for XML/API/AUTO parsing modes
+
+### Changed
+
+- Minnesota flag colors in onboarding welcome animation
+- Show model alias and provider in task result display
+- Exclude subagent reasoning from parent context by default
+- Optimize subagent output for parent model consumption
+- Refactor agent_loop.py for better maintainability
+
+### Fixed
+
+- Subagent response extraction for misbehaving models
+- Subagent token tracking leaking into main UI context progress
+- LSP tool name and malformed response detection
+- Bare except clause in error handling
+
+### Removed
+
+- Unused XML tool call parsing code
+
+
 ## [1.1.0] - 2026-01-27
 
 ### Changed

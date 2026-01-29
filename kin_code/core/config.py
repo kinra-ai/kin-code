@@ -317,7 +317,9 @@ class ModelConfig(BaseModel):
     temperature: float = 0.2
     top_p: float | None = None  # If set, include in API request
     reasoning_enabled: bool | None = None  # If True, send reasoning param to API
-    reasoning_mode: ReasoningMode = ReasoningMode.STRIP  # How to handle reasoning in context
+    reasoning_mode: ReasoningMode = (
+        ReasoningMode.STRIP
+    )  # How to handle reasoning in context
     reasoning_budget: int | None = None  # Max reasoning tokens (provider-specific)
     input_price: float | None = (
         None  # Price per million input tokens (None = auto-fetch)

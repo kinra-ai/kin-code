@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import time
 from collections.abc import AsyncGenerator
+import time
 from typing import TYPE_CHECKING
 
 from kin_code.core.config import VibeConfig
@@ -171,9 +171,7 @@ class LLMClient:
             ) from e
 
     async def count_tokens(
-        self,
-        messages: list[LLMMessage],
-        tool_manager: ToolManager,
+        self, messages: list[LLMMessage], tool_manager: ToolManager
     ) -> int:
         """Count tokens in messages."""
         active_model = self._config.get_active_model()

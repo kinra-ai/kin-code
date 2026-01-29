@@ -128,7 +128,9 @@ EXPLORE = AgentProfile(
     description="Read-only subagent for codebase exploration",
     safety=AgentSafety.SAFE,
     agent_type=AgentType.SUBAGENT,
-    overrides={"enabled_tools": ["grep", "glob", "list_directory", "l_s_p", "read_file"]},
+    overrides={
+        "enabled_tools": ["grep", "glob", "list_directory", "l_s_p", "read_file"]
+    },
 )
 
 PLANNER = AgentProfile(
@@ -138,7 +140,14 @@ PLANNER = AgentProfile(
     safety=AgentSafety.SAFE,
     agent_type=AgentType.SUBAGENT,
     overrides={
-        "enabled_tools": ["grep", "glob", "list_directory", "l_s_p", "read_file", "todo"]
+        "enabled_tools": [
+            "grep",
+            "glob",
+            "list_directory",
+            "l_s_p",
+            "read_file",
+            "todo",
+        ]
     },
 )
 

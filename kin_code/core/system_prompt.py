@@ -10,11 +10,10 @@ import sys
 import time
 from typing import TYPE_CHECKING
 
+from kin_code.core.agents.models import AgentType
 from kin_code.core.prompts import UtilityPrompt
 from kin_code.core.trusted_folders import TRUSTABLE_FILENAMES, trusted_folders_manager
 from kin_code.core.utils import is_dangerous_directory, is_windows
-
-from kin_code.core.agents.models import AgentType
 
 if TYPE_CHECKING:
     from kin_code.core.agents import AgentManager
