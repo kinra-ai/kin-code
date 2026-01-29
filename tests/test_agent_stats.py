@@ -723,7 +723,7 @@ class TestAutoFetchPricing:
         mock_pricing = ModelPricing(input_price=3.0, output_price=15.0, fetched_at=0)
         mock_get_pricing = MagicMock(return_value=mock_pricing)
         monkeypatch.setattr(
-            "kin_code.core.agent_loop.get_model_pricing_sync", mock_get_pricing
+            "kin_code.core.llm.pricing.get_model_pricing_sync", mock_get_pricing
         )
 
         config = VibeConfig(
@@ -757,7 +757,7 @@ class TestAutoFetchPricing:
         # Mock the pricing service - should NOT be called
         mock_get_pricing = MagicMock()
         monkeypatch.setattr(
-            "kin_code.core.agent_loop.get_model_pricing_sync", mock_get_pricing
+            "kin_code.core.llm.pricing.get_model_pricing_sync", mock_get_pricing
         )
 
         backend = FakeBackend([])
@@ -812,7 +812,7 @@ class TestAutoFetchPricing:
         mock_pricing = ModelPricing(input_price=7.5, output_price=22.5, fetched_at=0)
         mock_get_pricing = MagicMock(return_value=mock_pricing)
         monkeypatch.setattr(
-            "kin_code.core.agent_loop.get_model_pricing_sync", mock_get_pricing
+            "kin_code.core.llm.pricing.get_model_pricing_sync", mock_get_pricing
         )
 
         config2 = VibeConfig(
@@ -854,7 +854,7 @@ class TestAutoFetchPricing:
         # Mock the pricing service to return None (fetch failed)
         mock_get_pricing = MagicMock(return_value=None)
         monkeypatch.setattr(
-            "kin_code.core.agent_loop.get_model_pricing_sync", mock_get_pricing
+            "kin_code.core.llm.pricing.get_model_pricing_sync", mock_get_pricing
         )
 
         config = VibeConfig(
